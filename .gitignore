@@ -5,6 +5,7 @@
 
 # Local configuration files
 local.properties
+.venv/
 
 # Android Studio / IntelliJ IDEA
 .idea/
