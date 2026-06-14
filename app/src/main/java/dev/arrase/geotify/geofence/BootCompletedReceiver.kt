@@ -4,26 +4,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import dev.arrase.geotify.GeotifyApplication
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import dev.arrase.geotify.util.geotifyRepository
+import dev.arrase.geotify.util.goAsyncCoroutine
 
 class BootCompletedReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
 
-        val pendingResult = goAsync()
-        val repository = (context.applicationContext as GeotifyApplication).repository
-
-        CoroutineScope(Dispatchers.IO).launch {
+        goAsyncCoroutine {
             try {
-                repository.reRegisterAllActiveGeofences()
+                context.geotifyRepository.reRegisterAllActiveGeofences()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to re-register geofences after boot", e)
-            } finally {
-                pendingResult.finish()
             }
         }
     }

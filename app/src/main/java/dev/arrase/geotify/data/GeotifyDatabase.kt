@@ -12,7 +12,7 @@ import dev.arrase.geotify.data.entity.ReminderEntity
 @Database(
     entities = [LocationEntity::class, ReminderEntity::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class GeotifyDatabase : RoomDatabase() {
 

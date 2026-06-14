@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val initialTab = if (intent.getStringExtra("tab") == "reminders") {
+        val initialTab = if (intent.getStringExtra(EXTRA_TAB) == TAB_REMINDERS) {
             GeotifyTab.Reminders
         } else {
             GeotifyTab.Locations
@@ -38,5 +38,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    companion object {
+        const val EXTRA_TAB = "tab"
+        const val TAB_REMINDERS = "reminders"
     }
 }

@@ -1,9 +1,6 @@
 package dev.arrase.geotify.permission
 
 import android.Manifest
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -34,11 +32,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 private const val STEP_LOCATION = 0
 private const val STEP_NOTIFICATION = 1
-private const val STEP_BACKGROUND = 2
-private const val STEP_DONE = 3
+private const val STEP_DONE = 2
 
 @Composable
 fun PermissionGate(content: @Composable () -> Unit) {
@@ -64,6 +64,22 @@ fun PermissionGate(content: @Composable () -> Unit) {
         }
     }
 
+    // Re-check background location permission when returning from Settings
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && step == STEP_DONE) {
+                val bgGranted = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                // Background location is optional — no action needed if still not granted.
+                // This hook exists so future logic can react to the grant status change.
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     val locationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -86,6 +102,12 @@ fun PermissionGate(content: @Composable () -> Unit) {
         }
     }
 
+    val backgroundLocationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        step = STEP_DONE
+    }
+
     when (step) {
         STEP_LOCATION -> {
             PermissionRequestScreen(message = "Geotify needs location access to create geofence reminders.")
@@ -104,11 +126,6 @@ fun PermissionGate(content: @Composable () -> Unit) {
             LaunchedEffect(Unit) {
                 notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
-        }
-
-        STEP_BACKGROUND -> {
-            // User was sent to settings; we show content and hope they granted it
-            step = STEP_DONE
         }
 
         STEP_DONE -> content()
@@ -138,12 +155,7 @@ fun PermissionGate(content: @Composable () -> Unit) {
             confirmButton = {
                 TextButton(onClick = {
                     showBackgroundDialog = false
-                    val intent = Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.fromParts("package", context.packageName, null)
-                    )
-                    context.startActivity(intent)
-                    step = STEP_DONE
+                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 }) {
                     Text("Open Settings")
                 }

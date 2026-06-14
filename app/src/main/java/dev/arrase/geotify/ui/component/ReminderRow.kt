@@ -1,12 +1,9 @@
 package dev.arrase.geotify.ui.component
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AssistChipDefaults
@@ -17,7 +14,6 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.arrase.geotify.data.entity.ReminderEntity
@@ -26,7 +22,8 @@ import dev.arrase.geotify.data.entity.transitionLabel
 @Composable
 fun ReminderRow(
     reminder: ReminderEntity,
-    locationAliasMap: Map<String, String>
+    locationAliasMap: Map<String, String>,
+    modifier: Modifier = Modifier
 ) {
     val alias = locationAliasMap[reminder.locationId] ?: "Unknown"
 
@@ -46,29 +43,24 @@ fun ReminderRow(
             }
         },
         supportingContent = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val statusColor = if (reminder.isActive) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                }
-                SuggestionChip(
-                    onClick = {},
-                    label = {
-                        Text(
-                            text = if (reminder.isActive) "Active" else "Completed",
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    },
-                    colors = SuggestionChipDefaults.suggestionChipColors(
-                        containerColor = statusColor
-                    ),
-                    modifier = Modifier.height(24.dp)
-                )
+            val statusColor = if (reminder.isActive) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
             }
+            SuggestionChip(
+                onClick = {},
+                label = {
+                    Text(
+                        text = if (reminder.isActive) "Active" else "Completed",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
+                colors = SuggestionChipDefaults.suggestionChipColors(
+                    containerColor = statusColor
+                ),
+                modifier = Modifier.height(24.dp)
+            )
         },
         leadingContent = {
             Icon(
@@ -99,6 +91,7 @@ fun ReminderRow(
                 },
                 modifier = Modifier.height(24.dp)
             )
-        }
+        },
+        modifier = modifier
     )
 }

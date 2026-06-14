@@ -41,3 +41,8 @@ val ReminderEntity.transitionLabel: String
 val ReminderEntity.triggerTypeString: String
     get() = if (isArrival) "arrival" else "departure"
 
+data class LocationReminderCount(
+    @ColumnInfo(name = "location_id") val locationId: String,
+    val count: Int
+)
+

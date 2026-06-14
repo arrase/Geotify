@@ -8,17 +8,16 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import dev.arrase.geotify.data.entity.LocationEntity
-import dev.arrase.geotify.ui.GeotifyViewModel
 import java.util.Locale
 
 @Composable
-fun LocationRow(location: LocationEntity, viewModel: GeotifyViewModel) {
-    val activeCount by viewModel.activeReminderCount(location.id)
-        .collectAsState(initial = 0)
-
+fun LocationRow(
+    location: LocationEntity,
+    activeReminderCount: Int,
+    modifier: Modifier = Modifier
+) {
     ListItem(
         headlineContent = {
             Text(
@@ -46,14 +45,15 @@ fun LocationRow(location: LocationEntity, viewModel: GeotifyViewModel) {
             )
         },
         trailingContent = {
-            if (activeCount > 0) {
+            if (activeReminderCount > 0) {
                 Badge(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ) {
-                    Text(activeCount.toString())
+                    Text(activeReminderCount.toString())
                 }
             }
-        }
+        },
+        modifier = modifier
     )
 }

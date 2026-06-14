@@ -5,11 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.google.android.gms.location.GeofencingEvent
-import dev.arrase.geotify.GeotifyApplication
 import dev.arrase.geotify.notification.NotificationHelper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import dev.arrase.geotify.util.geotifyRepository
+import dev.arrase.geotify.util.goAsyncCoroutine
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
@@ -22,11 +20,11 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         }
 
         val triggeringGeofences = geofencingEvent.triggeringGeofences ?: return
-        val pendingResult = goAsync()
-        val repository = (context.applicationContext as GeotifyApplication).repository
 
-        CoroutineScope(Dispatchers.IO).launch {
+        goAsyncCoroutine {
             try {
+                val repository = context.geotifyRepository
+
                 for (geofence in triggeringGeofences) {
                     val locationId = geofence.requestId
                     val location = repository.findLocationById(locationId) ?: continue
@@ -49,8 +47,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing geofence event", e)
-            } finally {
-                pendingResult.finish()
             }
         }
     }

@@ -15,37 +15,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,14 +55,18 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
+import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
 import dev.arrase.geotify.ui.component.ReminderRow
-import dev.arrase.geotify.ui.component.SwipeToDeleteBackground
+import dev.arrase.geotify.ui.component.SwipeToDeleteContainer
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RemindersScreen(viewModel: GeotifyViewModel) {
+fun RemindersScreen(
+    viewModel: GeotifyViewModel,
+    modifier: Modifier = Modifier
+) {
     val reminders by viewModel.reminders.collectAsState()
     val locations by viewModel.locations.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -94,7 +91,7 @@ fun RemindersScreen(viewModel: GeotifyViewModel) {
     var transitionType by remember { mutableIntStateOf(Geofence.GEOFENCE_TRANSITION_ENTER) }
     var dropdownExpanded by remember { mutableStateOf(false) }
 
-    Box(Modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = reminders.isEmpty(),
             enter = fadeIn(),
@@ -342,18 +339,17 @@ fun RemindersScreen(viewModel: GeotifyViewModel) {
                     Button(
                         onClick = {
                             if (isValid) {
-                                if (editingReminder == null) {
+                                val editing = editingReminder
+                                if (editing == null) {
                                     viewModel.createReminder(selectedLocationId, message, transitionType)
                                 } else {
-                                    val oldLocationId = editingReminder!!.locationId
                                     viewModel.updateReminder(
-                                        editingReminder!!.copy(
+                                        editing.copy(
                                             locationId = selectedLocationId,
                                             message = message,
-                                            transitionType = transitionType,
-                                            isActive = editingReminder!!.isActive
+                                            transitionType = transitionType
                                         ),
-                                        oldLocationId = oldLocationId
+                                        oldLocationId = editing.locationId
                                     )
                                 }
                                 showDialog = false
@@ -367,42 +363,27 @@ fun RemindersScreen(viewModel: GeotifyViewModel) {
                     }
                 },
                 dismissButton = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (editingReminder != null) {
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.cancelReminder(editingReminder!!.id)
-                                    showDialog = false
-                                    editingReminder = null
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = "Reminder deleted",
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.error
-                                ),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text("Delete")
-                            }
-                        }
-                        OutlinedButton(
-                            onClick = {
+                    val editing = editingReminder
+                    DialogDismissButtons(
+                        isEditing = editing != null,
+                        onDelete = {
+                            if (editing != null) {
+                                viewModel.cancelReminder(editing.id)
                                 showDialog = false
                                 editingReminder = null
-                            },
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Cancel")
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Reminder deleted",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        },
+                        onCancel = {
+                            showDialog = false
+                            editingReminder = null
                         }
-                    }
+                    )
                 }
             )
         }
@@ -414,7 +395,6 @@ fun RemindersScreen(viewModel: GeotifyViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ActiveReminderItem(
     reminder: ReminderEntity,
@@ -423,23 +403,9 @@ private fun ActiveReminderItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onCancel()
-                true
-            } else {
-                false
-            }
-        }
-    )
-
-    SwipeToDismissBox(
-        state = dismissState,
-        backgroundContent = {
-            SwipeToDeleteBackground(contentDescription = "Cancel")
-        },
-        enableDismissFromStartToEnd = false,
+    SwipeToDeleteContainer(
+        onDelete = onCancel,
+        contentDescription = "Cancel",
         modifier = modifier
     ) {
         Box(modifier = Modifier.clickable(onClick = onClick)) {

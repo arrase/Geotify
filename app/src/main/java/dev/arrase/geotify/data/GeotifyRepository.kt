@@ -1,8 +1,10 @@
 package dev.arrase.geotify.data
 
+import android.util.Log
 import dev.arrase.geotify.data.dao.LocationDao
 import dev.arrase.geotify.data.dao.ReminderDao
 import dev.arrase.geotify.data.entity.LocationEntity
+import dev.arrase.geotify.data.entity.LocationReminderCount
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.geofence.GeofenceManager
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +21,9 @@ class GeotifyRepository(
     fun observeLocations(): Flow<List<LocationEntity>> = locationDao.observeAll()
 
     fun observeReminders(): Flow<List<ReminderEntity>> = reminderDao.observeAll()
+
+    fun observeActiveReminderCounts(): Flow<List<LocationReminderCount>> =
+        reminderDao.observeActiveReminderCounts()
 
     fun observeActiveReminderCount(locationId: String): Flow<Int> =
         reminderDao.observeActiveCountForLocation(locationId)
@@ -58,6 +63,7 @@ class GeotifyRepository(
         val location = locationDao.findByAlias(alias)
         if (location != null) {
             runCatching { geofenceManager.removeGeofences(listOf(location.id)) }
+                .onFailure { Log.w(TAG, "Failed to remove geofence for deleted location: $alias", it) }
             locationDao.deleteByAlias(alias)
         }
     }
@@ -125,16 +131,23 @@ class GeotifyRepository(
         val location = locationDao.findById(locationId)
         if (location == null) {
             runCatching { geofenceManager.removeGeofences(listOf(locationId)) }
+                .onFailure { Log.w(TAG, "Failed to remove geofence for missing location: $locationId", it) }
             return
         }
         val activeReminders = reminderDao.getActiveByLocationId(locationId)
         if (activeReminders.isEmpty()) {
             runCatching { geofenceManager.removeGeofences(listOf(locationId)) }
+                .onFailure { Log.w(TAG, "Failed to remove geofence for location: $locationId", it) }
         } else {
             val combinedTransition = activeReminders.fold(0) { acc, reminder ->
                 acc or reminder.transitionType
             }
             runCatching { geofenceManager.registerGeofenceForLocation(location, combinedTransition) }
+                .onFailure { Log.w(TAG, "Failed to register geofence for location: $locationId", it) }
         }
+    }
+
+    companion object {
+        private const val TAG = "GeotifyRepository"
     }
 }

@@ -26,7 +26,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun EmptyState(icon: ImageVector, title: String, suggestion: String) {
+fun EmptyState(
+    icon: ImageVector,
+    title: String,
+    suggestion: String,
+    modifier: Modifier = Modifier
+) {
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
 
@@ -42,7 +47,7 @@ fun EmptyState(icon: ImageVector, title: String, suggestion: String) {
     )
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .scale(scale)
             .alpha(alpha),

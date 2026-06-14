@@ -10,9 +10,7 @@
     <!-- Notifications -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Foreground service -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
 
     <!-- Boot completed for geofence re-registration -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -47,11 +45,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Foreground Service for GPS location fetch -->
-        <service
-            android:name=".service.LocationFetchService"
-            android:foregroundServiceType="location"
-            android:exported="false" />
+
 
         <!-- Geofence transition receiver -->
         <receiver

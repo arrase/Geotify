@@ -5,11 +5,16 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import dev.arrase.geotify.data.entity.LocationReminderCount
 import dev.arrase.geotify.data.entity.ReminderEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReminderDao {
+
+    @Query("SELECT location_id, COUNT(*) as count FROM reminders WHERE is_active = 1 GROUP BY location_id")
+    fun observeActiveReminderCounts(): Flow<List<LocationReminderCount>>
+
 
     @Query(
         """

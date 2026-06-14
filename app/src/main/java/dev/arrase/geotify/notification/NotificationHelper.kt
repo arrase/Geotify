@@ -16,10 +16,10 @@ import dev.arrase.geotify.R
 object NotificationHelper {
 
     const val CHANNEL_GEOFENCE = "geofence_reminders"
-    const val CHANNEL_LOCATION_SERVICE = "location_service"
     const val ACTION_DISMISS_REMINDER = "dev.arrase.geotify.ACTION_DISMISS_REMINDER"
     const val EXTRA_REMINDER_ID = "extra_reminder_id"
-    const val LOCATION_SERVICE_NOTIFICATION_ID = 1
+    const val EXTRA_TAB = "tab"
+    const val TAB_REMINDERS = "reminders"
 
     fun createNotificationChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
@@ -32,25 +32,8 @@ object NotificationHelper {
             description = "Notifications triggered when you enter or leave a saved location"
         }
 
-        val locationServiceChannel = NotificationChannel(
-            CHANNEL_LOCATION_SERVICE,
-            "Location Service",
-            NotificationManager.IMPORTANCE_LOW
-        ).apply {
-            description = "Shown while obtaining your current GPS location"
-        }
-
-        manager.createNotificationChannels(listOf(geofenceChannel, locationServiceChannel))
+        manager.createNotificationChannels(listOf(geofenceChannel))
     }
-
-    fun buildLocationServiceNotification(context: Context): android.app.Notification =
-        NotificationCompat.Builder(context, CHANNEL_LOCATION_SERVICE)
-            .setSmallIcon(R.drawable.ic_location)
-            .setContentTitle("Obtaining location")
-            .setContentText("Getting your current GPS coordinates…")
-            .setOngoing(true)
-            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .build()
 
     fun showGeofenceNotification(
         context: Context,
@@ -65,7 +48,7 @@ object NotificationHelper {
 
         val openIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("tab", "reminders")
+            putExtra(EXTRA_TAB, TAB_REMINDERS)
         }
         val openPending = PendingIntent.getActivity(
             context, notificationId, openIntent,
@@ -86,6 +69,7 @@ object NotificationHelper {
             .setContentTitle(alias)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(openPending)
             .addAction(R.drawable.ic_dismiss, "Dismiss", dismissPending)

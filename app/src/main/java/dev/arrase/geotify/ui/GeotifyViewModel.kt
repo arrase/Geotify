@@ -8,9 +8,9 @@ import dev.arrase.geotify.data.GeotifyRepository
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.location.LocationProvider
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -19,14 +19,17 @@ class GeotifyViewModel(
     private val locationProvider: LocationProvider
 ) : ViewModel() {
 
+
     val locations: StateFlow<List<LocationEntity>> = repository.observeLocations()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val reminders: StateFlow<List<ReminderEntity>> = repository.observeReminders()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    fun activeReminderCount(locationId: String): Flow<Int> =
-        repository.observeActiveReminderCount(locationId)
+    val activeReminderCounts: StateFlow<Map<String, Int>> = repository.observeActiveReminderCounts()
+        .map { list -> list.associate { it.locationId to it.count } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
 
     fun saveLocation(alias: String, latitude: Double, longitude: Double, radiusMeters: Float) {
         viewModelScope.launch {

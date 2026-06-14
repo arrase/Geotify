@@ -3,8 +3,6 @@ package dev.arrase.geotify.ui.screen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.AlertDialog
@@ -34,17 +31,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,16 +53,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
+import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
 import dev.arrase.geotify.ui.component.LocationRow
-import dev.arrase.geotify.ui.component.SwipeToDeleteBackground
+import dev.arrase.geotify.ui.component.SwipeToDeleteContainer
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LocationsScreen(viewModel: GeotifyViewModel) {
+fun LocationsScreen(
+    viewModel: GeotifyViewModel,
+    modifier: Modifier = Modifier
+) {
     val locations by viewModel.locations.collectAsState()
+    val activeReminderCounts by viewModel.activeReminderCounts.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -86,7 +84,12 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
         locations.any { it.alias.equals(alias, ignoreCase = true) && it.id != editingLocation?.id }
     }
 
-    Box(Modifier.fillMaxSize()) {
+    val lat = latitudeString.toDoubleOrNull()
+    val lng = longitudeString.toDoubleOrNull()
+    val isLatitudeValid = lat != null && lat in -90.0..90.0
+    val isLongitudeValid = lng != null && lng in -180.0..180.0
+
+    Box(modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = locations.isEmpty(),
             enter = fadeIn(),
@@ -109,29 +112,16 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
                     items = locations,
                     key = { it.id }
                 ) { location ->
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = { value ->
-                            if (value == SwipeToDismissBoxValue.EndToStart) {
-                                viewModel.deleteLocation(location.alias)
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = "\"${location.alias}\" deleted",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                                true
-                            } else {
-                                false
+                    SwipeToDeleteContainer(
+                        onDelete = {
+                            viewModel.deleteLocation(location.alias)
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "\"${location.alias}\" deleted",
+                                    duration = SnackbarDuration.Short
+                                )
                             }
-                        }
-                    )
-
-                    SwipeToDismissBox(
-                        state = dismissState,
-                        backgroundContent = {
-                            SwipeToDeleteBackground(contentDescription = "Delete")
                         },
-                        enableDismissFromStartToEnd = false,
                         modifier = Modifier.animateItem()
                     ) {
                         Box(
@@ -144,7 +134,10 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
                                 showDialog = true
                             }
                         ) {
-                            LocationRow(location = location, viewModel = viewModel)
+                            LocationRow(
+                                location = location,
+                                activeReminderCount = activeReminderCounts[location.id] ?: 0
+                            )
                         }
                     }
                 }
@@ -203,9 +196,15 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
                         OutlinedTextField(
                             value = latitudeString,
                             onValueChange = { latitudeString = it },
-                            label = { Text("Latitude") },
+                            label = { Text("Latitude ([-90.0, 90.0])") },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            isError = latitudeString.isNotEmpty() && !isLatitudeValid,
+                            supportingText = {
+                                if (latitudeString.isNotEmpty() && !isLatitudeValid) {
+                                    Text("Must be between -90.0 and 90.0", color = MaterialTheme.colorScheme.error)
+                                }
+                            },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -213,9 +212,15 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
                         OutlinedTextField(
                             value = longitudeString,
                             onValueChange = { longitudeString = it },
-                            label = { Text("Longitude") },
+                            label = { Text("Longitude ([-180.0, 180.0])") },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            isError = longitudeString.isNotEmpty() && !isLongitudeValid,
+                            supportingText = {
+                                if (longitudeString.isNotEmpty() && !isLongitudeValid) {
+                                    Text("Must be between -180.0 and 180.0", color = MaterialTheme.colorScheme.error)
+                                }
+                            },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -299,20 +304,19 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
                     }
                 },
                 confirmButton = {
-                    val lat = latitudeString.toDoubleOrNull()
-                    val lng = longitudeString.toDoubleOrNull()
-                    val isValid = alias.isNotBlank() && lat != null && lng != null && !aliasExists
+                    val isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists
                     Button(
                         onClick = {
-                            if (isValid) {
-                                if (editingLocation == null) {
-                                    viewModel.saveLocation(alias, lat!!, lng!!, radiusMeters)
+                            if (lat != null && lng != null) {
+                                val editing = editingLocation
+                                if (editing == null) {
+                                    viewModel.saveLocation(alias, lat, lng, radiusMeters)
                                 } else {
                                     viewModel.updateLocation(
-                                        editingLocation!!.copy(
+                                        editing.copy(
                                             alias = alias,
-                                            latitude = lat!!,
-                                            longitude = lng!!,
+                                            latitude = lat,
+                                            longitude = lng,
                                             radiusMeters = radiusMeters
                                         )
                                     )
@@ -328,42 +332,27 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
                     }
                 },
                 dismissButton = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (editingLocation != null) {
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.deleteLocation(editingLocation!!.alias)
-                                    showDialog = false
-                                    editingLocation = null
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = "\"${alias}\" deleted",
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.error
-                                ),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text("Delete")
-                            }
-                        }
-                        OutlinedButton(
-                            onClick = {
+                    val editing = editingLocation
+                    DialogDismissButtons(
+                        isEditing = editing != null,
+                        onDelete = {
+                            if (editing != null) {
+                                viewModel.deleteLocation(editing.alias)
                                 showDialog = false
                                 editingLocation = null
-                            },
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Cancel")
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "\"${alias}\" deleted",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        },
+                        onCancel = {
+                            showDialog = false
+                            editingLocation = null
                         }
-                    }
+                    )
                 }
             )
         }
