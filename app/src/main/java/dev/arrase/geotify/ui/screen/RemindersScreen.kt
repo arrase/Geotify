@@ -150,22 +150,34 @@ fun RemindersScreen(
                         items = completedReminders,
                         key = { it.id }
                     ) { reminder ->
-                        Box(
+                        SwipeToDeleteContainer(
+                            onDelete = {
+                                viewModel.cancelReminder(reminder.id)
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Reminder deleted",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            },
                             modifier = Modifier
                                 .alpha(0.6f)
                                 .animateItem()
-                                .clickable {
+                        ) {
+                            Box(
+                                modifier = Modifier.clickable {
                                     editingReminder = reminder
                                     selectedLocationId = reminder.locationId
                                     message = reminder.message
                                     transitionType = reminder.transitionType
                                     showDialog = true
                                 }
-                        ) {
-                            ReminderRow(
-                                reminder = reminder,
-                                locationAliasMap = locationAliasMap
-                            )
+                            ) {
+                                ReminderRow(
+                                    reminder = reminder,
+                                    locationAliasMap = locationAliasMap
+                                )
+                            }
                         }
                     }
                 }
