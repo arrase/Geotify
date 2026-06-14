@@ -16,6 +16,14 @@ Geotify is a modern, location-aware Android application that allows users to cre
 
 ---
 
+## Screenshots
+
+| Reminders (Default Screen) | Locations |
+|:---:|:---:|
+| ![Reminders Screen](reminders_en.png) | ![Locations Screen](locations_en.png) |
+
+---
+
 ## Expose AppFunctions (AI / Agentic Integration)
 
 Geotify implements **Jetpack AppFunctions** (via the `androidx.appfunctions` APIs). This acts as a bridge that allows system services, voice assistants, and local Large Language Models (LLMs) to discover and execute actions within the app context:
