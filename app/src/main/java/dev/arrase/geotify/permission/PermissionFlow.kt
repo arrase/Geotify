@@ -29,12 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import dev.arrase.geotify.R
 
 private const val STEP_LOCATION = 0
 private const val STEP_NOTIFICATION = 1
@@ -110,7 +112,7 @@ fun PermissionGate(content: @Composable () -> Unit) {
 
     when (step) {
         STEP_LOCATION -> {
-            PermissionRequestScreen(message = "Geotify needs location access to create geofence reminders.")
+            PermissionRequestScreen(message = stringResource(R.string.perm_location_message))
             LaunchedEffect(Unit) {
                 locationLauncher.launch(
                     arrayOf(
@@ -122,7 +124,7 @@ fun PermissionGate(content: @Composable () -> Unit) {
         }
 
         STEP_NOTIFICATION -> {
-            PermissionRequestScreen(message = "Geotify needs notification permission to alert you when entering or leaving locations.")
+            PermissionRequestScreen(message = stringResource(R.string.perm_notification_message))
             LaunchedEffect(Unit) {
                 notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
@@ -145,19 +147,16 @@ fun PermissionGate(content: @Composable () -> Unit) {
                     modifier = Modifier.size(32.dp)
                 )
             },
-            title = { Text("Background Location") },
+            title = { Text(stringResource(R.string.perm_bg_location_title)) },
             text = {
-                Text(
-                    "For geofence reminders to work reliably, Geotify needs " +
-                            "\"Allow all the time\" location access. Please select it in the next screen."
-                )
+                Text(stringResource(R.string.perm_bg_location_message))
             },
             confirmButton = {
                 TextButton(onClick = {
                     showBackgroundDialog = false
                     backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 }) {
-                    Text("Open Settings")
+                    Text(stringResource(R.string.btn_open_settings))
                 }
             },
             dismissButton = {
@@ -165,7 +164,7 @@ fun PermissionGate(content: @Composable () -> Unit) {
                     showBackgroundDialog = false
                     step = STEP_DONE
                 }) {
-                    Text("Skip")
+                    Text(stringResource(R.string.btn_skip))
                 }
             }
         )

@@ -1,5 +1,6 @@
 package dev.arrase.geotify.ui.navigation
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,16 +26,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
+import dev.arrase.geotify.R
 import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.screen.LocationsScreen
 import dev.arrase.geotify.ui.screen.RemindersScreen
 
 enum class GeotifyTab(
     val icon: ImageVector,
-    val label: String
+    @get:StringRes val labelResId: Int
 ) {
-    Locations(Icons.Filled.LocationOn, "Locations"),
-    Reminders(Icons.Filled.Notifications, "Reminders")
+    Locations(Icons.Filled.LocationOn, R.string.label_locations),
+    Reminders(Icons.Filled.Notifications, R.string.label_reminders)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,10 +66,10 @@ fun GeotifyNavHost(
                         icon = {
                             Icon(
                                 imageVector = tab.icon,
-                                contentDescription = tab.label
+                                contentDescription = stringResource(tab.labelResId)
                             )
                         },
-                        label = { Text(tab.label) }
+                        label = { Text(stringResource(tab.labelResId)) }
                     )
                 }
             }

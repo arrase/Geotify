@@ -15,9 +15,11 @@ import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.ReminderEntity
-import dev.arrase.geotify.data.entity.transitionLabel
+import dev.arrase.geotify.data.entity.isArrival
 
 @Composable
 fun ReminderRow(
@@ -25,7 +27,7 @@ fun ReminderRow(
     locationAliasMap: Map<String, String>,
     modifier: Modifier = Modifier
 ) {
-    val alias = locationAliasMap[reminder.locationId] ?: "Unknown"
+    val alias = locationAliasMap[reminder.locationId] ?: stringResource(R.string.reminder_unknown_location)
 
     ListItem(
         headlineContent = {
@@ -52,7 +54,7 @@ fun ReminderRow(
                 onClick = {},
                 label = {
                     Text(
-                        text = if (reminder.isActive) "Active" else "Completed",
+                        text = if (reminder.isActive) stringResource(R.string.label_active) else stringResource(R.string.label_completed),
                         style = MaterialTheme.typography.labelSmall
                     )
                 },
@@ -65,7 +67,7 @@ fun ReminderRow(
         leadingContent = {
             Icon(
                 imageVector = Icons.Filled.Notifications,
-                contentDescription = "Reminder",
+                contentDescription = stringResource(R.string.content_description_reminder),
                 tint = if (reminder.isActive) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -78,7 +80,11 @@ fun ReminderRow(
                 onClick = {},
                 label = {
                     Text(
-                        text = reminder.transitionLabel,
+                        text = if (reminder.isArrival) {
+                            stringResource(R.string.label_transition_arrival)
+                        } else {
+                            stringResource(R.string.label_transition_departure)
+                        },
                         style = MaterialTheme.typography.labelSmall
                     )
                 },

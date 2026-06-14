@@ -50,9 +50,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.location.Geofence
+import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.component.DialogDismissButtons
@@ -67,6 +70,7 @@ fun RemindersScreen(
     viewModel: GeotifyViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val reminders by viewModel.reminders.collectAsState()
     val locations by viewModel.locations.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -99,8 +103,8 @@ fun RemindersScreen(
         ) {
             EmptyState(
                 icon = Icons.Filled.Notifications,
-                title = "No reminders yet",
-                suggestion = "Tap + to create a reminder, or tell Gemini: \"Remind me to buy milk when I arrive at the supermarket\""
+                title = stringResource(R.string.empty_reminders_title),
+                suggestion = stringResource(R.string.empty_reminders_suggestion)
             )
         }
 
@@ -112,7 +116,7 @@ fun RemindersScreen(
             LazyColumn(Modifier.fillMaxSize()) {
                 if (activeReminders.isNotEmpty()) {
                     stickyHeader(key = "header_active") {
-                        SectionHeader("Active")
+                        SectionHeader(stringResource(R.string.label_active))
                     }
                     items(
                         items = activeReminders,
@@ -125,7 +129,7 @@ fun RemindersScreen(
                                 viewModel.cancelReminder(reminder.id)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = "Reminder cancelled",
+                                        message = context.getString(R.string.toast_reminder_cancelled),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -144,7 +148,7 @@ fun RemindersScreen(
 
                 if (completedReminders.isNotEmpty()) {
                     stickyHeader(key = "header_completed") {
-                        SectionHeader("Completed")
+                        SectionHeader(stringResource(R.string.label_completed))
                     }
                     items(
                         items = completedReminders,
@@ -155,7 +159,7 @@ fun RemindersScreen(
                                 viewModel.cancelReminder(reminder.id)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = "Reminder deleted",
+                                        message = context.getString(R.string.toast_reminder_deleted),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -196,7 +200,7 @@ fun RemindersScreen(
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add Reminder")
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_description_add_reminder))
         }
 
         if (showDialog) {
@@ -207,7 +211,7 @@ fun RemindersScreen(
                 },
                 title = {
                     Text(
-                        text = if (editingReminder == null) "New Reminder" else "Edit Reminder",
+                        text = if (editingReminder == null) stringResource(R.string.dialog_new_reminder) else stringResource(R.string.dialog_edit_reminder),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -219,7 +223,7 @@ fun RemindersScreen(
                     ) {
                         if (locations.isEmpty()) {
                             Text(
-                                text = "No locations available. Please create a location first in the Locations tab.",
+                                text = stringResource(R.string.reminder_no_locations),
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -227,10 +231,10 @@ fun RemindersScreen(
                             val selectedLocation = locations.find { it.id == selectedLocationId }
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 OutlinedTextField(
-                                    value = selectedLocation?.alias ?: "Select Location",
+                                    value = selectedLocation?.alias ?: stringResource(R.string.reminder_select_location),
                                     onValueChange = {},
                                     readOnly = true,
-                                    label = { Text("Target Location") },
+                                    label = { Text(stringResource(R.string.reminder_target_location)) },
                                     trailingIcon = {
                                         Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
                                     },
@@ -262,7 +266,7 @@ fun RemindersScreen(
                             OutlinedTextField(
                                 value = message,
                                 onValueChange = { message = it },
-                                label = { Text("Reminder Message") },
+                                label = { Text(stringResource(R.string.reminder_message)) },
                                 singleLine = true,
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.fillMaxWidth()
@@ -270,7 +274,7 @@ fun RemindersScreen(
 
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(
-                                    text = "Trigger Condition",
+                                    text = stringResource(R.string.reminder_trigger_condition),
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(bottom = 8.dp)
@@ -305,7 +309,7 @@ fun RemindersScreen(
                                             )
                                             Spacer(Modifier.width(8.dp))
                                             Text(
-                                                text = "Arrival",
+                                                text = stringResource(R.string.label_arrival),
                                                 style = MaterialTheme.typography.labelMedium,
                                                 color = if (isEnter) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                             )
@@ -335,7 +339,7 @@ fun RemindersScreen(
                                             )
                                             Spacer(Modifier.width(8.dp))
                                             Text(
-                                                text = "Departure",
+                                                text = stringResource(R.string.label_departure),
                                                 style = MaterialTheme.typography.labelMedium,
                                                 color = if (isExit) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                             )
@@ -371,7 +375,7 @@ fun RemindersScreen(
                         enabled = isValid,
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Save")
+                        Text(stringResource(R.string.btn_save))
                     }
                 },
                 dismissButton = {
@@ -385,7 +389,7 @@ fun RemindersScreen(
                                 editingReminder = null
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = "Reminder deleted",
+                                        message = context.getString(R.string.toast_reminder_deleted),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -417,7 +421,7 @@ private fun ActiveReminderItem(
 ) {
     SwipeToDeleteContainer(
         onDelete = onCancel,
-        contentDescription = "Cancel",
+        contentDescription = stringResource(R.string.content_description_cancel),
         modifier = modifier
     ) {
         Box(modifier = Modifier.clickable(onClick = onClick)) {

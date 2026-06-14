@@ -48,9 +48,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.component.DialogDismissButtons
@@ -66,6 +69,7 @@ fun LocationsScreen(
     viewModel: GeotifyViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val locations by viewModel.locations.collectAsState()
     val activeReminderCounts by viewModel.activeReminderCounts.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -97,8 +101,8 @@ fun LocationsScreen(
         ) {
             EmptyState(
                 icon = Icons.Filled.LocationOn,
-                title = "No locations saved",
-                suggestion = "Tap + to add a location, or tell Gemini: \"Save this location as home\""
+                title = stringResource(R.string.empty_locations_title),
+                suggestion = stringResource(R.string.empty_locations_suggestion)
             )
         }
 
@@ -117,7 +121,7 @@ fun LocationsScreen(
                             viewModel.deleteLocation(location.alias)
                             scope.launch {
                                 snackbarHostState.showSnackbar(
-                                    message = "\"${location.alias}\" deleted",
+                                    message = context.getString(R.string.toast_location_deleted, location.alias),
                                     duration = SnackbarDuration.Short
                                 )
                             }
@@ -157,7 +161,7 @@ fun LocationsScreen(
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add Location")
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_description_add_location))
         }
 
         if (showDialog) {
@@ -168,7 +172,7 @@ fun LocationsScreen(
                 },
                 title = {
                     Text(
-                        text = if (editingLocation == null) "New Location" else "Edit Location",
+                        text = if (editingLocation == null) stringResource(R.string.dialog_new_location) else stringResource(R.string.dialog_edit_location),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -181,12 +185,12 @@ fun LocationsScreen(
                         OutlinedTextField(
                             value = alias,
                             onValueChange = { alias = it },
-                            label = { Text("Alias (e.g. Home, Office)") },
+                            label = { Text(stringResource(R.string.alias_hint)) },
                             singleLine = true,
                             isError = aliasExists,
                             supportingText = {
                                 if (aliasExists) {
-                                    Text("Alias already exists", color = MaterialTheme.colorScheme.error)
+                                    Text(stringResource(R.string.err_alias_exists), color = MaterialTheme.colorScheme.error)
                                 }
                             },
                             shape = RoundedCornerShape(12.dp),
@@ -196,13 +200,13 @@ fun LocationsScreen(
                         OutlinedTextField(
                             value = latitudeString,
                             onValueChange = { latitudeString = it },
-                            label = { Text("Latitude ([-90.0, 90.0])") },
+                            label = { Text(stringResource(R.string.lat_hint)) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             isError = latitudeString.isNotEmpty() && !isLatitudeValid,
                             supportingText = {
                                 if (latitudeString.isNotEmpty() && !isLatitudeValid) {
-                                    Text("Must be between -90.0 and 90.0", color = MaterialTheme.colorScheme.error)
+                                    Text(stringResource(R.string.err_lat_invalid), color = MaterialTheme.colorScheme.error)
                                 }
                             },
                             shape = RoundedCornerShape(12.dp),
@@ -212,13 +216,13 @@ fun LocationsScreen(
                         OutlinedTextField(
                             value = longitudeString,
                             onValueChange = { longitudeString = it },
-                            label = { Text("Longitude ([-180.0, 180.0])") },
+                            label = { Text(stringResource(R.string.lng_hint)) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             isError = longitudeString.isNotEmpty() && !isLongitudeValid,
                             supportingText = {
                                 if (longitudeString.isNotEmpty() && !isLongitudeValid) {
-                                    Text("Must be between -180.0 and 180.0", color = MaterialTheme.colorScheme.error)
+                                    Text(stringResource(R.string.err_lng_invalid), color = MaterialTheme.colorScheme.error)
                                 }
                             },
                             shape = RoundedCornerShape(12.dp),
@@ -251,7 +255,7 @@ fun LocationsScreen(
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Spacer(Modifier.width(8.dp))
-                                Text("Querying GPS...")
+                                Text(stringResource(R.string.btn_querying_gps))
                             } else {
                                 Icon(
                                     imageVector = Icons.Filled.MyLocation,
@@ -259,7 +263,7 @@ fun LocationsScreen(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(Modifier.width(8.dp))
-                                Text("Use Current GPS Coordinates")
+                                Text(stringResource(R.string.btn_use_current_gps))
                             }
                         }
 
@@ -270,12 +274,12 @@ fun LocationsScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Geofence Radius",
+                                    text = stringResource(R.string.label_geofence_radius),
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "${radiusMeters.toInt()} meters",
+                                    text = stringResource(R.string.label_meters, radiusMeters.toInt()),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
@@ -297,8 +301,8 @@ fun LocationsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("50m", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                                Text("1000m", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(stringResource(R.string.label_50m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(stringResource(R.string.label_1000m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }
@@ -328,7 +332,7 @@ fun LocationsScreen(
                         enabled = isValid,
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Save")
+                        Text(stringResource(R.string.btn_save))
                     }
                 },
                 dismissButton = {
@@ -342,7 +346,7 @@ fun LocationsScreen(
                                 editingLocation = null
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = "\"${alias}\" deleted",
+                                        message = context.getString(R.string.toast_location_deleted, alias),
                                         duration = SnackbarDuration.Short
                                     )
                                 }

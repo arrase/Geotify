@@ -26,10 +26,10 @@ object NotificationHelper {
 
         val geofenceChannel = NotificationChannel(
             CHANNEL_GEOFENCE,
-            "Geofence Reminders",
+            context.getString(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = "Notifications triggered when you enter or leave a saved location"
+            description = context.getString(R.string.notif_channel_desc)
         }
 
         manager.createNotificationChannels(listOf(geofenceChannel))
@@ -72,7 +72,7 @@ object NotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(openPending)
-            .addAction(R.drawable.ic_dismiss, "Dismiss", dismissPending)
+            .addAction(R.drawable.ic_dismiss, context.getString(R.string.notif_action_dismiss), dismissPending)
             .build()
 
         NotificationManagerCompat.from(context).notify(notificationId, notification)

@@ -9,6 +9,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.LocationEntity
 import java.util.Locale
 
@@ -40,7 +42,7 @@ fun LocationRow(
         leadingContent = {
             Icon(
                 imageVector = Icons.Filled.LocationOn,
-                contentDescription = "Location",
+                contentDescription = stringResource(R.string.content_description_location),
                 tint = MaterialTheme.colorScheme.primary
             )
         },

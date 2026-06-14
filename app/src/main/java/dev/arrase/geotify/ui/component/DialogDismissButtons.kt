@@ -10,7 +10,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.arrase.geotify.R
 
 @Composable
 fun DialogDismissButtons(
@@ -31,14 +33,14 @@ fun DialogDismissButtons(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Delete")
+                Text(stringResource(R.string.btn_delete))
             }
         }
         OutlinedButton(
             onClick = onCancel,
             shape = RoundedCornerShape(10.dp)
         ) {
-            Text("Cancel")
+            Text(stringResource(R.string.btn_cancel))
         }
     }
 }
