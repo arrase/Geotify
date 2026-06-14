@@ -56,6 +56,19 @@ data class DeleteResult(
     val deleted: Boolean
 )
 
+/** Serializable representation of an active reminder. */
+@AppFunctionSerializable(isDescribedByKDoc = true)
+data class SavedReminder(
+    /** Unique identifier of the reminder. */
+    val reminderId: String,
+    /** The alias of the target location. */
+    val targetAlias: String,
+    /** The reminder message. */
+    val payloadMessage: String,
+    /** Whether the reminder triggers on "arrival" or "departure". */
+    val triggerType: String
+)
+
 class GeoNotesAppFunctions(
     private val repository: GeoNotesRepository,
     private val applicationContext: Context
@@ -73,6 +86,13 @@ class GeoNotesAppFunctions(
         appFunctionContext: AppFunctionContext,
         alias: String
     ): SaveLocationResult = withContext(Dispatchers.IO) {
+        val existing = repository.findLocationByAlias(alias)
+        if (existing != null) {
+            throw AppFunctionInvalidArgumentException(
+                "Location alias '$alias' already exists. Choose a unique name or delete the existing one first."
+            )
+        }
+
         val client = LocationServices.getFusedLocationProviderClient(applicationContext)
         val cancellationSource = CancellationTokenSource()
 
@@ -160,16 +180,17 @@ class GeoNotesAppFunctions(
 
     /**
      * Cancel and delete a specific active reminder by matching the location alias
-     * and reminder message.
+     * and optional reminder message.
      *
      * @param targetAlias The alias of the location associated with the reminder.
-     * @param message The reminder message to match and delete.
+     * @param message The reminder message to match and delete. If omitted or null,
+     *                and only one active reminder exists for the location, it will be deleted.
      */
     @AppFunction(isDescribedByKDoc = true)
     suspend fun deleteReminder(
         appFunctionContext: AppFunctionContext,
         targetAlias: String,
-        message: String
+        message: String? = null
     ): DeleteResult = withContext(Dispatchers.IO) {
         val location = repository.findLocationByAlias(targetAlias)
             ?: throwAliasNotFound(targetAlias)
@@ -177,22 +198,66 @@ class GeoNotesAppFunctions(
         val activeReminders = repository.getActiveReminders()
             .filter { it.locationId == location.id }
 
-        val matched = activeReminders.firstOrNull {
-            it.message.contains(message, ignoreCase = true)
-        } ?: throw AppFunctionInvalidArgumentException(
-            "No active reminder matching '$message' for '$targetAlias'. " +
-                "Active reminders: ${activeReminders.joinToString { "'${it.message}'" }}"
-        )
+        if (activeReminders.isEmpty()) {
+            throw AppFunctionInvalidArgumentException("No active reminders found for '$targetAlias'.")
+        }
+
+        val matched = if (message.isNullOrBlank()) {
+            if (activeReminders.size == 1) {
+                activeReminders.first()
+            } else {
+                throw AppFunctionInvalidArgumentException(
+                    "Multiple active reminders found for '$targetAlias'. Please specify which one to delete by matching its message. " +
+                        "Active reminders: ${activeReminders.joinToString { "'${it.message}'" }}"
+                )
+            }
+        } else {
+            activeReminders.firstOrNull {
+                it.message.contains(message, ignoreCase = true)
+            } ?: throw AppFunctionInvalidArgumentException(
+                "No active reminder matching '$message' for '$targetAlias'. " +
+                    "Active reminders: ${activeReminders.joinToString { "'${it.message}'" }}"
+            )
+        }
 
         repository.cancelReminder(matched.id)
         DeleteResult(targetAlias, deleted = true)
     }
 
+    /**
+     * List all active reminders across all locations.
+     * Use this to check active reminders and their messages.
+     */
+    @AppFunction(isDescribedByKDoc = true)
+    suspend fun listActiveReminders(
+        appFunctionContext: AppFunctionContext
+    ): List<SavedReminder> = withContext(Dispatchers.IO) {
+        val reminders = repository.getActiveReminders()
+        val locations = repository.getAllLocations().associateBy { it.id }
+        reminders.map { entity ->
+            val location = locations[entity.locationId]
+            val alias = location?.alias ?: "Unknown"
+            val trigger = if (entity.transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
+                "arrival"
+            } else {
+                "departure"
+            }
+            SavedReminder(
+                reminderId = entity.id,
+                targetAlias = alias,
+                payloadMessage = entity.message,
+                triggerType = trigger
+            )
+        }
+    }
+
     private suspend fun throwAliasNotFound(alias: String): Nothing {
-        val aliasList = repository.getAllAliases().joinToString()
-        throw AppFunctionInvalidArgumentException(
-            "Alias '$alias' not found. Valid locations are: $aliasList. " +
-                "Map the user's intent to an exact value from this list and invoke again."
-        )
+        val aliases = repository.getAllAliases()
+        val message = if (aliases.isEmpty()) {
+            "Alias '$alias' not found. No locations are saved yet. Please save a location first using saveCurrentLocation."
+        } else {
+            "Alias '$alias' not found. Valid locations are: ${aliases.joinToString()}. Map the user's intent to an exact value from this list and invoke again."
+        }
+        throw AppFunctionInvalidArgumentException(message)
     }
 }

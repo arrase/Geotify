@@ -24,7 +24,8 @@ GeoNotes implements **Jetpack AppFunctions** (via the `androidx.appfunctions` AP
 - **`createGeofenceReminder(targetAlias: String, payloadMessage: String, triggerOnArrival: Boolean)`**: Creates a reminder linked to a saved location alias, specifying whether it should fire on entry (arrival) or exit (departure).
 - **`listLocations()`**: Retrieves all saved locations, showing their names and coordinates.
 - **`deleteLocation(alias: String)`**: Deletes a saved location along with all associated reminders and active geofences.
-- **`deleteReminder(targetAlias: String, message: String)`**: Cancels and removes specific active geofence triggers matching the location and keyword.
+- **`deleteReminder(targetAlias: String, message: String?)`**: Cancels and removes active geofence triggers matching the location. The message is optional; if omitted, it will delete the reminder if only one exists for that location, or return a list of active reminders to resolve ambiguity if multiple exist.
+- **`listActiveReminders()`**: Retrieves all currently active reminders, detailing their IDs, location aliases, messages, and triggers.
 
 ---
 
