@@ -1,6 +1,6 @@
 # GeoNotes
 
-GeoNotes is a modern, location-aware Android application that allows users to create and manage geofenced reminders. Designed with modern Android development practices, it features a beautiful Jetpack Compose interface and exposes advanced system-level **Jetpack AppFunctions**, making it capable of being driven by on-device LLMs or voice assistants.
+Geotify is a modern, location-aware Android application that allows users to create and manage geofenced reminders. Designed with modern Android development practices, it features a beautiful Jetpack Compose interface and exposes advanced system-level **Jetpack AppFunctions**, making it capable of being driven by on-device LLMs or voice assistants.
 
 ---
 
@@ -18,7 +18,7 @@ GeoNotes is a modern, location-aware Android application that allows users to cr
 
 ## Expose AppFunctions (AI / Agentic Integration)
 
-GeoNotes implements **Jetpack AppFunctions** (via the `androidx.appfunctions` APIs). This acts as a bridge that allows system services, voice assistants, and local Large Language Models (LLMs) to discover and execute actions within the app context:
+Geotify implements **Jetpack AppFunctions** (via the `androidx.appfunctions` APIs). This acts as a bridge that allows system services, voice assistants, and local Large Language Models (LLMs) to discover and execute actions within the app context:
 
 - **`saveCurrentLocation(alias: String)`**: Automatically fetches the current high-accuracy GPS coordinates in the background and saves them under the given alias.
 - **`createGeofenceReminder(targetAlias: String, payloadMessage: String, triggerOnArrival: Boolean)`**: Creates a reminder linked to a saved location alias, specifying whether it should fire on entry (arrival) or exit (departure).
