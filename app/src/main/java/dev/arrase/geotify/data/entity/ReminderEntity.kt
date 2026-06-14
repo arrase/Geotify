@@ -31,3 +31,13 @@ data class ReminderEntity(
     @ColumnInfo(name = "created_at")
     val createdAt: Long
 )
+
+val ReminderEntity.isArrival: Boolean
+    get() = transitionType == com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_ENTER
+
+val ReminderEntity.transitionLabel: String
+    get() = if (isArrival) "↓ Arrival" else "↑ Departure"
+
+val ReminderEntity.triggerTypeString: String
+    get() = if (isArrival) "arrival" else "departure"
+

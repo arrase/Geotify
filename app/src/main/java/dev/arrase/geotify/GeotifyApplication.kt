@@ -6,6 +6,7 @@ import dev.arrase.geotify.appfunction.GeotifyAppFunctions
 import dev.arrase.geotify.data.GeotifyDatabase
 import dev.arrase.geotify.data.GeotifyRepository
 import dev.arrase.geotify.geofence.GeofenceManager
+import dev.arrase.geotify.location.DefaultLocationProvider
 import dev.arrase.geotify.notification.NotificationHelper
 
 class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
@@ -18,6 +19,8 @@ class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
         GeotifyRepository(database.locationDao(), database.reminderDao(), geofenceManager)
     }
 
+    val locationProvider by lazy { DefaultLocationProvider(this) }
+
     override fun onCreate() {
         super.onCreate()
         NotificationHelper.createNotificationChannels(this)
@@ -26,7 +29,7 @@ class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
     override val appFunctionConfiguration: AppFunctionConfiguration
         get() = AppFunctionConfiguration.Builder()
             .addEnclosingClassFactory(GeotifyAppFunctions::class.java) {
-                GeotifyAppFunctions(repository, this)
+                GeotifyAppFunctions(repository, locationProvider)
             }
             .build()
 }

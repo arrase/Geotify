@@ -64,6 +64,7 @@ import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.component.EmptyState
 import dev.arrase.geotify.ui.component.ReminderRow
+import dev.arrase.geotify.ui.component.SwipeToDeleteBackground
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -436,19 +437,7 @@ private fun ActiveReminderItem(
     SwipeToDismissBox(
         state = dismissState,
         backgroundContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.errorContainer)
-                    .padding(horizontal = 20.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Cancel",
-                    tint = MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
+            SwipeToDeleteBackground(contentDescription = "Cancel")
         },
         enableDismissFromStartToEnd = false,
         modifier = modifier

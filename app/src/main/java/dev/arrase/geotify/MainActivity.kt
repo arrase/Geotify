@@ -14,7 +14,8 @@ import dev.arrase.geotify.ui.theme.GeotifyTheme
 class MainActivity : ComponentActivity() {
 
     private val viewModel: GeotifyViewModel by viewModels {
-        GeotifyViewModel.Factory((application as GeotifyApplication).repository)
+        val app = application as GeotifyApplication
+        GeotifyViewModel.Factory(app.repository, app.locationProvider)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

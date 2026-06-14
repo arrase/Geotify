@@ -1,17 +1,14 @@
 package dev.arrase.geotify.appfunction
 
-import android.content.Context
 import androidx.appfunctions.AppFunctionContext
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionSerializable
 import androidx.appfunctions.service.AppFunction
 import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
 import dev.arrase.geotify.data.GeotifyRepository
+import dev.arrase.geotify.data.entity.triggerTypeString
+import dev.arrase.geotify.location.LocationProvider
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 /** Serializable result returned after initiating a location save. */
@@ -71,7 +68,7 @@ data class SavedReminder(
 
 class GeotifyAppFunctions(
     private val repository: GeotifyRepository,
-    private val applicationContext: Context
+    private val locationProvider: LocationProvider
 ) {
 
     /**
@@ -93,15 +90,8 @@ class GeotifyAppFunctions(
             )
         }
 
-        val client = LocationServices.getFusedLocationProviderClient(applicationContext)
-        val cancellationSource = CancellationTokenSource()
-
         try {
-            @Suppress("MissingPermission")
-            val location = client.getCurrentLocation(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                cancellationSource.token
-            ).await()
+            val location = locationProvider.getCurrentLocation()
 
             if (location != null) {
                 repository.saveLocation(alias, location.latitude, location.longitude)
@@ -237,16 +227,11 @@ class GeotifyAppFunctions(
         reminders.map { entity ->
             val location = locations[entity.locationId]
             val alias = location?.alias ?: "Unknown"
-            val trigger = if (entity.transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
-                "arrival"
-            } else {
-                "departure"
-            }
             SavedReminder(
                 reminderId = entity.id,
                 targetAlias = alias,
                 payloadMessage = entity.message,
-                triggerType = trigger
+                triggerType = entity.triggerTypeString
             )
         }
     }

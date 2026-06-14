@@ -1,26 +1,23 @@
 package dev.arrase.geotify.ui
 
-import android.content.Context
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
 import dev.arrase.geotify.data.GeotifyRepository
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
-import kotlinx.coroutines.Dispatchers
+import dev.arrase.geotify.location.LocationProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
-class GeotifyViewModel(private val repository: GeotifyRepository) : ViewModel() {
+class GeotifyViewModel(
+    private val repository: GeotifyRepository,
+    private val locationProvider: LocationProvider
+) : ViewModel() {
 
     val locations: StateFlow<List<LocationEntity>> = repository.observeLocations()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -64,29 +61,14 @@ class GeotifyViewModel(private val repository: GeotifyRepository) : ViewModel() 
         viewModelScope.launch { repository.deleteLocation(alias) }
     }
 
-    suspend fun getCurrentLocation(context: Context): Location? = withContext(Dispatchers.IO) {
-        if (androidx.core.content.ContextCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            return@withContext null
-        }
-        try {
-            val client = LocationServices.getFusedLocationProviderClient(context)
-            val cancellationSource = CancellationTokenSource()
-            client.getCurrentLocation(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                cancellationSource.token
-            ).await()
-        } catch (e: Exception) {
-            null
-        }
-    }
+    suspend fun getCurrentLocation(): Location? = locationProvider.getCurrentLocation()
 
-    class Factory(private val repository: GeotifyRepository) : ViewModelProvider.Factory {
+    class Factory(
+        private val repository: GeotifyRepository,
+        private val locationProvider: LocationProvider
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            GeotifyViewModel(repository) as T
+            GeotifyViewModel(repository, locationProvider) as T
     }
 }

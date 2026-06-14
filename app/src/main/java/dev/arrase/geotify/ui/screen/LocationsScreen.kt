@@ -55,7 +55,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -63,6 +62,7 @@ import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.component.EmptyState
 import dev.arrase.geotify.ui.component.LocationRow
+import dev.arrase.geotify.ui.component.SwipeToDeleteBackground
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -72,7 +72,6 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
     val locations by viewModel.locations.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     // Dialog state
     var showDialog by remember { mutableStateOf(false) }
@@ -130,19 +129,7 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(MaterialTheme.colorScheme.errorContainer)
-                                    .padding(horizontal = 20.dp),
-                                contentAlignment = Alignment.CenterEnd
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Delete,
-                                    contentDescription = "Delete",
-                                    tint = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                            }
+                            SwipeToDeleteBackground(contentDescription = "Delete")
                         },
                         enableDismissFromStartToEnd = false,
                         modifier = Modifier.animateItem()
@@ -237,7 +224,7 @@ fun LocationsScreen(viewModel: GeotifyViewModel) {
                             onClick = {
                                 isGpsLoading = true
                                 scope.launch {
-                                    val loc = viewModel.getCurrentLocation(context)
+                                    val loc = viewModel.getCurrentLocation()
                                     if (loc != null) {
                                         latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
                                         longitudeString = String.format(Locale.US, "%.6f", loc.longitude)

@@ -5,9 +5,6 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
 import dev.arrase.geotify.GeotifyApplication
 import dev.arrase.geotify.notification.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
@@ -15,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class LocationFetchService : Service() {
 
@@ -36,18 +32,15 @@ class LocationFetchService : Service() {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
         )
 
-        val client = LocationServices.getFusedLocationProviderClient(this)
-        val cancellationSource = CancellationTokenSource()
+        val app = application as GeotifyApplication
+        val locationProvider = app.locationProvider
+        val repository = app.repository
 
         scope.launch {
             try {
-                val location = client.getCurrentLocation(
-                    Priority.PRIORITY_HIGH_ACCURACY,
-                    cancellationSource.token
-                ).await()
+                val location = locationProvider.getCurrentLocation()
 
                 if (location != null) {
-                    val repository = (application as GeotifyApplication).repository
                     repository.saveLocation(alias, location.latitude, location.longitude)
                 } else {
                     Log.w(TAG, "Location provider returned null")

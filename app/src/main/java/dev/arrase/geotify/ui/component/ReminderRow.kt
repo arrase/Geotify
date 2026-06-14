@@ -20,8 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.data.entity.ReminderEntity
+import dev.arrase.geotify.data.entity.transitionLabel
 
 @Composable
 fun ReminderRow(
@@ -29,8 +29,6 @@ fun ReminderRow(
     locationAliasMap: Map<String, String>
 ) {
     val alias = locationAliasMap[reminder.locationId] ?: "Unknown"
-    val isArrival = reminder.transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
-    val transitionLabel = if (isArrival) "↓ Arrival" else "↑ Departure"
 
     ListItem(
         headlineContent = {
@@ -88,7 +86,7 @@ fun ReminderRow(
                 onClick = {},
                 label = {
                     Text(
-                        text = transitionLabel,
+                        text = reminder.transitionLabel,
                         style = MaterialTheme.typography.labelSmall
                     )
                 },
