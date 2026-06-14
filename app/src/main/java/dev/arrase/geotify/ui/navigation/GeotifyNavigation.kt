@@ -36,15 +36,15 @@ enum class GeotifyTab(
     val icon: ImageVector,
     @get:StringRes val labelResId: Int
 ) {
-    Locations(Icons.Filled.LocationOn, R.string.label_locations),
-    Reminders(Icons.Filled.Notifications, R.string.label_reminders)
+    Reminders(Icons.Filled.Notifications, R.string.label_reminders),
+    Locations(Icons.Filled.LocationOn, R.string.label_locations)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeotifyNavHost(
     viewModel: GeotifyViewModel,
-    initialTab: GeotifyTab = GeotifyTab.Locations
+    initialTab: GeotifyTab = GeotifyTab.Reminders
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(initialTab) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
