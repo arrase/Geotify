@@ -20,7 +20,7 @@ Geotify is a modern, location-aware Android application that allows users to cre
 
 | Reminders (Default Screen) | Locations |
 |:---:|:---:|
-| ![Reminders Screen](reminders_en.png) | ![Locations Screen](locations_en.png) |
+| ![Reminders Screen](screenshots/reminders_en.png) | ![Locations Screen](screenshots/locations_en.png) |
 
 ---
 
