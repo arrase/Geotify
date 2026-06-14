@@ -18,7 +18,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:name=".GeoNotesApplication"
+        android:name=".GeotifyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -26,7 +26,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.GeoNotes">
+        android:theme="@style/Theme.Geotify">
 
         <!-- AppFunctions metadata for LLM discovery -->
         <property
@@ -39,7 +39,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.GeoNotes"
+            android:theme="@style/Theme.Geotify"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -72,7 +72,7 @@
             android:name=".notification.ReminderDismissReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="dev.arrase.geonotes.ACTION_DISMISS_REMINDER" />
+                <action android:name="dev.arrase.geotify.ACTION_DISMISS_REMINDER" />
             </intent-filter>
         </receiver>
 

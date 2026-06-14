@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "GeoNotes"
+rootProject.name = "Geotify"
 include(":app")

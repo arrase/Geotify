@@ -1,4 +1,4 @@
-# GeoNotes
+# Geotify
 
 Geotify is a modern, location-aware Android application that allows users to create and manage geofenced reminders. Designed with modern Android development practices, it features a beautiful Jetpack Compose interface and exposes advanced system-level **Jetpack AppFunctions**, making it capable of being driven by on-device LLMs or voice assistants.
 
@@ -31,7 +31,7 @@ Geotify implements **Jetpack AppFunctions** (via the `androidx.appfunctions` API
 
 ## Tech Stack & Architecture
 
-GeoNotes is built on a clean MVVM (Model-View-ViewModel) architecture:
+Geotify is built on a clean MVVM (Model-View-ViewModel) architecture:
 
 - **Language**: [Kotlin](https://kotlinlang.org/)
 - **UI Framework**: [Jetpack Compose](https://developer.android.com/compose) (with Material Design 3)
@@ -45,7 +45,7 @@ GeoNotes is built on a clean MVVM (Model-View-ViewModel) architecture:
 
 ## System Permissions Required
 
-To function correctly in the background, GeoNotes requests the following permissions:
+To function correctly in the background, Geotify requests the following permissions:
 
 - `ACCESS_FINE_LOCATION` & `ACCESS_COARSE_LOCATION`: To obtain the device's coordinates for saving locations.
 - `ACCESS_BACKGROUND_LOCATION`: Required by the system to monitor geofences in the background when the app is minimized or closed.
@@ -61,8 +61,8 @@ Ensure you have Android Studio installed.
 
 1. Clone this repository:
    ```bash
-   git clone git@github.com:arrase/GeoNotes.git
-   cd GeoNotes
+   git clone git@github.com:arrase/Geotify.git
+   cd Geotify
    ```
 2. Build the project using Gradle:
    ```bash

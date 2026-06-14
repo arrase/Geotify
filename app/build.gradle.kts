@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.arrase.geonotes"
+    namespace = "dev.arrase.geotify"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "dev.arrase.geonotes"
+        applicationId = "dev.arrase.geotify"
         minSdk = 36
         targetSdk = 36
         versionCode = 1

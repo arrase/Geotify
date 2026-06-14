@@ -1,4 +1,4 @@
 <AppFunctionAppMetadata
     xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
-    appfn:description="GeoNotes manages location-based reminders. Users save GPS locations with aliases (e.g. 'home', 'gym') and create geofence reminders that trigger on arrival or departure. Use listLocations to discover available aliases before creating reminders. Use saveCurrentLocation to save the device's current GPS position."
+    appfn:description="Geotify manages location-based reminders. Users save GPS locations with aliases (e.g. 'home', 'gym') and create geofence reminders that trigger on arrival or departure. Use listLocations to discover available aliases before creating reminders. Use saveCurrentLocation to save the device's current GPS position."
     appfn:displayDescription="@string/app_name" />
