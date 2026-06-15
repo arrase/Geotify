@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.arrase.geotify.data.dao.LocationDao
 import dev.arrase.geotify.data.dao.ReminderDao
 import dev.arrase.geotify.data.entity.LocationEntity
@@ -29,7 +30,14 @@ abstract class GeotifyDatabase : RoomDatabase() {
                     context.applicationContext,
                     GeotifyDatabase::class.java,
                     "geotify.db"
-                ).build().also { INSTANCE = it }
+                )
+                .addCallback(object : RoomDatabase.Callback() {
+                    override fun onOpen(db: SupportSQLiteDatabase) {
+                        super.onOpen(db)
+                        db.execSQL("UPDATE locations SET radius_meters = 150.0 WHERE radius_meters < 50.0")
+                    }
+                })
+                .build().also { INSTANCE = it }
             }
     }
 }

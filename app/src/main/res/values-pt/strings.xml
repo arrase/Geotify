@@ -28,8 +28,8 @@
     <string name="err_lng_invalid">Deve ser entre -180.0 e 180.0</string>
     <string name="label_geofence_radius">Raio da cerca virtual</string>
     <string name="label_meters">%1$d metros</string>
-    <string name="label_20m">20m</string>
-    <string name="label_150m">150m</string>
+    <string name="label_50m">50m</string>
+    <string name="label_1000m">1000m</string>
     <string name="dialog_new_location">Novo local</string>
     <string name="dialog_edit_location">Editar local</string>
     <string name="dialog_new_reminder">Novo lembrete</string>

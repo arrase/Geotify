@@ -544,14 +544,9 @@ fun LocationsScreen(
                         Spacer(Modifier.height(4.dp))
                         Slider(
                             value = radiusMeters,
-                            onValueChange = { rawValue ->
-                                radiusMeters = if (rawValue < 22.5f) {
-                                    20f
-                                } else {
-                                    round(rawValue / 5f) * 5f
-                                }
-                            },
-                            valueRange = 20f..150f,
+                            onValueChange = { radiusMeters = it },
+                            valueRange = 50f..1000f,
+                            steps = 18,
                             colors = SliderDefaults.colors(
                                 thumbColor = MaterialTheme.colorScheme.primary,
                                 activeTrackColor = MaterialTheme.colorScheme.primary,
@@ -562,8 +557,8 @@ fun LocationsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(stringResource(R.string.label_20m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                            Text(stringResource(R.string.label_150m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.label_50m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.label_1000m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                         }
                     }
 
