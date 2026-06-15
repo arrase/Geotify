@@ -23,6 +23,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -41,6 +43,9 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -101,6 +106,7 @@ fun LocationsScreen(
 
     // Dialog state
     var showDialog by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var editingLocation by remember { mutableStateOf<LocationEntity?>(null) }
     var alias by remember { mutableStateOf("") }
     var latitudeString by remember { mutableStateOf("") }
@@ -379,236 +385,248 @@ fun LocationsScreen(
             }
 
         if (showDialog) {
-            AlertDialog(
+            ModalBottomSheet(
                 onDismissRequest = {
                     showDialog = false
                     editingLocation = null
                 },
-                title = {
+                sheetState = sheetState
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 24.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
                     Text(
                         text = if (editingLocation == null) stringResource(R.string.dialog_new_location) else stringResource(R.string.dialog_edit_location),
                         style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                },
-                text = {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = alias,
-                            onValueChange = { alias = it },
-                            label = { Text(stringResource(R.string.alias_hint)) },
-                            singleLine = true,
-                            isError = aliasExists,
-                            supportingText = {
-                                if (aliasExists) {
-                                    Text(stringResource(R.string.err_alias_exists), color = MaterialTheme.colorScheme.error)
-                                }
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
 
-                        OutlinedTextField(
-                            value = latitudeString,
-                            onValueChange = { latitudeString = it },
-                            label = { Text(stringResource(R.string.lat_hint)) },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            isError = latitudeString.isNotEmpty() && !isLatitudeValid,
-                            supportingText = {
-                                if (latitudeString.isNotEmpty() && !isLatitudeValid) {
-                                    Text(stringResource(R.string.err_lat_invalid), color = MaterialTheme.colorScheme.error)
-                                }
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        OutlinedTextField(
-                            value = longitudeString,
-                            onValueChange = { longitudeString = it },
-                            label = { Text(stringResource(R.string.lng_hint)) },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            isError = longitudeString.isNotEmpty() && !isLongitudeValid,
-                            supportingText = {
-                                if (longitudeString.isNotEmpty() && !isLongitudeValid) {
-                                    Text(stringResource(R.string.err_lng_invalid), color = MaterialTheme.colorScheme.error)
-                                }
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Button(
-                                onClick = {
-                                    isGpsLoading = true
-                                    scope.launch {
-                                        val loc = viewModel.getCurrentLocation()
-                                        if (loc != null) {
-                                            latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
-                                            longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
-                                        } else {
-                                            snackbarHostState.showSnackbar(
-                                                message = context.getString(R.string.err_gps_failed),
-                                                duration = SnackbarDuration.Short
-                                            )
-                                        }
-                                        isGpsLoading = false
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                ),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.weight(1f),
-                                enabled = !isGpsLoading
-                            ) {
-                                if (isGpsLoading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(20.dp),
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(stringResource(R.string.btn_querying_gps), maxLines = 1)
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Filled.MyLocation,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(stringResource(R.string.btn_use_gps), maxLines = 1)
-                                }
+                    OutlinedTextField(
+                        value = alias,
+                        onValueChange = { alias = it },
+                        label = { Text(stringResource(R.string.alias_hint)) },
+                        singleLine = true,
+                        isError = aliasExists,
+                        supportingText = {
+                            if (aliasExists) {
+                                Text(stringResource(R.string.err_alias_exists), color = MaterialTheme.colorScheme.error)
                             }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                            Button(
-                                onClick = {
-                                    showMapPicker = true
-                                    showDialog = false
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                ),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
+                    OutlinedTextField(
+                        value = latitudeString,
+                        onValueChange = { latitudeString = it },
+                        label = { Text(stringResource(R.string.lat_hint)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        isError = latitudeString.isNotEmpty() && !isLatitudeValid,
+                        supportingText = {
+                            if (latitudeString.isNotEmpty() && !isLatitudeValid) {
+                                Text(stringResource(R.string.err_lat_invalid), color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = longitudeString,
+                        onValueChange = { longitudeString = it },
+                        label = { Text(stringResource(R.string.lng_hint)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        isError = longitudeString.isNotEmpty() && !isLongitudeValid,
+                        supportingText = {
+                            if (longitudeString.isNotEmpty() && !isLongitudeValid) {
+                                Text(stringResource(R.string.err_lng_invalid), color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                isGpsLoading = true
+                                scope.launch {
+                                    val loc = viewModel.getCurrentLocation()
+                                    if (loc != null) {
+                                        latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
+                                        longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
+                                    } else {
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(R.string.err_gps_failed),
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                    isGpsLoading = false
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f),
+                            enabled = !isGpsLoading
+                        ) {
+                            if (isGpsLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.btn_querying_gps), maxLines = 1)
+                            } else {
                                 Icon(
-                                    imageVector = Icons.Filled.LocationOn,
+                                    imageVector = Icons.Filled.MyLocation,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(Modifier.width(4.dp))
-                                Text(stringResource(R.string.btn_select_on_map), maxLines = 1)
+                                Text(stringResource(R.string.btn_use_gps), maxLines = 1)
                             }
                         }
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.label_geofence_radius),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = stringResource(R.string.label_meters, radiusMeters.toInt()),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Spacer(Modifier.height(4.dp))
-                            Slider(
-                                value = radiusMeters,
-                                onValueChange = { rawValue ->
-                                    radiusMeters = if (rawValue < 27.5f) {
-                                        25f
-                                    } else {
-                                        round(rawValue / 10f) * 10f
-                                    }
-                                },
-                                valueRange = 25f..150f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary,
-                                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                        Button(
+                            onClick = {
+                                showMapPicker = true
+                                showDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.LocationOn,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
                             )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(stringResource(R.string.label_25m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                                Text(stringResource(R.string.label_150m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                            }
+                            Spacer(Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_select_on_map), maxLines = 1)
                         }
                     }
-                },
-                confirmButton = {
-                    val isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists
-                    Button(
-                        onClick = {
-                            if (lat != null && lng != null) {
-                                val editing = editingLocation
-                                if (editing == null) {
-                                    viewModel.saveLocation(alias, lat, lng, radiusMeters)
+
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.label_geofence_radius),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = stringResource(R.string.label_meters, radiusMeters.toInt()),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Slider(
+                            value = radiusMeters,
+                            onValueChange = { rawValue ->
+                                radiusMeters = if (rawValue < 22.5f) {
+                                    20f
                                 } else {
-                                    viewModel.updateLocation(
-                                        editing.copy(
-                                            alias = alias,
-                                            latitude = lat,
-                                            longitude = lng,
-                                            radiusMeters = radiusMeters
-                                        )
-                                    )
+                                    round(rawValue / 5f) * 5f
                                 }
-                                showDialog = false
-                                editingLocation = null
-                            }
-                        },
-                        enabled = isValid,
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Text(stringResource(R.string.btn_save))
-                    }
-                },
-                dismissButton = {
-                    val editing = editingLocation
-                    DialogDismissButtons(
-                        isEditing = editing != null,
-                        onDelete = {
-                            if (editing != null) {
-                                viewModel.deleteLocation(editing.alias)
-                                showDialog = false
-                                editingLocation = null
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = context.getString(R.string.toast_location_deleted, alias),
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            }
-                        },
-                        onCancel = {
-                            showDialog = false
-                            editingLocation = null
+                            },
+                            valueRange = 20f..150f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                                activeTrackColor = MaterialTheme.colorScheme.primary,
+                                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(stringResource(R.string.label_20m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.label_150m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                         }
-                    )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val editing = editingLocation
+                        DialogDismissButtons(
+                            isEditing = editing != null,
+                            onDelete = {
+                                if (editing != null) {
+                                    viewModel.deleteLocation(editing.alias)
+                                    showDialog = false
+                                    editingLocation = null
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(R.string.toast_location_deleted, alias),
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                }
+                            },
+                            onCancel = {
+                                showDialog = false
+                                editingLocation = null
+                            }
+                        )
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        val isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists
+                        Button(
+                            onClick = {
+                                if (lat != null && lng != null) {
+                                    val currentEditing = editingLocation
+                                    if (currentEditing == null) {
+                                        viewModel.saveLocation(alias, lat, lng, radiusMeters)
+                                    } else {
+                                        viewModel.updateLocation(
+                                            currentEditing.copy(
+                                                alias = alias,
+                                                latitude = lat,
+                                                longitude = lng,
+                                                radiusMeters = radiusMeters
+                                            )
+                                        )
+                                    }
+                                    showDialog = false
+                                    editingLocation = null
+                                }
+                            },
+                            enabled = isValid,
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(stringResource(R.string.btn_save))
+                        }
+                    }
                 }
-            )
+            }
         }
 
         SnackbarHost(

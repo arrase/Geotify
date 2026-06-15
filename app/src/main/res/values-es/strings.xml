@@ -28,7 +28,7 @@
     <string name="err_lng_invalid">Debe estar entre -180.0 y 180.0</string>
     <string name="label_geofence_radius">Radio del geovallado</string>
     <string name="label_meters">%1$d metros</string>
-    <string name="label_25m">25m</string>
+    <string name="label_20m">20m</string>
     <string name="label_150m">150m</string>
     <string name="dialog_new_location">Nuevo lugar</string>
     <string name="dialog_edit_location">Editar lugar</string>

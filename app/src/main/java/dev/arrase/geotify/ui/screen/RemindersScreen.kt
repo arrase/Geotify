@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Add
@@ -26,6 +28,8 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -90,6 +94,7 @@ fun RemindersScreen(
 
     // Dialog State
     var showDialog by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var editingReminder by remember { mutableStateOf<ReminderEntity?>(null) }
     var selectedLocationId by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -212,204 +217,216 @@ fun RemindersScreen(
         }
 
         if (showDialog) {
-            AlertDialog(
+            ModalBottomSheet(
                 onDismissRequest = {
                     showDialog = false
                     editingReminder = null
                 },
-                title = {
+                sheetState = sheetState
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 24.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
                     Text(
                         text = if (editingReminder == null) stringResource(R.string.dialog_new_reminder) else stringResource(R.string.dialog_edit_reminder),
                         style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                },
-                text = {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        if (locations.isEmpty()) {
-                            Text(
-                                text = stringResource(R.string.reminder_no_locations),
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodyMedium
+
+                    if (locations.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.reminder_no_locations),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    } else {
+                        val selectedLocation = locations.find { it.id == selectedLocationId }
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = selectedLocation?.alias ?: stringResource(R.string.reminder_select_location),
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text(stringResource(R.string.reminder_target_location)) },
+                                trailingIcon = {
+                                    Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth()
                             )
-                        } else {
-                            val selectedLocation = locations.find { it.id == selectedLocationId }
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                OutlinedTextField(
-                                    value = selectedLocation?.alias ?: stringResource(R.string.reminder_select_location),
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    label = { Text(stringResource(R.string.reminder_target_location)) },
-                                    trailingIcon = {
-                                        Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
-                                    },
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable { dropdownExpanded = true }
+                            )
+                            DropdownMenu(
+                                expanded = dropdownExpanded,
+                                onDismissRequest = { dropdownExpanded = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                locations.forEach { location ->
+                                    DropdownMenuItem(
+                                        text = { Text(location.alias) },
+                                        onClick = {
+                                            selectedLocationId = location.id
+                                            dropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        OutlinedTextField(
+                            value = message,
+                            onValueChange = { message = it },
+                            label = { Text(stringResource(R.string.reminder_message)) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = stringResource(R.string.reminder_trigger_condition),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                val isEnter = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
+                                val isExit = transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
+
+                                // Arrival button
+                                Surface(
+                                    onClick = { transitionType = Geofence.GEOFENCE_TRANSITION_ENTER },
                                     shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .matchParentSize()
-                                        .clickable { dropdownExpanded = true }
-                                )
-                                DropdownMenu(
-                                    expanded = dropdownExpanded,
-                                    onDismissRequest = { dropdownExpanded = false },
-                                    modifier = Modifier.fillMaxWidth()
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                                    ),
+                                    color = if (isEnter) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                                    modifier = Modifier.weight(1f)
                                 ) {
-                                    locations.forEach { location ->
-                                        DropdownMenuItem(
-                                            text = { Text(location.alias) },
-                                            onClick = {
-                                                selectedLocationId = location.id
-                                                dropdownExpanded = false
-                                            }
+                                    Row(
+                                        modifier = Modifier.padding(vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.LocationOn,
+                                            contentDescription = null,
+                                            tint = if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.label_arrival),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = if (isEnter) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+
+                                // Departure button
+                                Surface(
+                                    onClick = { transitionType = Geofence.GEOFENCE_TRANSITION_EXIT },
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                                    ),
+                                    color = if (isExit) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
+                                            contentDescription = null,
+                                            tint = if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.label_departure),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = if (isExit) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 }
                             }
-
-                            OutlinedTextField(
-                                value = message,
-                                onValueChange = { message = it },
-                                label = { Text(stringResource(R.string.reminder_message)) },
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                Text(
-                                    text = stringResource(R.string.reminder_trigger_condition),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 8.dp)
-                                )
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    val isEnter = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
-                                    val isExit = transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
-
-                                    // Arrival button
-                                    Surface(
-                                        onClick = { transitionType = Geofence.GEOFENCE_TRANSITION_ENTER },
-                                        shape = RoundedCornerShape(12.dp),
-                                        border = BorderStroke(
-                                            1.dp,
-                                            if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                                        ),
-                                        color = if (isEnter) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(vertical = 12.dp),
-                                            horizontalArrangement = Arrangement.Center,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Filled.LocationOn,
-                                                contentDescription = null,
-                                                tint = if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Spacer(Modifier.width(8.dp))
-                                            Text(
-                                                text = stringResource(R.string.label_arrival),
-                                                style = MaterialTheme.typography.labelMedium,
-                                                color = if (isEnter) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-                                    }
-
-                                    // Departure button
-                                    Surface(
-                                        onClick = { transitionType = Geofence.GEOFENCE_TRANSITION_EXIT },
-                                        shape = RoundedCornerShape(12.dp),
-                                        border = BorderStroke(
-                                            1.dp,
-                                            if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                                        ),
-                                        color = if (isExit) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(vertical = 12.dp),
-                                            horizontalArrangement = Arrangement.Center,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
-                                                contentDescription = null,
-                                                tint = if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Spacer(Modifier.width(8.dp))
-                                            Text(
-                                                text = stringResource(R.string.label_departure),
-                                                style = MaterialTheme.typography.labelMedium,
-                                                color = if (isExit) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
-                },
-                confirmButton = {
-                    val isValid = locations.isNotEmpty() && message.isNotBlank() && selectedLocationId.isNotEmpty()
-                    Button(
-                        onClick = {
-                            if (isValid) {
-                                val editing = editingReminder
-                                if (editing == null) {
-                                    viewModel.createReminder(selectedLocationId, message, transitionType)
-                                } else {
-                                    viewModel.updateReminder(
-                                        editing.copy(
-                                            locationId = selectedLocationId,
-                                            message = message,
-                                            transitionType = transitionType
-                                        ),
-                                        oldLocationId = editing.locationId
-                                    )
-                                }
-                                showDialog = false
-                                editingReminder = null
-                            }
-                        },
-                        enabled = isValid,
-                        shape = RoundedCornerShape(10.dp)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(stringResource(R.string.btn_save))
-                    }
-                },
-                dismissButton = {
-                    val editing = editingReminder
-                    DialogDismissButtons(
-                        isEditing = editing != null,
-                        onDelete = {
-                            if (editing != null) {
-                                viewModel.cancelReminder(editing.id)
+                        val editing = editingReminder
+                        DialogDismissButtons(
+                            isEditing = editing != null,
+                            onDelete = {
+                                if (editing != null) {
+                                    viewModel.cancelReminder(editing.id)
+                                    showDialog = false
+                                    editingReminder = null
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(R.string.toast_reminder_deleted),
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                }
+                            },
+                            onCancel = {
                                 showDialog = false
                                 editingReminder = null
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = context.getString(R.string.toast_reminder_deleted),
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
                             }
-                        },
-                        onCancel = {
-                            showDialog = false
-                            editingReminder = null
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        val isValid = locations.isNotEmpty() && message.isNotBlank() && selectedLocationId.isNotEmpty()
+                        Button(
+                            onClick = {
+                                if (isValid) {
+                                    val currentEditing = editingReminder
+                                    if (currentEditing == null) {
+                                        viewModel.createReminder(selectedLocationId, message, transitionType)
+                                    } else {
+                                        viewModel.updateReminder(
+                                            currentEditing.copy(
+                                                locationId = selectedLocationId,
+                                                message = message,
+                                                transitionType = transitionType
+                                            ),
+                                            oldLocationId = currentEditing.locationId
+                                        )
+                                    }
+                                    showDialog = false
+                                    editingReminder = null
+                                }
+                            },
+                            enabled = isValid,
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(stringResource(R.string.btn_save))
                         }
-                    )
+                    }
                 }
-            )
+            }
         }
 
         SnackbarHost(
