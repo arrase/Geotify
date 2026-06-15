@@ -55,4 +55,7 @@
     <string name="notif_channel_name">Lembretes de cerca virtual</string>
     <string name="notif_channel_desc">Notificações ativadas quando você entra ou sai de um local salvo</string>
     <string name="notif_action_dismiss">Dispensar</string>
+    <string name="err_gps_failed">Falha ao obter coordenadas GPS. Certifique-se de que os serviços de localização estão ativados.</string>
+    <string name="warn_bg_location_missing">Falta a permissão de localização em segundo plano. As geocercas não serão ativadas até que conceda a permissão \"Permitir o tempo todo\".</string>
+    <string name="btn_fix">Corrigir</string>
 </resources>

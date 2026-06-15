@@ -55,4 +55,7 @@
     <string name="notif_channel_name">Promemoria geofence</string>
     <string name="notif_channel_desc">Notifiche attivate quando entri o esci da un luogo salvato</string>
     <string name="notif_action_dismiss">Ignora</string>
+    <string name="err_gps_failed">Impossibile ottenere le coordinate GPS. Assicurati che i servizi di localizzazione siano attivi.</string>
+    <string name="warn_bg_location_missing">Autorizzazione di localizzazione in background mancante. I geofence non si attiveranno finché non concedi l\'autorizzazione \"Consenti sempre\".</string>
+    <string name="btn_fix">Risolvi</string>
 </resources>

@@ -55,4 +55,7 @@
     <string name="notif_channel_name">Rappels de geofencing</string>
     <string name="notif_channel_desc">Notifications déclenchées lorsque vous entrez ou sortez d\'un lieu enregistré</string>
     <string name="notif_action_dismiss">Ignorer</string>
+    <string name="err_gps_failed">Impossible d\'obtenir les coordonnées GPS. Veuillez vous assurer que les services de localisation sont activés.</string>
+    <string name="warn_bg_location_missing">L\'autorisation de localisation en arrière-plan est manquante. Les geofences ne se déclencheront pas tant que vous n\'aurez pas accordé l\'autorisation \"Toujours autoriser\".</string>
+    <string name="btn_fix">Corriger</string>
 </resources>
