@@ -28,8 +28,8 @@
     <string name="err_lng_invalid">Muss zwischen -180.0 und 180.0 liegen</string>
     <string name="label_geofence_radius">Geofence-Radius</string>
     <string name="label_meters">%1$d Meter</string>
-    <string name="label_50m">50m</string>
-    <string name="label_1000m">1000m</string>
+    <string name="label_25m">25m</string>
+    <string name="label_150m">150m</string>
     <string name="dialog_new_location">Neuer Ort</string>
     <string name="dialog_edit_location">Ort bearbeiten</string>
     <string name="dialog_new_reminder">Neue Erinnerung</string>
@@ -58,4 +58,23 @@
     <string name="err_gps_failed">GPS-Koordinaten konnten nicht ermittelt werden. Bitte stelle sicher, dass die Standortdienste aktiviert sind.</string>
     <string name="warn_bg_location_missing">Hintergrund-Standortberechtigung fehlt. Geofences werden erst ausgelöst, wenn du die Berechtigung „Immer zulassen“ erteilst.</string>
     <string name="btn_fix">Beheben</string>
+    <string name="tab_list">Liste</string>
+    <string name="tab_map">Karte</string>
+    <string name="btn_select_on_map">Auf Karte auswählen</string>
+    <string name="btn_use_gps">GPS nutzen</string>
+    <string name="btn_map_picker">Kartenauswahl</string>
+    <string name="label_map_picker_title">Ort auf Karte auswählen</string>
+    <string name="label_selected_location">Ausgewählter Ort</string>
+    <string name="btn_confirm_selection">Auswahl bestätigen</string>
+    <string name="label_latitude">Breitengrad</string>
+    <string name="label_longitude">Längengrad</string>
+    <string name="label_settings">Einstellungen</string>
+    <string name="settings_app_theme_title">App-Design</string>
+    <string name="settings_app_theme_desc">Wähle aus, ob die App das helle, dunkle oder System-Design verwendet.</string>
+    <string name="settings_map_theme_title">Kartendesign</string>
+    <string name="settings_map_theme_desc">Wähle aus, ob die Karte unabhängig das helle, dunkle oder System-Design verwendet.</string>
+    <string name="settings_subtitle">App-Einstellungen konfigurieren</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Hell</string>
+    <string name="settings_theme_dark">Dunkel</string>
 </resources>
