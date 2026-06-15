@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.arrase.geotify.data.GeotifyRepository
+import dev.arrase.geotify.data.SettingsManager
+import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.location.LocationProvider
@@ -16,7 +18,8 @@ import kotlinx.coroutines.launch
 
 class GeotifyViewModel(
     private val repository: GeotifyRepository,
-    private val locationProvider: LocationProvider
+    private val locationProvider: LocationProvider,
+    private val settingsManager: SettingsManager
 ) : ViewModel() {
 
 
@@ -30,6 +33,16 @@ class GeotifyViewModel(
         .map { list -> list.associate { it.locationId to it.count } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
+    val appTheme: StateFlow<ThemeSetting> = settingsManager.appTheme
+    val mapTheme: StateFlow<ThemeSetting> = settingsManager.mapTheme
+
+    fun setAppTheme(theme: ThemeSetting) {
+        settingsManager.setAppTheme(theme)
+    }
+
+    fun setMapTheme(theme: ThemeSetting) {
+        settingsManager.setMapTheme(theme)
+    }
 
     fun saveLocation(alias: String, latitude: Double, longitude: Double, radiusMeters: Float) {
         viewModelScope.launch {
@@ -68,10 +81,11 @@ class GeotifyViewModel(
 
     class Factory(
         private val repository: GeotifyRepository,
-        private val locationProvider: LocationProvider
+        private val locationProvider: LocationProvider,
+        private val settingsManager: SettingsManager
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            GeotifyViewModel(repository, locationProvider) as T
+            GeotifyViewModel(repository, locationProvider, settingsManager) as T
     }
 }
