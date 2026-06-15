@@ -9,10 +9,12 @@ Geotify is a modern, location-aware Android application that allows users to cre
 - **Location Management**: Save current GPS coordinates with custom, easy-to-remember aliases (e.g., *'home'*, *'gym'*, *'mom's house'*).
 - **Geofenced Reminders**: Create triggers that display notifications when arriving or departing from any saved location.
 - **Jetpack AppFunctions**: Exposes system-discoverable APIs, enabling assistant-driven or LLM-driven actions directly inside the app.
+- **In-App Guidance Banners**: Automatically alerts the user with a banner if background location permissions are missing, offering a direct action to grant them.
 - **Persistent Local Storage**: Built on **Room Database** to store locations, active geofences, and reminder configurations securely on-device.
 - **Reliable Background Execution**: Integrates Google Play Services Geofencing API and registers a `BroadcastReceiver` to handle location transitions even when the app is closed.
 - **Boot Recovery**: Automatically re-registers geofences on device boot.
 - **Material 3 Design**: Features a fully responsive user interface utilizing Jetpack Compose and Material Design 3 guidelines.
+- **Internationalization (i18n)**: Out-of-the-box localization for English, Spanish, German, French, Italian, and Portuguese.
 
 ---
 
@@ -32,7 +34,7 @@ Geotify implements **Jetpack AppFunctions** (via the `androidx.appfunctions` API
 - **`createGeofenceReminder(targetAlias: String, payloadMessage: String, triggerOnArrival: Boolean)`**: Creates a reminder linked to a saved location alias, specifying whether it should fire on entry (arrival) or exit (departure).
 - **`listLocations()`**: Retrieves all saved locations, showing their names and coordinates.
 - **`deleteLocation(alias: String)`**: Deletes a saved location along with all associated reminders and active geofences.
-- **`deleteReminder(targetAlias: String, message: String?)`**: Cancels and removes active geofence triggers matching the location. The message is optional; if omitted, it will delete the reminder if only one exists for that location, or return a list of active reminders to resolve ambiguity if multiple exist.
+- **`deleteReminder(targetAlias: String, message: String?)`**: Cancels and removes active geofence triggers matching the location. The message is optional; if omitted and only one active reminder exists for that location, it is deleted. If multiple reminders exist, it throws an error listing active reminders to resolve ambiguity.
 - **`listActiveReminders()`**: Retrieves all currently active reminders, detailing their IDs, location aliases, messages, and triggers.
 
 ---
@@ -59,7 +61,6 @@ To function correctly in the background, Geotify requests the following permissi
 - `ACCESS_BACKGROUND_LOCATION`: Required by the system to monitor geofences in the background when the app is minimized or closed.
 - `POST_NOTIFICATIONS`: To show reminders when geofence transitions occur.
 - `RECEIVE_BOOT_COMPLETED`: To automatically restore geofences when the device restarts.
-- `FOREGROUND_SERVICE` & `FOREGROUND_SERVICE_LOCATION`: To perform foreground operations when fetching single-shot locations.
 
 ---
 
