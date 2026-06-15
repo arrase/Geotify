@@ -6,7 +6,9 @@ import androidx.appfunctions.AppFunctionSerializable
 import androidx.appfunctions.service.AppFunction
 import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.data.GeotifyRepository
+import dev.arrase.geotify.data.GeofenceLimitExceededException
 import dev.arrase.geotify.data.entity.triggerTypeString
+import dev.arrase.geotify.R
 import dev.arrase.geotify.location.LocationProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -30,7 +32,9 @@ data class CreateReminderResult(
     /** The reminder message that will be displayed when triggered. */
     val payloadMessage: String,
     /** Whether the reminder triggers on "arrival" or "departure". */
-    val triggerType: String
+    val triggerType: String,
+    /** A warning message if the geofence limit is reached. */
+    val warning: String? = null
 )
 
 /** Serializable representation of a saved location. */
@@ -129,14 +133,23 @@ class GeotifyAppFunctions(
             Geofence.GEOFENCE_TRANSITION_EXIT
         }
 
-        val reminder = repository.createReminder(location, payloadMessage, transitionType)
-
-        CreateReminderResult(
-            reminderId = reminder.id,
-            targetAlias = targetAlias,
-            payloadMessage = payloadMessage,
-            triggerType = if (triggerOnArrival) "arrival" else "departure"
-        )
+        try {
+            val result = repository.createReminder(location, payloadMessage, transitionType)
+            val warning = if (result.isLimitWarningTriggered) {
+                appFunctionContext.context.getString(R.string.geofence_limit_warning)
+            } else null
+            CreateReminderResult(
+                reminderId = result.reminder.id,
+                targetAlias = targetAlias,
+                payloadMessage = payloadMessage,
+                triggerType = if (triggerOnArrival) "arrival" else "departure",
+                warning = warning
+            )
+        } catch (e: GeofenceLimitExceededException) {
+            throw AppFunctionInvalidArgumentException(
+                appFunctionContext.context.getString(R.string.geofence_limit_error)
+            )
+        }
     }
 
     /**

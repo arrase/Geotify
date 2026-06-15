@@ -10,6 +10,14 @@ import dev.arrase.geotify.geofence.GeofenceManager
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
+class GeofenceLimitExceededException(message: String) : Exception(message)
+
+data class ReminderCreationResult(
+    val reminder: ReminderEntity,
+    val isLimitWarningTriggered: Boolean = false
+)
+
+
 class GeotifyRepository(
     private val locationDao: LocationDao,
     private val reminderDao: ReminderDao,
@@ -78,7 +86,8 @@ class GeotifyRepository(
         location: LocationEntity,
         message: String,
         transitionType: Int
-    ): ReminderEntity {
+    ): ReminderCreationResult {
+        val warningTriggered = checkGeofenceLimitForFutureState(null, location.id, true)
         val reminder = ReminderEntity(
             id = UUID.randomUUID().toString(),
             locationId = location.id,
@@ -88,16 +97,42 @@ class GeotifyRepository(
         )
         reminderDao.insert(reminder)
         syncGeofenceForLocation(location.id)
-        return reminder
+        return ReminderCreationResult(reminder, warningTriggered)
     }
 
-    suspend fun updateReminder(reminder: ReminderEntity, oldLocationId: String) {
+    suspend fun updateReminder(reminder: ReminderEntity, oldLocationId: String): Boolean {
+        val warningTriggered = checkGeofenceLimitForFutureState(reminder.id, reminder.locationId, reminder.isActive)
         reminderDao.update(reminder)
         syncGeofenceForLocation(reminder.locationId)
         if (oldLocationId != reminder.locationId) {
             syncGeofenceForLocation(oldLocationId)
         }
+        return warningTriggered
     }
+
+    private suspend fun checkGeofenceLimitForFutureState(
+        modifiedReminderId: String?,
+        newLocationId: String,
+        newIsActive: Boolean
+    ): Boolean {
+        val activeReminders = reminderDao.getActiveReminders()
+        val currentActiveGeofences = activeReminders.map { it.locationId }.distinct().size
+
+        val activeLocations = activeReminders
+            .filter { it.id != modifiedReminderId }
+            .map { it.locationId }
+            .toMutableSet()
+        if (newIsActive) {
+            activeLocations.add(newLocationId)
+        }
+
+        val futureActiveGeofences = activeLocations.size
+        if (futureActiveGeofences > 100) {
+            throw GeofenceLimitExceededException("Geofence limit reached (maximum 100).")
+        }
+        return futureActiveGeofences == 100 && currentActiveGeofences < 100
+    }
+
 
     suspend fun deactivateReminder(reminderId: String) {
         val reminder = reminderDao.findById(reminderId) ?: return

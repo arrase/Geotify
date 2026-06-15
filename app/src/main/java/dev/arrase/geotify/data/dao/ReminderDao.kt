@@ -15,6 +15,10 @@ interface ReminderDao {
     @Query("SELECT location_id, COUNT(*) as count FROM reminders WHERE is_active = 1 GROUP BY location_id")
     fun observeActiveReminderCounts(): Flow<List<LocationReminderCount>>
 
+    @Query("SELECT COUNT(DISTINCT location_id) FROM reminders WHERE is_active = 1")
+    suspend fun getActiveGeofenceCount(): Int
+
+
 
     @Query(
         """

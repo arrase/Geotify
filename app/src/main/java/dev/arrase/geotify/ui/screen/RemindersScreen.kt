@@ -44,6 +44,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -62,6 +63,7 @@ import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
+import dev.arrase.geotify.ui.UiText
 import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
@@ -78,8 +80,23 @@ fun RemindersScreen(
     val context = LocalContext.current
     val reminders by viewModel.reminders.collectAsState()
     val locations by viewModel.locations.collectAsState()
+    val activeReminderCounts by viewModel.activeReminderCounts.collectAsState()
+    val activeGeofencesCount = remember(activeReminderCounts) { activeReminderCounts.size }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(viewModel) {
+        viewModel.snackbarMessage.collect { uiText ->
+            val msg = when (uiText) {
+                is UiText.DynamicString -> uiText.value
+                is UiText.StringResource -> context.getString(uiText.resId)
+            }
+            snackbarHostState.showSnackbar(
+                message = msg,
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     val locationAliasMap = remember(locations) {
         locations.associate { it.id to it.alias }
@@ -203,6 +220,14 @@ fun RemindersScreen(
 
         FloatingActionButton(
             onClick = {
+                if (activeGeofencesCount >= 100) {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = context.getString(R.string.geofence_limit_fab_warning),
+                            duration = SnackbarDuration.Long
+                        )
+                    }
+                }
                 editingReminder = null
                 selectedLocationId = locations.firstOrNull()?.id ?: ""
                 message = ""
@@ -367,6 +392,19 @@ fun RemindersScreen(
                         }
                     }
 
+                    val selectedLocationHasGeofence = activeReminderCounts.containsKey(selectedLocationId)
+                    val exceedsLimit = activeGeofencesCount >= 100 && !selectedLocationHasGeofence
+                    val isValid = locations.isNotEmpty() && message.isNotBlank() && selectedLocationId.isNotEmpty() && !exceedsLimit
+
+                    if (exceedsLimit) {
+                        Text(
+                            text = stringResource(R.string.geofence_limit_dialog_error),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
@@ -398,7 +436,6 @@ fun RemindersScreen(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        val isValid = locations.isNotEmpty() && message.isNotBlank() && selectedLocationId.isNotEmpty()
                         Button(
                             onClick = {
                                 if (isValid) {

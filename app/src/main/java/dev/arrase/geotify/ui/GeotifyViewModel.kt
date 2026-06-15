@@ -10,17 +10,31 @@ import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.location.LocationProvider
+import dev.arrase.geotify.R
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import dev.arrase.geotify.data.GeofenceLimitExceededException
+
+sealed interface UiText {
+    data class DynamicString(val value: String) : UiText
+    data class StringResource(val resId: Int) : UiText
+}
 
 class GeotifyViewModel(
     private val repository: GeotifyRepository,
     private val locationProvider: LocationProvider,
     private val settingsManager: SettingsManager
 ) : ViewModel() {
+
+    private val _snackbarMessage = MutableSharedFlow<UiText>()
+    val snackbarMessage: SharedFlow<UiText> = _snackbarMessage.asSharedFlow()
+
 
 
     val locations: StateFlow<List<LocationEntity>> = repository.observeLocations()
@@ -58,14 +72,32 @@ class GeotifyViewModel(
 
     fun createReminder(locationId: String, message: String, transitionType: Int) {
         viewModelScope.launch {
-            val location = repository.findLocationById(locationId) ?: return@launch
-            repository.createReminder(location, message, transitionType)
+            try {
+                val location = repository.findLocationById(locationId) ?: return@launch
+                val result = repository.createReminder(location, message, transitionType)
+                if (result.isLimitWarningTriggered) {
+                    _snackbarMessage.emit(UiText.StringResource(R.string.geofence_limit_warning))
+                }
+            } catch (e: GeofenceLimitExceededException) {
+                _snackbarMessage.emit(UiText.StringResource(R.string.geofence_limit_error))
+            } catch (e: Exception) {
+                _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
+            }
         }
     }
 
     fun updateReminder(reminder: ReminderEntity, oldLocationId: String) {
         viewModelScope.launch {
-            repository.updateReminder(reminder, oldLocationId)
+            try {
+                val warningTriggered = repository.updateReminder(reminder, oldLocationId)
+                if (warningTriggered) {
+                    _snackbarMessage.emit(UiText.StringResource(R.string.geofence_limit_warning))
+                }
+            } catch (e: GeofenceLimitExceededException) {
+                _snackbarMessage.emit(UiText.StringResource(R.string.geofence_limit_error))
+            } catch (e: Exception) {
+                _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
+            }
         }
     }
 

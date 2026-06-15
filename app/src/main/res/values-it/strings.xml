@@ -77,4 +77,8 @@
     <string name="settings_theme_system">Sistema</string>
     <string name="settings_theme_light">Chiaro</string>
     <string name="settings_theme_dark">Scuro</string>
+    <string name="geofence_limit_error">Limite di geofence raggiunto (massimo 100). Non puoi attivarne altri.</string>
+    <string name="geofence_limit_warning">Hai raggiunto il limite massimo di 100 geofence attivi.</string>
+    <string name="geofence_limit_fab_warning">Limite di 100 geofence raggiunto. Puoi solo aggiungere promemoria a luoghi con geofence attivi.</string>
+    <string name="geofence_limit_dialog_error">Limite di 100 geofence raggiunto. Seleziona un luogo con promemoria attivi.</string>
 </resources>
