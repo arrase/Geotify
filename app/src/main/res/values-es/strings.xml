@@ -68,4 +68,13 @@
     <string name="btn_confirm_selection">Confirmar selección</string>
     <string name="label_latitude">Latitud</string>
     <string name="label_longitude">Longitud</string>
+    <string name="label_settings">Ajustes</string>
+    <string name="settings_app_theme_title">Tema de la aplicación</string>
+    <string name="settings_app_theme_desc">Elige si la aplicación usa el tema claro, oscuro o el del sistema.</string>
+    <string name="settings_map_theme_title">Tema del mapa</string>
+    <string name="settings_map_theme_desc">Elige si el mapa usa el tema claro, oscuro o el del sistema de forma independiente.</string>
+    <string name="settings_subtitle">Configura las preferencias de la aplicación</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
 </resources>

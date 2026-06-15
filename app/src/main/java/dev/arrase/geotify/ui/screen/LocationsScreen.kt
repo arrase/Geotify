@@ -66,6 +66,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.arrase.geotify.R
+import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
@@ -85,6 +86,13 @@ fun LocationsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val mapThemeSetting by viewModel.mapTheme.collectAsState()
+    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val isMapDarkTheme = when (mapThemeSetting) {
+        ThemeSetting.SYSTEM -> isSystemDark
+        ThemeSetting.LIGHT -> false
+        ThemeSetting.DARK -> true
+    }
     val locations by viewModel.locations.collectAsState()
     val activeReminderCounts by viewModel.activeReminderCounts.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -188,7 +196,8 @@ fun LocationsScreen(
                     LocationMapView(
                         locations = locations,
                         selectedLocation = selectedLocationOnMap,
-                        onLocationSelected = { selectedLocationOnMap = it }
+                        onLocationSelected = { selectedLocationOnMap = it },
+                        isDarkTheme = isMapDarkTheme
                     )
 
                     // Floating card at the bottom to show selected location details
@@ -616,7 +625,8 @@ fun LocationsScreen(
                 onDismiss = {
                     showMapPicker = false
                     showDialog = true
-                }
+                },
+                isDarkTheme = isMapDarkTheme
             )
         }
     }

@@ -5,6 +5,7 @@ import androidx.appfunctions.service.AppFunctionConfiguration
 import dev.arrase.geotify.appfunction.GeotifyAppFunctions
 import dev.arrase.geotify.data.GeotifyDatabase
 import dev.arrase.geotify.data.GeotifyRepository
+import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.geofence.GeofenceManager
 import dev.arrase.geotify.location.DefaultLocationProvider
 import dev.arrase.geotify.notification.NotificationHelper
@@ -20,6 +21,8 @@ class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
     }
 
     val locationProvider by lazy { DefaultLocationProvider(this) }
+
+    val settingsManager by lazy { SettingsManager(this) }
 
     override fun onCreate() {
         super.onCreate()

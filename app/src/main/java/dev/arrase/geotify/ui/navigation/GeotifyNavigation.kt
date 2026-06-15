@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -31,13 +32,15 @@ import dev.arrase.geotify.R
 import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.screen.LocationsScreen
 import dev.arrase.geotify.ui.screen.RemindersScreen
+import dev.arrase.geotify.ui.screen.SettingsScreen
 
 enum class GeotifyTab(
     val icon: ImageVector,
     @get:StringRes val labelResId: Int
 ) {
     Reminders(Icons.Filled.Notifications, R.string.label_reminders),
-    Locations(Icons.Filled.LocationOn, R.string.label_locations)
+    Locations(Icons.Filled.LocationOn, R.string.label_locations),
+    Settings(Icons.Filled.Settings, R.string.label_settings)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,6 +89,7 @@ fun GeotifyNavHost(
             when (tab) {
                 GeotifyTab.Locations -> LocationsScreen(viewModel)
                 GeotifyTab.Reminders -> RemindersScreen(viewModel)
+                GeotifyTab.Settings -> SettingsScreen(viewModel)
             }
         }
     }

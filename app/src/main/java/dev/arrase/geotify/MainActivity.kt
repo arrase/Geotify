@@ -5,6 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.permission.PermissionGate
 import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.navigation.GeotifyNavHost
@@ -15,7 +18,7 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: GeotifyViewModel by viewModels {
         val app = application as GeotifyApplication
-        GeotifyViewModel.Factory(app.repository, app.locationProvider)
+        GeotifyViewModel.Factory(app.repository, app.locationProvider, app.settingsManager)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +32,14 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            GeotifyTheme {
+            val appTheme by viewModel.appTheme.collectAsState()
+            val useDarkTheme = when (appTheme) {
+                ThemeSetting.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+                ThemeSetting.LIGHT -> false
+                ThemeSetting.DARK -> true
+            }
+
+            GeotifyTheme(darkTheme = useDarkTheme) {
                 PermissionGate {
                     GeotifyNavHost(
                         viewModel = viewModel,

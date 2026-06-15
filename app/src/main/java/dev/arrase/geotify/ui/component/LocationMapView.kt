@@ -41,10 +41,10 @@ fun LocationMapView(
     locations: List<LocationEntity>,
     selectedLocation: LocationEntity?,
     onLocationSelected: (LocationEntity?) -> Unit,
+    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val isDarkTheme = isSystemInDarkTheme()
 
     // Configure osmdroid cache to avoid external storage permission issues
     remember {
@@ -139,10 +139,10 @@ fun LocationMapView(
             // Apply dark mode styling to map tiles
             if (isDarkTheme) {
                 val filter = ColorMatrixColorFilter(ColorMatrix(floatArrayOf(
-                    -0.213f, -0.715f, -0.072f, 0f, 255f,
-                    -0.213f, -0.715f, -0.072f, 0f, 255f,
-                    -0.213f, -0.715f, -0.072f, 0f, 255f,
-                    0f,      0f,      0f,      1f, 0f
+                    -0.1491f, -0.5005f, -0.0504f, 0f, 215f,
+                    -0.1491f, -0.5005f, -0.0504f, 0f, 215f,
+                    -0.1491f, -0.5005f, -0.0504f, 0f, 230f,
+                    0f,        0f,        0f,        1f, 0f
                 )))
                 map.overlayManager.tilesOverlay.setColorFilter(filter)
             } else {
