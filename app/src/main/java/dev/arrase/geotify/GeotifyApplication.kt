@@ -10,6 +10,9 @@ import dev.arrase.geotify.geofence.AndroidGeofenceManager
 import dev.arrase.geotify.geofence.GeofenceManager
 import dev.arrase.geotify.location.DefaultLocationProvider
 import dev.arrase.geotify.notification.NotificationHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
 
@@ -28,6 +31,9 @@ class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
     override fun onCreate() {
         super.onCreate()
         NotificationHelper.createNotificationChannels(this)
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.reRegisterAllActiveGeofences()
+        }
     }
 
     override val appFunctionConfiguration: AppFunctionConfiguration
