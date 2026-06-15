@@ -58,4 +58,14 @@
     <string name="err_gps_failed">No se pudieron obtener las coordenadas GPS. Por favor, asegúrate de que los servicios de ubicación están activados.</string>
     <string name="warn_bg_location_missing">Falta el permiso de ubicación en segundo plano. Las geocercas no se activarán hasta que concedas el permiso \"Permitir todo el tiempo\".</string>
     <string name="btn_fix">Solucionar</string>
+    <string name="tab_list">Lista</string>
+    <string name="tab_map">Mapa</string>
+    <string name="btn_select_on_map">Seleccionar en mapa</string>
+    <string name="btn_use_gps">Usar GPS</string>
+    <string name="btn_map_picker">Mapa</string>
+    <string name="label_map_picker_title">Seleccionar ubicación en el mapa</string>
+    <string name="label_selected_location">Ubicación seleccionada</string>
+    <string name="btn_confirm_selection">Confirmar selección</string>
+    <string name="label_latitude">Latitud</string>
+    <string name="label_longitude">Longitud</string>
 </resources>
