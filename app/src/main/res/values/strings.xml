@@ -58,4 +58,14 @@
     <string name="err_gps_failed">Failed to obtain GPS coordinates. Please make sure location services are enabled.</string>
     <string name="warn_bg_location_missing">Background location permission is missing. Geofences will not trigger until you grant \"Allow all the time\" permission.</string>
     <string name="btn_fix">Fix</string>
+    <string name="tab_list">List</string>
+    <string name="tab_map">Map</string>
+    <string name="btn_select_on_map">Select on Map</string>
+    <string name="btn_use_gps">Use GPS</string>
+    <string name="btn_map_picker">Map Picker</string>
+    <string name="label_map_picker_title">Select Location on Map</string>
+    <string name="label_selected_location">Selected Location</string>
+    <string name="btn_confirm_selection">Confirm Selection</string>
+    <string name="label_latitude">Latitude</string>
+    <string name="label_longitude">Longitude</string>
 </resources>
