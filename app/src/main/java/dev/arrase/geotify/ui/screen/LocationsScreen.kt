@@ -58,6 +58,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import kotlin.math.round
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -532,9 +533,14 @@ fun LocationsScreen(
                             Spacer(Modifier.height(4.dp))
                             Slider(
                                 value = radiusMeters,
-                                onValueChange = { radiusMeters = it },
-                                valueRange = 50f..1000f,
-                                steps = 18,
+                                onValueChange = { rawValue ->
+                                    radiusMeters = if (rawValue < 27.5f) {
+                                        25f
+                                    } else {
+                                        round(rawValue / 10f) * 10f
+                                    }
+                                },
+                                valueRange = 25f..150f,
                                 colors = SliderDefaults.colors(
                                     thumbColor = MaterialTheme.colorScheme.primary,
                                     activeTrackColor = MaterialTheme.colorScheme.primary,
@@ -545,8 +551,8 @@ fun LocationsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(stringResource(R.string.label_50m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                                Text(stringResource(R.string.label_1000m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(stringResource(R.string.label_25m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(stringResource(R.string.label_150m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }

@@ -28,8 +28,8 @@
     <string name="err_lng_invalid">Doit être entre -180.0 et 180.0</string>
     <string name="label_geofence_radius">Rayon du geofencing</string>
     <string name="label_meters">%1$d mètres</string>
-    <string name="label_50m">50m</string>
-    <string name="label_1000m">1000m</string>
+    <string name="label_25m">25m</string>
+    <string name="label_150m">150m</string>
     <string name="dialog_new_location">Nouveau lieu</string>
     <string name="dialog_edit_location">Modifier le lieu</string>
     <string name="dialog_new_reminder">Nouveau rappel</string>
@@ -58,4 +58,23 @@
     <string name="err_gps_failed">Impossible d\'obtenir les coordonnées GPS. Veuillez vous assurer que les services de localisation sont activés.</string>
     <string name="warn_bg_location_missing">L\'autorisation de localisation en arrière-plan est manquante. Les geofences ne se déclencheront pas tant que vous n\'aurez pas accordé l\'autorisation \"Toujours autoriser\".</string>
     <string name="btn_fix">Corriger</string>
+    <string name="tab_list">Liste</string>
+    <string name="tab_map">Carte</string>
+    <string name="btn_select_on_map">Sélectionner sur la carte</string>
+    <string name="btn_use_gps">Utiliser le GPS</string>
+    <string name="btn_map_picker">Sélecteur de carte</string>
+    <string name="label_map_picker_title">Sélectionner un lieu sur la carte</string>
+    <string name="label_selected_location">Lieu sélectionné</string>
+    <string name="btn_confirm_selection">Confirmer la sélection</string>
+    <string name="label_latitude">Latitude</string>
+    <string name="label_longitude">Longitude</string>
+    <string name="label_settings">Paramètres</string>
+    <string name="settings_app_theme_title">Thème de l\'application</string>
+    <string name="settings_app_theme_desc">Choisissez si l\'application utilise le thème clair, sombre ou système.</string>
+    <string name="settings_map_theme_title">Thème de la carte</string>
+    <string name="settings_map_theme_desc">Choisissez si la carte utilise le thème clair, sombre ou système de manière indépendante.</string>
+    <string name="settings_subtitle">Configurer les préférences de l\'application</string>
+    <string name="settings_theme_system">Système</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
 </resources>

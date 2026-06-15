@@ -28,8 +28,8 @@
     <string name="err_lng_invalid">Deve essere compreso tra -180.0 e 180.0</string>
     <string name="label_geofence_radius">Raggio del geofence</string>
     <string name="label_meters">%1$d metri</string>
-    <string name="label_50m">50m</string>
-    <string name="label_1000m">1000m</string>
+    <string name="label_25m">25m</string>
+    <string name="label_150m">150m</string>
     <string name="dialog_new_location">Nuovo luogo</string>
     <string name="dialog_edit_location">Modifica luogo</string>
     <string name="dialog_new_reminder">Nuovo promemoria</string>
@@ -58,4 +58,23 @@
     <string name="err_gps_failed">Impossibile ottenere le coordinate GPS. Assicurati che i servizi di localizzazione siano attivi.</string>
     <string name="warn_bg_location_missing">Autorizzazione di localizzazione in background mancante. I geofence non si attiveranno finché non concedi l\'autorizzazione \"Consenti sempre\".</string>
     <string name="btn_fix">Risolvi</string>
+    <string name="tab_list">Lista</string>
+    <string name="tab_map">Mappa</string>
+    <string name="btn_select_on_map">Seleziona sulla mappa</string>
+    <string name="btn_use_gps">Usa GPS</string>
+    <string name="btn_map_picker">Selettore mappa</string>
+    <string name="label_map_picker_title">Seleziona posizione sulla mappa</string>
+    <string name="label_selected_location">Posizione selezionata</string>
+    <string name="btn_confirm_selection">Conferma selezione</string>
+    <string name="label_latitude">Latitudine</string>
+    <string name="label_longitude">Longitudine</string>
+    <string name="label_settings">Impostazioni</string>
+    <string name="settings_app_theme_title">Tema dell\'app</string>
+    <string name="settings_app_theme_desc">Scegli se l\'applicazione utilizza il tema chiaro, scuro o di sistema.</string>
+    <string name="settings_map_theme_title">Tema della mappa</string>
+    <string name="settings_map_theme_desc">Scegli se la mappa utilizza il tema chiaro, scuro o di sistema in modo indipendente.</string>
+    <string name="settings_subtitle">Configura le preferenze dell\'applicazione</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Chiaro</string>
+    <string name="settings_theme_dark">Scuro</string>
 </resources>
