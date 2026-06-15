@@ -77,4 +77,8 @@
     <string name="settings_theme_system">Sistema</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
+    <string name="geofence_limit_error">Límite de geovallas alcanzado (máximo 100). No puedes activar más.</string>
+    <string name="geofence_limit_warning">Has alcanzado el límite máximo de 100 geovallas activas.</string>
+    <string name="geofence_limit_fab_warning">Límite de 100 geovallas alcanzado. Solo puedes añadir recordatorios a ubicaciones con geovallas activas.</string>
+    <string name="geofence_limit_dialog_error">Límite de 100 geovallas alcanzado. Selecciona una ubicación con recordatorios activos.</string>
 </resources>

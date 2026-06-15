@@ -77,4 +77,8 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Hell</string>
     <string name="settings_theme_dark">Dunkel</string>
+    <string name="geofence_limit_error">Geofence-Limit erreicht (maximal 100). Sie können keine weiteren aktivieren.</string>
+    <string name="geofence_limit_warning">Sie haben das maximale Limit von 100 aktiven Geofences erreicht.</string>
+    <string name="geofence_limit_fab_warning">Geofence-Limit von 100 erreicht. Sie können Erinnerungen nur für Orte mit aktiven Geofences hinzufügen.</string>
+    <string name="geofence_limit_dialog_error">Geofence-Limit von 100 erreicht. Bitte wählen Sie einen Ort mit aktiven Erinnerungen.</string>
 </resources>

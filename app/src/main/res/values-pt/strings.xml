@@ -77,4 +77,8 @@
     <string name="settings_theme_system">Sistema</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Escuro</string>
+    <string name="geofence_limit_error">Limite de geocercas atingido (máximo 100). Você não pode ativar mais.</string>
+    <string name="geofence_limit_warning">Você atingiu o limite máximo de 100 geocercas ativas.</string>
+    <string name="geofence_limit_fab_warning">Limite de 100 geocercas atingido. Você só pode adicionar lembretes a locais com geocercas ativas.</string>
+    <string name="geofence_limit_dialog_error">Limite de 100 geocercas atingido. Selecione um local com lembretes ativos.</string>
 </resources>

@@ -77,4 +77,8 @@
     <string name="settings_theme_system">Système</string>
     <string name="settings_theme_light">Clair</string>
     <string name="settings_theme_dark">Sombre</string>
+    <string name="geofence_limit_error">Limite de géobarrières atteinte (maximum 100). Vous ne pouvez pas en activer plus.</string>
+    <string name="geofence_limit_warning">Vous avez atteint la limite maximale de 100 géobarrières actives.</string>
+    <string name="geofence_limit_fab_warning">Limite de 100 géobarrières atteinte. Vous ne pouvez ajouter des rappels que pour les lieux ayant des géobarrières actives.</string>
+    <string name="geofence_limit_dialog_error">Limite de 100 géobarrières atteinte. Veuillez sélectionner un lieu avec des rappels actifs.</string>
 </resources>
