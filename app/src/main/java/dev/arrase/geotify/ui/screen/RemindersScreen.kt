@@ -58,6 +58,7 @@ import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
+import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
 import dev.arrase.geotify.ui.component.ReminderRow
@@ -95,12 +96,19 @@ fun RemindersScreen(
     var transitionType by remember { mutableIntStateOf(Geofence.GEOFENCE_TRANSITION_ENTER) }
     var dropdownExpanded by remember { mutableStateOf(false) }
 
-    Box(modifier.fillMaxSize()) {
-        AnimatedVisibility(
-            visible = reminders.isEmpty(),
-            enter = fadeIn(),
-            exit = fadeOut()
+    Column(modifier.fillMaxSize()) {
+        BackgroundLocationWarningBanner()
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         ) {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = reminders.isEmpty(),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
             EmptyState(
                 icon = Icons.Filled.Notifications,
                 title = stringResource(R.string.empty_reminders_title),
@@ -108,7 +116,7 @@ fun RemindersScreen(
             )
         }
 
-        AnimatedVisibility(
+        androidx.compose.animation.AnimatedVisibility(
             visible = reminders.isNotEmpty(),
             enter = fadeIn(),
             exit = fadeOut()
@@ -409,6 +417,7 @@ fun RemindersScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+}
 }
 
 @Composable

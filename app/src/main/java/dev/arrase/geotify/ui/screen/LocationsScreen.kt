@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.ui.GeotifyViewModel
+import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
 import dev.arrase.geotify.ui.component.LocationRow
@@ -93,12 +94,19 @@ fun LocationsScreen(
     val isLatitudeValid = lat != null && lat in -90.0..90.0
     val isLongitudeValid = lng != null && lng in -180.0..180.0
 
-    Box(modifier.fillMaxSize()) {
-        AnimatedVisibility(
-            visible = locations.isEmpty(),
-            enter = fadeIn(),
-            exit = fadeOut()
+    Column(modifier.fillMaxSize()) {
+        BackgroundLocationWarningBanner()
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         ) {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = locations.isEmpty(),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
             EmptyState(
                 icon = Icons.Filled.LocationOn,
                 title = stringResource(R.string.empty_locations_title),
@@ -106,7 +114,7 @@ fun LocationsScreen(
             )
         }
 
-        AnimatedVisibility(
+        androidx.compose.animation.AnimatedVisibility(
             visible = locations.isNotEmpty(),
             enter = fadeIn(),
             exit = fadeOut()
@@ -237,6 +245,11 @@ fun LocationsScreen(
                                     if (loc != null) {
                                         latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
                                         longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
+                                    } else {
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(R.string.err_gps_failed),
+                                            duration = SnackbarDuration.Short
+                                        )
                                     }
                                     isGpsLoading = false
                                 }
@@ -366,4 +379,5 @@ fun LocationsScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+}
 }

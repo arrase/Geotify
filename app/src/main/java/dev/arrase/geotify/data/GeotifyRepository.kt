@@ -36,6 +36,8 @@ class GeotifyRepository(
         longitude: Double,
         radiusMeters: Float = 150f
     ): LocationEntity {
+        require(latitude in -90.0..90.0) { "Latitude must be between -90.0 and 90.0" }
+        require(longitude in -180.0..180.0) { "Longitude must be between -180.0 and 180.0" }
         val entity = LocationEntity(
             id = UUID.randomUUID().toString(),
             alias = alias,
@@ -48,6 +50,8 @@ class GeotifyRepository(
     }
 
     suspend fun updateLocation(location: LocationEntity) {
+        require(location.latitude in -90.0..90.0) { "Latitude must be between -90.0 and 90.0" }
+        require(location.longitude in -180.0..180.0) { "Longitude must be between -180.0 and 180.0" }
         locationDao.update(location)
         syncGeofenceForLocation(location.id)
     }
