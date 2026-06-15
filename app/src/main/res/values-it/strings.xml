@@ -28,7 +28,7 @@
     <string name="err_lng_invalid">Deve essere compreso tra -180.0 e 180.0</string>
     <string name="label_geofence_radius">Raggio del geofence</string>
     <string name="label_meters">%1$d metri</string>
-    <string name="label_25m">25m</string>
+    <string name="label_20m">20m</string>
     <string name="label_150m">150m</string>
     <string name="dialog_new_location">Nuovo luogo</string>
     <string name="dialog_edit_location">Modifica luogo</string>

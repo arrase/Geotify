@@ -28,7 +28,7 @@
     <string name="err_lng_invalid">Doit être entre -180.0 et 180.0</string>
     <string name="label_geofence_radius">Rayon du geofencing</string>
     <string name="label_meters">%1$d mètres</string>
-    <string name="label_25m">25m</string>
+    <string name="label_20m">20m</string>
     <string name="label_150m">150m</string>
     <string name="dialog_new_location">Nouveau lieu</string>
     <string name="dialog_edit_location">Modifier le lieu</string>
