@@ -1,8 +1,42 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+}
+
+fun getSecretFromKWallet(entryName: String): String? {
+    return try {
+        providers.exec {
+            commandLine("kwallet-query", "-r", entryName, "-f", "Geotify", "kdewallet")
+            isIgnoreExitValue = true
+        }.standardOutput.asText.orNull?.trim()?.let {
+            if (it.isEmpty() || it.contains("fallado")) null else it
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+fun getSigningSecret(entryName: String, propertyKey: String, envVar: String): String? {
+    // 1. Try KWallet
+    getSecretFromKWallet(entryName)?.let { return it }
+
+    // 2. Try local.properties
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        val localProperties = Properties().apply {
+            localPropertiesFile.inputStream().use { load(it) }
+        }
+        localProperties.getProperty(propertyKey)?.let { return it }
+    }
+
+    // 3. Try Environment Variable
+    System.getenv(envVar)?.let { return it }
+
+    return null
 }
 
 android {
@@ -23,6 +57,15 @@ android {
         unitTests.isReturnDefaultValues = true
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("geotify-upload-key.keystore")
+            storePassword = getSigningSecret("keystore_password", "signing.storePassword", "GEOTIFY_KEYSTORE_PASSWORD") ?: ""
+            keyAlias = "geotify-key"
+            keyPassword = getSigningSecret("key_password", "signing.keyPassword", "GEOTIFY_KEY_PASSWORD") ?: ""
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -30,6 +73,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val keystoreFile = file("geotify-upload-key.keystore")
+            if (keystoreFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+                val storePass = signingConfigs.getByName("release").storePassword
+                if (storePass.isNullOrEmpty()) {
+                    logger.warn("WARNING: geotify-upload-key.keystore exists but storePassword could not be retrieved from KWallet, local.properties, or environment variables. Build might fail or be unsigned.")
+                }
+            }
         }
     }
     compileOptions {
