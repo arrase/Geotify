@@ -19,5 +19,5 @@ data class LocationEntity(
     @ColumnInfo(name = "radius_meters")
     val radiusMeters: Float = 150f,
     @ColumnInfo(name = "notification_responsiveness_ms")
-    val notificationResponsivenessMs: Int = 120000
+    val notificationResponsivenessMs: Int = 180000
 )
