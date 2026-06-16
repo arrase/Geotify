@@ -35,11 +35,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.ThemeSetting
-import dev.arrase.geotify.ui.GeotifyViewModel
 
 @Composable
 fun SettingsScreen(
-    viewModel: GeotifyViewModel,
+    viewModel: SettingsViewModel,
     modifier: Modifier = Modifier
 ) {
     val appTheme by viewModel.appTheme.collectAsState()

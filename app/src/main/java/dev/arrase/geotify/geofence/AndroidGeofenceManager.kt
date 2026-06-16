@@ -11,9 +11,15 @@ import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import dev.arrase.geotify.data.entity.LocationEntity
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AndroidGeofenceManager(private val context: Context) : GeofenceManager {
+@Singleton
+class AndroidGeofenceManager @Inject constructor(
+    @param:ApplicationContext private val context: Context
+) : GeofenceManager {
 
     private val geofencingClient: GeofencingClient =
         LocationServices.getGeofencingClient(context)

@@ -2,36 +2,34 @@ package dev.arrase.geotify
 
 import android.app.Application
 import androidx.appfunctions.service.AppFunctionConfiguration
+import dagger.hilt.android.HiltAndroidApp
 import dev.arrase.geotify.appfunction.GeotifyAppFunctions
-import dev.arrase.geotify.data.GeotifyDatabase
 import dev.arrase.geotify.data.GeotifyRepository
-import dev.arrase.geotify.data.SettingsManager
-import dev.arrase.geotify.geofence.AndroidGeofenceManager
-import dev.arrase.geotify.geofence.GeofenceManager
-import dev.arrase.geotify.location.DefaultLocationProvider
+import dev.arrase.geotify.di.IoDispatcher
+import dev.arrase.geotify.location.LocationProvider
 import dev.arrase.geotify.notification.NotificationHelper
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@HiltAndroidApp
 class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
 
-    private val database by lazy { GeotifyDatabase.getInstance(this) }
+    @Inject
+    lateinit var repository: GeotifyRepository
 
-    private val geofenceManager: GeofenceManager by lazy { AndroidGeofenceManager(this) }
+    @Inject
+    lateinit var locationProvider: LocationProvider
 
-    val repository by lazy {
-        GeotifyRepository(database.locationDao(), database.reminderDao(), geofenceManager)
-    }
-
-    val locationProvider by lazy { DefaultLocationProvider(this) }
-
-    val settingsManager by lazy { SettingsManager(this) }
+    @Inject
+    @IoDispatcher
+    lateinit var ioDispatcher: CoroutineDispatcher
 
     override fun onCreate() {
         super.onCreate()
         NotificationHelper.createNotificationChannels(this)
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(ioDispatcher).launch {
             repository.reRegisterAllActiveGeofences()
         }
     }

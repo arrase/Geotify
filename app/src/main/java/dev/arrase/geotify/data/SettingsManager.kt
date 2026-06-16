@@ -1,54 +1,61 @@
 package dev.arrase.geotify.data
 
 import android.content.Context
-import android.content.SharedPreferences
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 enum class ThemeSetting {
     SYSTEM, LIGHT, DARK
 }
 
-class SettingsManager(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("geotify_settings", Context.MODE_PRIVATE)
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "geotify_settings")
 
-    private val _appTheme = MutableStateFlow(getAppThemeSetting())
-    val appTheme: StateFlow<ThemeSetting> = _appTheme.asStateFlow()
+@Singleton
+class SettingsManager @Inject constructor(
+    @param:ApplicationContext private val context: Context
+) {
+    val appTheme: Flow<ThemeSetting> = context.dataStore.data
+        .map { preferences ->
+            val name = preferences[KEY_APP_THEME] ?: ThemeSetting.SYSTEM.name
+            try {
+                ThemeSetting.valueOf(name)
+            } catch (e: IllegalArgumentException) {
+                ThemeSetting.SYSTEM
+            }
+        }
 
-    private val _mapTheme = MutableStateFlow(getMapThemeSetting())
-    val mapTheme: StateFlow<ThemeSetting> = _mapTheme.asStateFlow()
+    val mapTheme: Flow<ThemeSetting> = context.dataStore.data
+        .map { preferences ->
+            val name = preferences[KEY_MAP_THEME] ?: ThemeSetting.SYSTEM.name
+            try {
+                ThemeSetting.valueOf(name)
+            } catch (e: IllegalArgumentException) {
+                ThemeSetting.SYSTEM
+            }
+        }
 
-    private fun getAppThemeSetting(): ThemeSetting {
-        val name = prefs.getString(KEY_APP_THEME, ThemeSetting.SYSTEM.name) ?: ThemeSetting.SYSTEM.name
-        return try {
-            ThemeSetting.valueOf(name)
-        } catch (e: IllegalArgumentException) {
-            ThemeSetting.SYSTEM
+    suspend fun setAppTheme(theme: ThemeSetting) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_APP_THEME] = theme.name
         }
     }
 
-    private fun getMapThemeSetting(): ThemeSetting {
-        val name = prefs.getString(KEY_MAP_THEME, ThemeSetting.SYSTEM.name) ?: ThemeSetting.SYSTEM.name
-        return try {
-            ThemeSetting.valueOf(name)
-        } catch (e: IllegalArgumentException) {
-            ThemeSetting.SYSTEM
+    suspend fun setMapTheme(theme: ThemeSetting) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_MAP_THEME] = theme.name
         }
-    }
-
-    fun setAppTheme(theme: ThemeSetting) {
-        prefs.edit().putString(KEY_APP_THEME, theme.name).apply()
-        _appTheme.value = theme
-    }
-
-    fun setMapTheme(theme: ThemeSetting) {
-        prefs.edit().putString(KEY_MAP_THEME, theme.name).apply()
-        _mapTheme.value = theme
     }
 
     companion object {
-        private const val KEY_APP_THEME = "app_theme"
-        private const val KEY_MAP_THEME = "map_theme"
+        private val KEY_APP_THEME = stringPreferencesKey("app_theme")
+        private val KEY_MAP_THEME = stringPreferencesKey("map_theme")
     }
 }

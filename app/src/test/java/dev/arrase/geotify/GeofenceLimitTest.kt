@@ -80,7 +80,12 @@ class GeofenceLimitTest {
         override suspend fun removeGeofences(requestIds: List<String>) {}
     }
 
-    private val repository = GeotifyRepository(fakeLocationDao, fakeReminderDao, fakeGeofenceManager)
+    private val repository = GeotifyRepository(
+        fakeLocationDao,
+        fakeReminderDao,
+        fakeGeofenceManager,
+        kotlinx.coroutines.Dispatchers.Unconfined
+    )
 
     @Test
     fun testGeofenceLimitEnforcement() = runBlocking {

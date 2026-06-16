@@ -10,21 +10,29 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-import kotlinx.coroutines.Dispatchers
+import dev.arrase.geotify.di.IoDispatcher
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import javax.inject.Inject
+import javax.inject.Singleton
 
 interface LocationProvider {
     suspend fun getCurrentLocation(): Location?
 }
 
-class DefaultLocationProvider(private val context: Context) : LocationProvider {
+@Singleton
+class DefaultLocationProvider @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
+) : LocationProvider {
 
     private val client: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
-    override suspend fun getCurrentLocation(): Location? = withContext(Dispatchers.IO) {
+    override suspend fun getCurrentLocation(): Location? = withContext(ioDispatcher) {
         if (ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION

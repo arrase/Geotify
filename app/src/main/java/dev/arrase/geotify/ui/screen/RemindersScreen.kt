@@ -62,7 +62,6 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.ReminderEntity
-import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.UiText
 import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
@@ -74,7 +73,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RemindersScreen(
-    viewModel: GeotifyViewModel,
+    viewModel: RemindersViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -131,12 +130,12 @@ fun RemindersScreen(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-            EmptyState(
-                icon = Icons.Filled.Notifications,
-                title = stringResource(R.string.empty_reminders_title),
-                suggestion = stringResource(R.string.empty_reminders_suggestion)
-            )
-        }
+                EmptyState(
+                    icon = Icons.Filled.Notifications,
+                    title = stringResource(R.string.empty_reminders_title),
+                    suggestion = stringResource(R.string.empty_reminders_suggestion)
+                )
+            }
 
         androidx.compose.animation.AnimatedVisibility(
             visible = reminders.isNotEmpty(),

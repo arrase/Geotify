@@ -74,7 +74,6 @@ import androidx.compose.ui.unit.dp
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
-import dev.arrase.geotify.ui.GeotifyViewModel
 import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
@@ -88,7 +87,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationsScreen(
-    viewModel: GeotifyViewModel,
+    viewModel: LocationsViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
