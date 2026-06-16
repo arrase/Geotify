@@ -178,7 +178,9 @@ class GeotifyRepository @Inject constructor(
 
     suspend fun reRegisterAllActiveGeofences() = withContext(ioDispatcher) {
         val locations = locationDao.getAll()
+        Log.i(TAG, "reRegisterAllActiveGeofences: Found ${locations.size} locations in database.")
         for (location in locations) {
+            Log.i(TAG, "reRegisterAllActiveGeofences: Syncing location ${location.alias} (id=${location.id})")
             syncGeofenceForLocation(location.id)
         }
     }
@@ -188,18 +190,22 @@ class GeotifyRepository @Inject constructor(
     private suspend fun syncGeofenceForLocation(locationId: String) {
         val location = locationDao.findById(locationId)
         if (location == null) {
+            Log.w(TAG, "syncGeofenceForLocation: Location $locationId not found in db.")
             runCatching { geofenceManager.removeGeofences(listOf(locationId)) }
                 .onFailure { Log.w(TAG, "Failed to remove geofence for missing location: $locationId", it) }
             return
         }
         val activeReminders = reminderDao.getActiveByLocationId(locationId)
+        Log.i(TAG, "syncGeofenceForLocation: Location ${location.alias} has ${activeReminders.size} active reminders.")
         if (activeReminders.isEmpty()) {
+            Log.i(TAG, "syncGeofenceForLocation: No active reminders for ${location.alias}, removing geofence.")
             runCatching { geofenceManager.removeGeofences(listOf(locationId)) }
                 .onFailure { Log.w(TAG, "Failed to remove geofence for location: $locationId", it) }
         } else {
             val combinedTransition = activeReminders.fold(0) { acc, reminder ->
                 acc or reminder.transitionType
             }
+            Log.i(TAG, "syncGeofenceForLocation: Registering geofence for ${location.alias} with combinedTransition=$combinedTransition")
             runCatching { geofenceManager.registerGeofenceForLocation(location, combinedTransition) }
                 .onFailure { Log.w(TAG, "Failed to register geofence for location: $locationId", it) }
         }

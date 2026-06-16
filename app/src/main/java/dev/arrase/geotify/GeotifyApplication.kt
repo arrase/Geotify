@@ -8,6 +8,7 @@ import dev.arrase.geotify.data.GeotifyRepository
 import dev.arrase.geotify.di.IoDispatcher
 import dev.arrase.geotify.location.LocationProvider
 import dev.arrase.geotify.notification.NotificationHelper
+import android.util.Log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -28,9 +29,16 @@ class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        Log.i("GeotifyApp", "GeotifyApplication.onCreate() - Initializing notification channels...")
         NotificationHelper.createNotificationChannels(this)
+        Log.i("GeotifyApp", "GeotifyApplication.onCreate() - Launching active geofence registration...")
         CoroutineScope(ioDispatcher).launch {
-            repository.reRegisterAllActiveGeofences()
+            try {
+                repository.reRegisterAllActiveGeofences()
+                Log.i("GeotifyApp", "GeotifyApplication.onCreate() - reRegisterAllActiveGeofences completed successfully.")
+            } catch (e: Exception) {
+                Log.e("GeotifyApp", "GeotifyApplication.onCreate() - Failed to reRegisterAllActiveGeofences", e)
+            }
         }
     }
 

@@ -12,14 +12,26 @@ import dev.arrase.geotify.util.goAsyncCoroutine
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val geofencingEvent = GeofencingEvent.fromIntent(intent) ?: return
-
-        if (geofencingEvent.hasError()) {
-            Log.e(TAG, "Geofencing error: ${geofencingEvent.errorCode}")
+        Log.d(TAG, "onReceive triggered with intent: $intent")
+        val geofencingEvent = GeofencingEvent.fromIntent(intent)
+        if (geofencingEvent == null) {
+            Log.w(TAG, "GeofencingEvent is null in received intent")
             return
         }
 
-        val triggeringGeofences = geofencingEvent.triggeringGeofences ?: return
+        if (geofencingEvent.hasError()) {
+            Log.e(TAG, "Geofencing error code: ${geofencingEvent.errorCode}")
+            return
+        }
+
+        val triggeringGeofences = geofencingEvent.triggeringGeofences
+        if (triggeringGeofences.isNullOrEmpty()) {
+            Log.w(TAG, "No triggering geofences found in event")
+            return
+        }
+
+        val transitionType = geofencingEvent.geofenceTransition
+        Log.d(TAG, "Triggered geofences count: ${triggeringGeofences.size}, transitionType: $transitionType")
 
         goAsyncCoroutine {
             try {
@@ -27,13 +39,21 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
                 for (geofence in triggeringGeofences) {
                     val locationId = geofence.requestId
-                    val location = repository.findLocationById(locationId) ?: continue
-                    val transitionType = geofencingEvent.geofenceTransition
+                    val location = repository.findLocationById(locationId)
+                    if (location == null) {
+                        Log.d(TAG, "Location not found in database for geofence ID: $locationId")
+                        continue
+                    }
+                    Log.d(TAG, "Processing geofence for location: ${location.alias} (ID: $locationId)")
 
                     val activeReminders = repository.getActiveRemindersForLocation(locationId)
-                        .filter { it.transitionType == transitionType }
+                    Log.d(TAG, "Found ${activeReminders.size} active reminders for location ID: $locationId")
+                    
+                    val matchingReminders = activeReminders.filter { it.transitionType == transitionType }
+                    Log.d(TAG, "Found ${matchingReminders.size} matching reminders for transitionType: $transitionType")
 
-                    for (reminder in activeReminders) {
+                    for (reminder in matchingReminders) {
+                        Log.d(TAG, "Deactivating and showing notification for reminder ID: ${reminder.id}")
                         repository.deactivateReminder(reminder.id)
 
                         NotificationHelper.showGeofenceNotification(
