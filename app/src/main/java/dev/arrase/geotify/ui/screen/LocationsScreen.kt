@@ -594,13 +594,13 @@ fun LocationsScreen(
                                 )
                                 IconButton(
                                     onClick = { showResponsivenessInfo = true },
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(30.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Info,
                                         contentDescription = "Info",
                                         tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(16.dp)
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
