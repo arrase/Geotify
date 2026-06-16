@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.AlertDialog
@@ -112,6 +113,7 @@ fun LocationsScreen(
     var longitudeString by remember { mutableStateOf("") }
     var radiusMeters by remember { mutableFloatStateOf(150f) }
     var responsivenessMinutes by remember { mutableFloatStateOf(2f) }
+    var showResponsivenessInfo by remember { mutableStateOf(false) }
     var isGpsLoading by remember { mutableStateOf(false) }
 
     // Map view and Map picker states
@@ -581,11 +583,27 @@ fun LocationsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = stringResource(R.string.label_notification_responsiveness),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.label_notification_responsiveness),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                IconButton(
+                                    onClick = { showResponsivenessInfo = true },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Info,
+                                        contentDescription = "Info",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
                             Text(
                                 text = if (responsivenessMinutes.toInt() == 0) {
                                     stringResource(R.string.label_0min)
@@ -686,6 +704,30 @@ fun LocationsScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+
+        if (showResponsivenessInfo) {
+            AlertDialog(
+                onDismissRequest = { showResponsivenessInfo = false },
+                title = {
+                    Text(
+                        text = stringResource(R.string.label_notification_responsiveness),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(R.string.info_notification_responsiveness_desc)
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showResponsivenessInfo = false }
+                    ) {
+                        Text(stringResource(R.string.btn_ok))
+                    }
+                }
+            )
+        }
 
         if (showMapPicker) {
             MapPicker(

@@ -85,4 +85,6 @@
     <string name="label_minutes_value">%1$d min</string>
     <string name="label_0min">0 min (Instantâneo)</string>
     <string name="label_10min">10 min</string>
+    <string name="btn_ok">OK</string>
+    <string name="info_notification_responsiveness_desc">Define a latência máxima permitida para notificar uma transição de cerca virtual. Configurar esse intervalo permite ao sistema operacional agrupar escaneamentos de localização com outras tarefas de rede, reduzindo o consumo da CPU.</string>
 </resources>
