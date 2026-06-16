@@ -81,4 +81,8 @@
     <string name="geofence_limit_warning">Has alcanzado el límite máximo de 100 geovallas activas.</string>
     <string name="geofence_limit_fab_warning">Límite de 100 geovallas alcanzado. Solo puedes añadir recordatorios a ubicaciones con geovallas activas.</string>
     <string name="geofence_limit_dialog_error">Límite de 100 geovallas alcanzado. Selecciona una ubicación con recordatorios activos.</string>
+    <string name="label_notification_responsiveness">Tiempo de respuesta</string>
+    <string name="label_minutes_value">%1$d min</string>
+    <string name="label_0min">0 min (Instantáneo)</string>
+    <string name="label_10min">10 min</string>
 </resources>

@@ -33,9 +33,9 @@ class LocationsViewModel @Inject constructor(
     val mapTheme: StateFlow<ThemeSetting> = settingsManager.mapTheme
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeSetting.SYSTEM)
 
-    fun saveLocation(alias: String, latitude: Double, longitude: Double, radiusMeters: Float) {
+    fun saveLocation(alias: String, latitude: Double, longitude: Double, radiusMeters: Float, notificationResponsivenessMs: Int) {
         viewModelScope.launch {
-            repository.saveLocation(alias, latitude, longitude, radiusMeters)
+            repository.saveLocation(alias, latitude, longitude, radiusMeters, notificationResponsivenessMs)
         }
     }
 

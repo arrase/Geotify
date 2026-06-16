@@ -17,5 +17,7 @@ data class LocationEntity(
     val latitude: Double,
     val longitude: Double,
     @ColumnInfo(name = "radius_meters")
-    val radiusMeters: Float = 150f
+    val radiusMeters: Float = 150f,
+    @ColumnInfo(name = "notification_responsiveness_ms")
+    val notificationResponsivenessMs: Int = 120000
 )

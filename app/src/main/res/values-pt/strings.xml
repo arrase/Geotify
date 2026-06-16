@@ -81,4 +81,8 @@
     <string name="geofence_limit_warning">Você atingiu o limite máximo de 100 geocercas ativas.</string>
     <string name="geofence_limit_fab_warning">Limite de 100 geocercas atingido. Você só pode adicionar lembretes a locais com geocercas ativas.</string>
     <string name="geofence_limit_dialog_error">Limite de 100 geocercas atingido. Selecione um local com lembretes ativos.</string>
+    <string name="label_notification_responsiveness">Tempo de resposta das notificações</string>
+    <string name="label_minutes_value">%1$d min</string>
+    <string name="label_0min">0 min (Instantâneo)</string>
+    <string name="label_10min">10 min</string>
 </resources>

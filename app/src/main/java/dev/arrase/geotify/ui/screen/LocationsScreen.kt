@@ -111,6 +111,7 @@ fun LocationsScreen(
     var latitudeString by remember { mutableStateOf("") }
     var longitudeString by remember { mutableStateOf("") }
     var radiusMeters by remember { mutableFloatStateOf(150f) }
+    var responsivenessMinutes by remember { mutableFloatStateOf(2f) }
     var isGpsLoading by remember { mutableStateOf(false) }
 
     // Map view and Map picker states
@@ -180,6 +181,7 @@ fun LocationsScreen(
                                     latitudeString = location.latitude.toString()
                                     longitudeString = location.longitude.toString()
                                     radiusMeters = location.radiusMeters
+                                    responsivenessMinutes = location.notificationResponsivenessMs / 60000f
                                     showDialog = true
                                 }
                             ) {
@@ -240,6 +242,16 @@ fun LocationsScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
+                                        text = stringResource(R.string.label_notification_responsiveness) + ": " +
+                                                if (selLoc.notificationResponsivenessMs == 0) {
+                                                    stringResource(R.string.label_0min)
+                                                } else {
+                                                    stringResource(R.string.label_minutes_value, selLoc.notificationResponsivenessMs / 60000)
+                                                },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
                                         text = String.format(Locale.US, "Lat: %.5f, Lng: %.5f", selLoc.latitude, selLoc.longitude),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -257,6 +269,7 @@ fun LocationsScreen(
                                             latitudeString = selLoc.latitude.toString()
                                             longitudeString = selLoc.longitude.toString()
                                             radiusMeters = selLoc.radiusMeters
+                                            responsivenessMinutes = selLoc.notificationResponsivenessMs / 60000f
                                             showDialog = true
                                         }
                                     ) {
@@ -310,6 +323,7 @@ fun LocationsScreen(
                         latitudeString = ""
                         longitudeString = ""
                         radiusMeters = 150f
+                        responsivenessMinutes = 2f
                         showDialog = true
                     },
                     modifier = Modifier
@@ -561,6 +575,49 @@ fun LocationsScreen(
                         }
                     }
 
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.label_notification_responsiveness),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = if (responsivenessMinutes.toInt() == 0) {
+                                    stringResource(R.string.label_0min)
+                                } else {
+                                    stringResource(R.string.label_minutes_value, responsivenessMinutes.toInt())
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Slider(
+                            value = responsivenessMinutes,
+                            onValueChange = { responsivenessMinutes = it },
+                            valueRange = 0f..10f,
+                            steps = 9,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                                activeTrackColor = MaterialTheme.colorScheme.primary,
+                                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(stringResource(R.string.label_0min), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.label_10min), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
@@ -597,15 +654,17 @@ fun LocationsScreen(
                             onClick = {
                                 if (lat != null && lng != null) {
                                     val currentEditing = editingLocation
+                                    val responsivenessMs = (responsivenessMinutes * 60000).toInt()
                                     if (currentEditing == null) {
-                                        viewModel.saveLocation(alias, lat, lng, radiusMeters)
+                                        viewModel.saveLocation(alias, lat, lng, radiusMeters, responsivenessMs)
                                     } else {
                                         viewModel.updateLocation(
                                             currentEditing.copy(
                                                 alias = alias,
                                                 latitude = lat,
                                                 longitude = lng,
-                                                radiusMeters = radiusMeters
+                                                radiusMeters = radiusMeters,
+                                                notificationResponsivenessMs = responsivenessMs
                                             )
                                         )
                                     }

@@ -57,6 +57,7 @@ class AndroidGeofenceManager @Inject constructor(
             .setCircularRegion(location.latitude, location.longitude, location.radiusMeters)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(transitionTypes)
+            .setNotificationResponsiveness(location.notificationResponsivenessMs)
             .build()
 
         val request = GeofencingRequest.Builder()

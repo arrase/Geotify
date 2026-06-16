@@ -81,4 +81,8 @@
     <string name="geofence_limit_warning">Sie haben das maximale Limit von 100 aktiven Geofences erreicht.</string>
     <string name="geofence_limit_fab_warning">Geofence-Limit von 100 erreicht. Sie können Erinnerungen nur für Orte mit aktiven Geofences hinzufügen.</string>
     <string name="geofence_limit_dialog_error">Geofence-Limit von 100 erreicht. Bitte wählen Sie einen Ort mit aktiven Erinnerungen.</string>
+    <string name="label_notification_responsiveness">Reaktionszeit</string>
+    <string name="label_minutes_value">%1$d Min.</string>
+    <string name="label_0min">0 Min. (Sofort)</string>
+    <string name="label_10min">10 Min.</string>
 </resources>

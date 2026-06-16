@@ -48,17 +48,20 @@ class GeotifyRepository @Inject constructor(
         alias: String,
         latitude: Double,
         longitude: Double,
-        radiusMeters: Float = 150f
+        radiusMeters: Float = 150f,
+        notificationResponsivenessMs: Int = 120000
     ): LocationEntity = withContext(ioDispatcher) {
         require(latitude in -90.0..90.0) { "Latitude must be between -90.0 and 90.0" }
         require(longitude in -180.0..180.0) { "Longitude must be between -180.0 and 180.0" }
         require(radiusMeters >= 50f) { "Geofence radius must be at least 50 meters" }
+        require(notificationResponsivenessMs >= 0) { "Notification responsiveness must be non-negative" }
         val entity = LocationEntity(
             id = UUID.randomUUID().toString(),
             alias = alias,
             latitude = latitude,
             longitude = longitude,
-            radiusMeters = radiusMeters
+            radiusMeters = radiusMeters,
+            notificationResponsivenessMs = notificationResponsivenessMs
         )
         locationDao.insert(entity)
         return@withContext entity

@@ -81,4 +81,8 @@
     <string name="geofence_limit_warning">Vous avez atteint la limite maximale de 100 géobarrières actives.</string>
     <string name="geofence_limit_fab_warning">Limite de 100 géobarrières atteinte. Vous ne pouvez ajouter des rappels que pour les lieux ayant des géobarrières actives.</string>
     <string name="geofence_limit_dialog_error">Limite de 100 géobarrières atteinte. Veuillez sélectionner un lieu avec des rappels actifs.</string>
+    <string name="label_notification_responsiveness">Réactivité des notifications</string>
+    <string name="label_minutes_value">%1$d min</string>
+    <string name="label_0min">0 min (Instantané)</string>
+    <string name="label_10min">10 min</string>
 </resources>
