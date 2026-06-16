@@ -86,5 +86,5 @@
     <string name="label_0min">0 min (Instantané)</string>
     <string name="label_10min">10 min</string>
     <string name="btn_ok">OK</string>
-    <string name="info_notification_responsiveness_desc">Définit la latence maximale autorisée pour notifier une transition de geofencing. Configurer cette plage permet au système d\'exploitation de regrouper les scans de localisation avec d\'autres tâches réseau, réduisant ainsi les réveils du processeur.</string>
+    <string name="info_notification_responsiveness_desc">Définit la latence maximale autorisée pour notifier une transition de geofencing. Configurer cette plage permet au système d\'exploitation de regrouper les scans de localisation avec d\'autres tâches réseau, réduisant ainsi les réveils du processeur. Augmenter cette valeur réduit la consommation de batterie.</string>
 </resources>

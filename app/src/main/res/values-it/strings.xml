@@ -86,5 +86,5 @@
     <string name="label_0min">0 min (Istantaneo)</string>
     <string name="label_10min">10 min</string>
     <string name="btn_ok">OK</string>
-    <string name="info_notification_responsiveness_desc">Definisce la latenza massima consentita per notificare una transizione di geofence. La configurazione di questo intervallo consente al sistema operativo di raggruppare i rilevamenti di posizione con altre attività di rete, riducendo i risvegli della CPU.</string>
+    <string name="info_notification_responsiveness_desc">Definisce la latenza massima consentita per notificare una transizione di geofence. La configurazione di questo intervallo consente al sistema operativo di raggruppare i rilevamenti di posizione con altre attività di rete, riducendo i risvegli della CPU. L\'aumento di questo valore riduce il consumo della batteria.</string>
 </resources>

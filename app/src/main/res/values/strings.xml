@@ -86,5 +86,5 @@
     <string name="label_0min">0 min (Instant)</string>
     <string name="label_10min">10 min</string>
     <string name="btn_ok">OK</string>
-    <string name="info_notification_responsiveness_desc">Defines the maximum latency allowed to notify a geofence transition. Configuring this range allows the OS to batch location scans with other network tasks, reducing CPU wakeups.</string>
+    <string name="info_notification_responsiveness_desc">Defines the maximum latency allowed to notify a geofence transition. Configuring this range allows the OS to batch location scans with other network tasks, reducing CPU wakeups. Increasing this value reduces battery consumption.</string>
 </resources>

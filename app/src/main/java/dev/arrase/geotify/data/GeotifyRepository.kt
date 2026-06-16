@@ -49,7 +49,7 @@ class GeotifyRepository @Inject constructor(
         latitude: Double,
         longitude: Double,
         radiusMeters: Float = 150f,
-        notificationResponsivenessMs: Int = 180000
+        notificationResponsivenessMs: Int = 0
     ): LocationEntity = withContext(ioDispatcher) {
         require(latitude in -90.0..90.0) { "Latitude must be between -90.0 and 90.0" }
         require(longitude in -180.0..180.0) { "Longitude must be between -180.0 and 180.0" }

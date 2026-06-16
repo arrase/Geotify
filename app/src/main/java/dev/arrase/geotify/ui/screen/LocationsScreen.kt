@@ -112,7 +112,7 @@ fun LocationsScreen(
     var latitudeString by remember { mutableStateOf("") }
     var longitudeString by remember { mutableStateOf("") }
     var radiusMeters by remember { mutableFloatStateOf(150f) }
-    var responsivenessMinutes by remember { mutableFloatStateOf(3f) }
+    var responsivenessMinutes by remember { mutableFloatStateOf(0f) }
     var showResponsivenessInfo by remember { mutableStateOf(false) }
     var isGpsLoading by remember { mutableStateOf(false) }
 
@@ -325,7 +325,7 @@ fun LocationsScreen(
                         latitudeString = ""
                         longitudeString = ""
                         radiusMeters = 150f
-                        responsivenessMinutes = 3f
+                        responsivenessMinutes = 0f
                         showDialog = true
                     },
                     modifier = Modifier

@@ -6,7 +6,7 @@ Geotify is a modern, location-aware Android application that allows users to cre
 
 ## Features
 
-- **Location Management**: Save current GPS coordinates or pick custom coordinates interactively using an embedded **Map Picker**, with support for custom location aliases (e.g., *'home'*, *'gym'*, *'mom's house'*), custom geofence radii (minimum 50 meters, defaults to 150 meters), and custom notification responsiveness settings (0 to 10 minutes, defaults to 3 minutes) to balance battery consumption and latency.
+- **Location Management**: Save current GPS coordinates or pick custom coordinates interactively using an embedded **Map Picker**, with support for custom location aliases (e.g., *'home'*, *'gym'*, *'mom's house'*), custom geofence radii (minimum 50 meters, defaults to 150 meters), and custom notification responsiveness settings (0 to 10 minutes, defaults to 0 minutes / instant) to balance battery consumption and latency.
 - **Geofenced Reminders**: Create triggers that display notifications when arriving or departing from any saved location.
 - **Interactive Map View**: Displays all saved locations and active geofences dynamically using **OpenStreetMap (osmdroid)**. The map automatically centers and fits all points, handles selection synchronization, and supports themed map tiles (light and dark mode).
 - **Theme & Map Customization**: Configure independent theme choices for the application UI and the map rendering (System Default, Light, or Dark Mode).

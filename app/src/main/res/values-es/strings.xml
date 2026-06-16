@@ -86,5 +86,5 @@
     <string name="label_0min">0 min (Instantáneo)</string>
     <string name="label_10min">10 min</string>
     <string name="btn_ok">Aceptar</string>
-    <string name="info_notification_responsiveness_desc">Define la latencia máxima permitida para notificar una transición. Configurar este rango permite al sistema operativo realizar un agrupamiento (batching) de los escaneos de ubicación junto con otras tareas de red, reduciendo los despertares de la CPU.</string>
+    <string name="info_notification_responsiveness_desc">Define la latencia máxima permitida para notificar una transición. Configurar este rango permite al sistema operativo realizar un agrupamiento (batching) de los escaneos de ubicación junto con otras tareas de red, reduciendo los despertares de la CPU. Incrementar este valor reduce el consumo de batería.</string>
 </resources>

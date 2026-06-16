@@ -86,5 +86,5 @@
     <string name="label_0min">0 Min. (Sofort)</string>
     <string name="label_10min">10 Min.</string>
     <string name="btn_ok">OK</string>
-    <string name="info_notification_responsiveness_desc">Definiert die maximal zulässige Latenz zur Benachrichtigung eines Geofence-Übergangs. Die Konfiguration dieses Bereichs ermöglicht es dem Betriebssystem, Standortscans mit anderen Netzwerkaufgaben zu bündeln, was CPU-Aufwachvorgänge reduziert.</string>
+    <string name="info_notification_responsiveness_desc">Definiert die maximal zulässige Latenz zur Benachrichtigung eines Geofence-Übergangs. Die Konfiguration dieses Bereichs ermöglicht es dem Betriebssystem, Standortscans mit anderen Netzwerkaufgaben zu bündeln, was CPU-Aufwachvorgänge reduziert. Das Erhöhen dieses Werts verringert den Batterieverbrauch.</string>
 </resources>
