@@ -41,7 +41,7 @@ jobs:
           GEOTIFY_KEY_PASSWORD: ${{ secrets.GEOTIFY_KEY_PASSWORD }}
 
       - name: Upload to Play Store
-        uses: r0adkll/upload-google-play@v1.1.3
+        uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAYSTORE_SERVICE_ACCOUNT_JSON }}
           packageName: dev.arrase.geotify
