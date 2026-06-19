@@ -8,6 +8,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
+import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 import dev.arrase.geotify.notification.NotificationHelper
 import dev.arrase.geotify.util.geotifyRepository
@@ -37,8 +38,9 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val transitionType = geofencingEvent.geofenceTransition
         Log.d(TAG, "Triggered geofences count: ${triggeringGeofences.size}, transitionType: $transitionType")
 
-        val hasMasterTrigger = triggeringGeofences.any { it.requestId == "MASTER_GEOFENCE_TRIGGER" }
-        if (hasMasterTrigger) {
+        val hasMasterExit = triggeringGeofences.any { it.requestId == "MASTER_GEOFENCE_TRIGGER" } &&
+                transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
+        if (hasMasterExit) {
             Log.i(TAG, "Master geofence exit triggered. Enqueuing recalculation...")
             val workRequest = OneTimeWorkRequestBuilder<GeofenceRecalculationWorker>()
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)

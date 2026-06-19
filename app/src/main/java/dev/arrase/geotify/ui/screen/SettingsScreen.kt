@@ -95,6 +95,9 @@ fun SettingsScreen(
         val outerRadiusN by viewModel.outerRadiusN.collectAsState()
         val innerRadiusR by viewModel.innerRadiusR.collectAsState()
 
+        var localOuterRadius by remember(outerRadiusN) { mutableStateOf(outerRadiusN) }
+        var localInnerRadius by remember(innerRadiusR) { mutableStateOf(innerRadiusR) }
+
         SettingsCard(
             icon = Icons.Filled.LocationOn,
             title = stringResource(R.string.settings_geofence_recalc_title),
@@ -118,19 +121,25 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = stringResource(R.string.label_km_value, outerRadiusN),
+                            text = stringResource(R.string.label_km_value, localOuterRadius),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                     }
                     androidx.compose.material3.Slider(
-                        value = outerRadiusN,
+                        value = localOuterRadius,
                         onValueChange = { newVal ->
                             val cleanVal = Math.round(newVal * 10f) / 10f
-                            viewModel.setOuterRadiusN(cleanVal)
-                            if (innerRadiusR > cleanVal) {
-                                viewModel.setInnerRadiusR(cleanVal)
+                            localOuterRadius = cleanVal
+                            if (localInnerRadius > cleanVal) {
+                                localInnerRadius = cleanVal
+                            }
+                        },
+                        onValueChangeFinished = {
+                            viewModel.setOuterRadiusN(localOuterRadius)
+                            if (innerRadiusR > localOuterRadius) {
+                                viewModel.setInnerRadiusR(localOuterRadius)
                             }
                         },
                         valueRange = 1.0f..10.0f
@@ -150,19 +159,22 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = stringResource(R.string.label_km_value, innerRadiusR),
+                            text = stringResource(R.string.label_km_value, localInnerRadius),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                     }
                     androidx.compose.material3.Slider(
-                        value = innerRadiusR,
+                        value = localInnerRadius,
                         onValueChange = { newVal ->
                             val cleanVal = Math.round(newVal * 10f) / 10f
-                            viewModel.setInnerRadiusR(cleanVal)
+                            localInnerRadius = cleanVal
                         },
-                        valueRange = 0.5f..outerRadiusN
+                        onValueChangeFinished = {
+                            viewModel.setInnerRadiusR(localInnerRadius)
+                        },
+                        valueRange = 0.5f..localOuterRadius
                     )
                 }
             }

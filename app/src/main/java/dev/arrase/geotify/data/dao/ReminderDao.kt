@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import dev.arrase.geotify.data.entity.LocationReminderCount
 import dev.arrase.geotify.data.entity.ReminderEntity
@@ -67,4 +68,12 @@ interface ReminderDao {
 
     @Query("UPDATE reminders SET is_in_range = 1 WHERE location_id IN (:locationIds) AND is_active = 1")
     suspend fun setInRangeForLocations(locationIds: List<String>)
+
+    @Transaction
+    suspend fun updateInRangeStatus(locationIds: List<String>) {
+        clearAllInRange()
+        if (locationIds.isNotEmpty()) {
+            setInRangeForLocations(locationIds)
+        }
+    }
 }
