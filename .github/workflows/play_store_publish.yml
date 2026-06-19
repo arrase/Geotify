@@ -1,0 +1,50 @@
+name: Play Store Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Determine Track
+        id: track
+        run: |
+          if [[ "${{ github.ref_name }}" == *-alpha* ]]; then
+            echo "TRACK=alpha" >> $GITHUB_ENV
+          elif [[ "${{ github.ref_name }}" == *-beta* ]]; then
+            echo "TRACK=beta" >> $GITHUB_ENV
+          else
+            echo "TRACK=production" >> $GITHUB_ENV
+          fi
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.GEOTIFY_KEYSTORE_B64 }}" | base64 --decode > app/geotify-upload-key.keystore
+
+      - name: Build Release Bundle
+        run: ./gradlew bundleRelease
+        env:
+          GEOTIFY_KEYSTORE_PASSWORD: ${{ secrets.GEOTIFY_KEYSTORE_PASSWORD }}
+          GEOTIFY_KEY_PASSWORD: ${{ secrets.GEOTIFY_KEY_PASSWORD }}
+
+      - name: Upload to Play Store
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAYSTORE_SERVICE_ACCOUNT_JSON }}
+          packageName: dev.arrase.geotify
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          track: ${{ env.TRACK }}
+          status: completed
