@@ -87,7 +87,6 @@
     <string name="label_10min">10 min</string>
     <string name="btn_ok">Aceptar</string>
     <string name="info_notification_responsiveness_desc">Define la latencia máxima permitida para notificar una transición. Configurar este rango permite al sistema operativo realizar un agrupamiento (batching) de los escaneos de ubicación junto con otras tareas de red, reduciendo los despertares de la CPU. Incrementar este valor reduce el consumo de batería.</string>
-    <string name="perm_activity_recognition_message">Geotify necesita permiso de reconocimiento de actividad para detectar cuándo llega a sus destinos y recalcular las geocercas.</string>
     <string name="settings_geofence_recalc_title">Recálculo Espacial de Geocercas</string>
     <string name="settings_geofence_recalc_desc">Define el área activa para tus recordatorios de ubicación y optimiza el consumo de batería.</string>
     <string name="info_geofence_recalc_desc">Para superar el límite de 100 geocercas del sistema, esta app activa dinámicamente los recordatorios más cercanos a ti.\n\n• Radio de Cobertura (N): Define el área circular máxima a tu alrededor donde los recordatorios estarán activos.\n• Radio Maestro (r): Define el límite que, al salir de él, fuerza un recálculo de tu ubicación para actualizar las geocercas activas.\n\nNota: Un radio maestro (r) más grande reduce la frecuencia de recálculos, lo que ahorra batería. Además, los radios más amplios permiten al sistema utilizar métodos de localización de bajo consumo.</string>

@@ -7,9 +7,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-    <!-- Activity recognition -->
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-
     <!-- Network permissions for OpenStreetMap -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -78,15 +75,6 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="dev.arrase.geotify.ACTION_DISMISS_REMINDER" />
-            </intent-filter>
-        </receiver>
-
-        <!-- Activity transition receiver -->
-        <receiver
-            android:name=".activity.ActivityTransitionReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="dev.arrase.geotify.ACTION_ACTIVITY_TRANSITION" />
             </intent-filter>
         </receiver>
 

@@ -87,7 +87,6 @@
     <string name="label_10min">10 Min.</string>
     <string name="btn_ok">OK</string>
     <string name="info_notification_responsiveness_desc">Definiert die maximal zulässige Latenz zur Benachrichtigung eines Geofence-Übergangs. Die Konfiguration dieses Bereichs ermöglicht es dem Betriebssystem, Standortscans mit anderen Netzwerkaufgaben zu bündeln, was CPU-Aufwachvorgänge reduziert. Das Erhöhen dieses Werts verringert den Batterieverbrauch.</string>
-    <string name="perm_activity_recognition_message">Geotify benötigt die Berechtigung zur Aktivitätserkennung, um festzustellen, wann Sie an Ihren Zielen ankommen, und die Geofences neu zu berechnen.</string>
     <string name="settings_geofence_recalc_title">Räumliche Geofence-Neuberechnung</string>
     <string name="settings_geofence_recalc_desc">Legen Sie den aktiven Bereich für Ihre Standorterinnerungen fest und sparen Sie Akku.</string>
     <string name="info_geofence_recalc_desc">Um das Systemlimit von 100 Geofences zu umgehen, aktiviert diese App dynamisch die Erinnerungen, die Ihnen am nächsten liegen.\n\n• Erfassungsradius (N): Definiert den maximalen kreisförmigen Bereich um Sie herum, in dem Geofence-Erinnerungen aktiv sind.\n• Master-Radius (r): Definiert die Grenze, bei deren Verlassen eine Neuberechnung Ihres Standorts erzwungen wird, um aktive Geofences zu aktualisieren.\n\nHinweis: Ein größerer Master-Radius (r) verringert die Häufigkeit von Neuberechnungen und spart Akku. Zudem ermöglichen größere Radien dem System die Nutzung stromsparender Standortmethoden.</string>
