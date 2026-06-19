@@ -41,7 +41,8 @@ import dev.arrase.geotify.R
 
 private const val STEP_LOCATION = 0
 private const val STEP_NOTIFICATION = 1
-private const val STEP_DONE = 2
+private const val STEP_ACTIVITY_RECOGNITION = 2
+private const val STEP_DONE = 3
 
 @Composable
 fun rememberBackgroundLocationGranted(): Boolean {
@@ -89,8 +90,13 @@ fun PermissionGate(content: @Composable () -> Unit) {
                 context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
             ) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
+            val activityRecognitionGranted = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACTIVITY_RECOGNITION
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
             step = when {
-                bgGranted -> STEP_DONE
+                bgGranted && activityRecognitionGranted -> STEP_DONE
+                !activityRecognitionGranted -> STEP_ACTIVITY_RECOGNITION
                 else -> STEP_NOTIFICATION
             }
         }
@@ -122,19 +128,24 @@ fun PermissionGate(content: @Composable () -> Unit) {
     val notificationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {
-        // Whether granted or not, move to background step
         val bgGranted = ContextCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
         if (bgGranted) {
-            step = STEP_DONE
+            step = STEP_ACTIVITY_RECOGNITION
         } else {
             showBackgroundDialog = true
         }
     }
 
     val backgroundLocationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        step = STEP_ACTIVITY_RECOGNITION
+    }
+
+    val activityRecognitionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ ->
         step = STEP_DONE
@@ -160,6 +171,13 @@ fun PermissionGate(content: @Composable () -> Unit) {
             }
         }
 
+        STEP_ACTIVITY_RECOGNITION -> {
+            PermissionRequestScreen(message = stringResource(R.string.perm_activity_recognition_message))
+            LaunchedEffect(Unit) {
+                activityRecognitionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+        }
+
         STEP_DONE -> content()
     }
 
@@ -167,7 +185,7 @@ fun PermissionGate(content: @Composable () -> Unit) {
         AlertDialog(
             onDismissRequest = {
                 showBackgroundDialog = false
-                step = STEP_DONE
+                step = STEP_ACTIVITY_RECOGNITION
             },
             icon = {
                 Icon(
@@ -192,7 +210,7 @@ fun PermissionGate(content: @Composable () -> Unit) {
             dismissButton = {
                 TextButton(onClick = {
                     showBackgroundDialog = false
-                    step = STEP_DONE
+                    step = STEP_ACTIVITY_RECOGNITION
                 }) {
                     Text(stringResource(R.string.btn_skip))
                 }

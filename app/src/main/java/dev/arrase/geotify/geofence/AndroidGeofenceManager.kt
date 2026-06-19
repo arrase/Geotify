@@ -88,4 +88,80 @@ class AndroidGeofenceManager @Inject constructor(
         if (requestIds.isEmpty()) return
         geofencingClient.removeGeofences(requestIds).await()
     }
+
+    override suspend fun removeAllGeofences() {
+        Log.i("GeofenceManager", "removeAllGeofences: Purging all geofences registered with pending intent...")
+        try {
+            geofencingClient.removeGeofences(geofencePendingIntent).await()
+            Log.i("GeofenceManager", "Successfully removed all geofences")
+        } catch (e: Exception) {
+            Log.e("GeofenceManager", "Failed to remove all geofences", e)
+            throw e
+        }
+    }
+
+    override suspend fun registerSlidingWindowGeofences(
+        locations: List<LocationEntity>,
+        centerLat: Double,
+        centerLon: Double,
+        innerRadiusMeters: Float
+    ) {
+        val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        val backgroundLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        
+        Log.i("GeofenceManager", "registerSlidingWindowGeofences: centerLat=$centerLat, centerLon=$centerLon, innerRadiusMeters=$innerRadiusMeters, locationsCount=${locations.size}")
+        Log.i("GeofenceManager", "Permissions check: FINE=$fineLocationPermission, BACKGROUND=$backgroundLocationPermission")
+
+        if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
+            backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.w("GeofenceManager", "Aborting registration: Permissions not granted!")
+            return
+        }
+
+        val requestBuilder = GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+
+        // 1. Create and add Master Geofence
+        val masterGeofence = Geofence.Builder()
+            .setRequestId("MASTER_GEOFENCE_TRIGGER")
+            .setCircularRegion(centerLat, centerLon, innerRadiusMeters)
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT)
+            .setNotificationResponsiveness(0)
+            .build()
+        requestBuilder.addGeofence(masterGeofence)
+
+        // 2. Create and add POIs geofences
+        for (location in locations) {
+            val geofence = Geofence.Builder()
+                .setRequestId(location.id)
+                .setCircularRegion(location.latitude, location.longitude, location.radiusMeters)
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .setNotificationResponsiveness(location.notificationResponsivenessMs)
+                .build()
+            requestBuilder.addGeofence(geofence)
+        }
+
+        val request = requestBuilder.build()
+
+        Log.i("GeofenceManager", "Calling addGeofences for sliding window...")
+        try {
+            geofencingClient.addGeofences(request, geofencePendingIntent).await()
+            Log.i("GeofenceManager", "Successfully registered sliding window geofences in GMS")
+        } catch (e: Exception) {
+            Log.e("GeofenceManager", "Failed to register sliding window geofences in GMS", e)
+            throw e
+        }
+
+        // Force GMS to evaluate the geofence by requesting a high-accuracy location update
+        Log.i("GeofenceManager", "Requesting current location to force GMS geofence evaluation...")
+        runCatching {
+            val loc = locationProvider.getCurrentLocation()
+            Log.i("GeofenceManager", "Location update received: $loc")
+        }.onFailure { e ->
+            Log.w("GeofenceManager", "Failed to force location update", e)
+        }
+    }
 }

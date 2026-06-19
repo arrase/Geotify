@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.appfunctions.service.AppFunctionConfiguration
 import dagger.hilt.android.HiltAndroidApp
 import dev.arrase.geotify.appfunction.GeotifyAppFunctions
+import dev.arrase.geotify.activity.ActivityRecognitionHelper
 import dev.arrase.geotify.data.GeotifyRepository
 import dev.arrase.geotify.di.IoDispatcher
 import dev.arrase.geotify.location.LocationProvider
@@ -24,6 +25,9 @@ class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
     lateinit var locationProvider: LocationProvider
 
     @Inject
+    lateinit var activityRecognitionHelper: ActivityRecognitionHelper
+
+    @Inject
     @IoDispatcher
     lateinit var ioDispatcher: CoroutineDispatcher
 
@@ -31,6 +35,8 @@ class GeotifyApplication : Application(), AppFunctionConfiguration.Provider {
         super.onCreate()
         Log.i("GeotifyApp", "GeotifyApplication.onCreate() - Initializing notification channels...")
         NotificationHelper.createNotificationChannels(this)
+        Log.i("GeotifyApp", "GeotifyApplication.onCreate() - Registering activity recognition transitions...")
+        activityRecognitionHelper.registerTransitions()
         Log.i("GeotifyApp", "GeotifyApplication.onCreate() - Launching active geofence registration...")
         CoroutineScope(ioDispatcher).launch {
             try {

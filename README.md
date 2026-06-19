@@ -14,7 +14,7 @@ Geotify is a modern, location-aware Android application that allows users to cre
 - **In-App Guidance Banners**: Automatically alerts the user with a banner if background location permissions are missing, offering a direct action to grant them.
 - **Persistent Local Storage**: Utilizes **Room Database** for locations/reminders and **Jetpack DataStore (Preferences)** for theme settings.
 - **Reliable Background Execution**: Integrates Google Play Services Geofencing API and registers a `BroadcastReceiver` to handle location transitions even when the app is closed.
-- **Geofence Limit Enforcement**: Hard limit of 100 active geofences on the device, displaying errors and warnings to comply with OS constraints.
+- **Sliding Window Geofencing**: Solves the system-level limit of 100 active geofences by dynamically monitoring the 99 closest locations to the user and 1 Master Geofence. Recalculation triggers automatically upon master geofence exit, database updates, or Activity Recognition transition events (moving to standing/walking).
 - **Boot Recovery**: Automatically re-registers active geofences on device boot.
 - **Material 3 Design**: Features a fully responsive user interface utilizing Jetpack Compose and Material Design 3 guidelines.
 - **Internationalization (i18n)**: Out-of-the-box localization for English, Spanish, German, French, Italian, and Portuguese.
@@ -123,6 +123,8 @@ Geotify is built on a clean MVVM (Model-View-ViewModel) architecture:
 - **Location & Geofencing**: Google Play Services Location APIs (`FusedLocationProviderClient`, `GeofencingClient`)
 - **Dependency Injection**: [Dagger Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
 - **Integration**: Jetpack AppFunctions (`androidx.appfunctions`) with KSP code-generation
+- **Background Work**: [Jetpack WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) for spatial recalculation jobs
+- **Activity Recognition**: Google Play Services Activity Recognition API for smart recalculation triggers
 - **Asynchronous Flow**: Kotlin Coroutines & Flows
 - **Dependency Resolution**: Gradle Version Catalogs (`libs.versions.toml`)
 
@@ -135,6 +137,7 @@ To function correctly in the background, Geotify requests the following permissi
 - `ACCESS_FINE_LOCATION` & `ACCESS_COARSE_LOCATION`: To obtain the device's coordinates for saving/picking locations.
 - `ACCESS_BACKGROUND_LOCATION`: Required by the system to monitor geofences in the background when the app is minimized or closed.
 - `POST_NOTIFICATIONS`: To show reminders when geofence transitions occur.
+- `ACTIVITY_RECOGNITION`: To detect transition events (e.g., stopping vehicle) and trigger spatial recalculation to update active geofences.
 - `RECEIVE_BOOT_COMPLETED`: To automatically restore geofences when the device restarts.
 
 ---

@@ -7,7 +7,10 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "locations",
-    indices = [Index(value = ["alias"], unique = true)]
+    indices = [
+        Index(value = ["alias"], unique = true),
+        Index(value = ["latitude", "longitude"])
+    ]
 )
 data class LocationEntity(
     @PrimaryKey

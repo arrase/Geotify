@@ -87,4 +87,11 @@
     <string name="label_10min">10 min</string>
     <string name="btn_ok">OK</string>
     <string name="info_notification_responsiveness_desc">Définit la latence maximale autorisée pour notifier une transition de geofencing. Configurer cette plage permet au système d\'exploitation de regrouper les scans de localisation avec d\'autres tâches réseau, réduisant ainsi les réveils du processeur. Augmenter cette valeur réduit la consommation de batterie.</string>
+    <string name="perm_activity_recognition_message">Geotify a besoin de l\'autorisation de reconnaissance d\'activité pour détecter quand vous arrivez à vos destinations et recalculer les géofences.</string>
+    <string name="settings_geofence_recalc_title">Recalcul Spatial des Géofences</string>
+    <string name="settings_geofence_recalc_desc">Définissez la zone active pour vos rappels de position et économisez de la batterie.</string>
+    <string name="info_geofence_recalc_desc">Pour surcharger la limite système de 100 géofences, cette application active dynamiquement les rappels les plus proches de vous.\n\n• Rayon de Couverture (N) : Définit la zone circulaire maximale autour de vous où les rappels seront actifs.\n• Rayon Maître (r) : Définit la limite qui, une fois franchie, force un recalcul de votre position pour mettre à jour les géofences actives.\n\nNote : Un rayon maître (r) plus grand réduit la fréquence des recalculs, ce qui économise la batterie. De plus, des rayons plus larges permettent au système d\'utiliser des méthodes de localisation à faible consommation.</string>
+    <string name="label_outer_radius">Rayon de Couverture (N)</string>
+    <string name="label_inner_radius">Rayon Maître (r)</string>
+    <string name="label_km_value">%1$.1f km</string>
 </resources>

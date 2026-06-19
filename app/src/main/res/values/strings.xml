@@ -50,6 +50,7 @@
     <string name="reminder_unknown_location">Unknown</string>
     <string name="perm_location_message">Geotify needs location access to create geofence reminders.</string>
     <string name="perm_notification_message">Geotify needs notification permission to alert you when entering or leaving locations.</string>
+    <string name="perm_activity_recognition_message">Geotify needs activity recognition permission to detect when you arrive at your destinations and recalculate geofences.</string>
     <string name="perm_bg_location_title">Background Location</string>
     <string name="perm_bg_location_message">For geofence reminders to work reliably, Geotify needs \"Allow all the time\" location access. Please select it in the next screen.</string>
     <string name="notif_channel_name">Geofence Reminders</string>
@@ -87,4 +88,10 @@
     <string name="label_10min">10 min</string>
     <string name="btn_ok">OK</string>
     <string name="info_notification_responsiveness_desc">Defines the maximum latency allowed to notify a geofence transition. Configuring this range allows the OS to batch location scans with other network tasks, reducing CPU wakeups. Increasing this value reduces battery consumption.</string>
+    <string name="settings_geofence_recalc_title">Geofence Spatial Recalculation</string>
+    <string name="settings_geofence_recalc_desc">Set the active area for your location reminders and manage battery savings.</string>
+    <string name="info_geofence_recalc_desc">To overcome the system limit of 100 geofences, this app dynamically activates reminders closest to you.\n\n• Coverage Radius (N): Defines the maximum circular area around you where geofence reminders will be active.\n• Master Radius (r): Defines the boundary that, when exited, forces a recalculation of your location to update active geofences.\n\nNote: A larger master radius (r) reduces the frequency of recalculations, saving battery. Additionally, larger radii allow the system to use low-power location methods.</string>
+    <string name="label_outer_radius">Coverage Radius (N)</string>
+    <string name="label_inner_radius">Master Radius (r)</string>
+    <string name="label_km_value">%1$.1f km</string>
 </resources>

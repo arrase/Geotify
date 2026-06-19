@@ -4,6 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
 import com.google.android.gms.location.GeofencingEvent
 import dev.arrase.geotify.notification.NotificationHelper
 import dev.arrase.geotify.util.geotifyRepository
@@ -33,11 +37,24 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val transitionType = geofencingEvent.geofenceTransition
         Log.d(TAG, "Triggered geofences count: ${triggeringGeofences.size}, transitionType: $transitionType")
 
+        val hasMasterTrigger = triggeringGeofences.any { it.requestId == "MASTER_GEOFENCE_TRIGGER" }
+        if (hasMasterTrigger) {
+            Log.i(TAG, "Master geofence exit triggered. Enqueuing recalculation...")
+            val workRequest = OneTimeWorkRequestBuilder<GeofenceRecalculationWorker>()
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build()
+            WorkManager.getInstance(context)
+                .enqueueUniqueWork("geofence_recalculation", ExistingWorkPolicy.REPLACE, workRequest)
+        }
+
+        val poiGeofences = triggeringGeofences.filter { it.requestId != "MASTER_GEOFENCE_TRIGGER" }
+        if (poiGeofences.isEmpty()) return
+
         goAsyncCoroutine {
             try {
                 val repository = context.geotifyRepository
 
-                for (geofence in triggeringGeofences) {
+                for (geofence in poiGeofences) {
                     val locationId = geofence.requestId
                     val location = repository.findLocationById(locationId)
                     if (location == null) {

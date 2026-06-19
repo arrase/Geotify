@@ -1,6 +1,12 @@
 package dev.arrase.geotify.data
 
+import android.content.Context
 import android.util.Log
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.arrase.geotify.data.dao.LocationDao
 import dev.arrase.geotify.data.dao.ReminderDao
 import dev.arrase.geotify.data.entity.LocationEntity
@@ -8,6 +14,7 @@ import dev.arrase.geotify.data.entity.LocationReminderCount
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.di.IoDispatcher
 import dev.arrase.geotify.geofence.GeofenceManager
+import dev.arrase.geotify.geofence.GeofenceRecalculationWorker
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -24,6 +31,7 @@ data class ReminderCreationResult(
 
 @Singleton
 class GeotifyRepository @Inject constructor(
+    @param:ApplicationContext private val context: Context,
     private val locationDao: LocationDao,
     private val reminderDao: ReminderDao,
     private val geofenceManager: GeofenceManager,
@@ -64,6 +72,7 @@ class GeotifyRepository @Inject constructor(
             notificationResponsivenessMs = notificationResponsivenessMs
         )
         locationDao.insert(entity)
+        triggerRecalculation()
         return@withContext entity
     }
 
@@ -90,9 +99,8 @@ class GeotifyRepository @Inject constructor(
     suspend fun deleteLocation(alias: String) = withContext(ioDispatcher) {
         val location = locationDao.findByAlias(alias)
         if (location != null) {
-            runCatching { geofenceManager.removeGeofences(listOf(location.id)) }
-                .onFailure { Log.w(TAG, "Failed to remove geofence for deleted location: $alias", it) }
             locationDao.deleteByAlias(alias)
+            triggerRecalculation()
         }
     }
 
@@ -103,7 +111,6 @@ class GeotifyRepository @Inject constructor(
         message: String,
         transitionType: Int
     ): ReminderCreationResult = withContext(ioDispatcher) {
-        val warningTriggered = checkGeofenceLimitForFutureState(null, location.id, true)
         val reminder = ReminderEntity(
             id = UUID.randomUUID().toString(),
             locationId = location.id,
@@ -113,40 +120,16 @@ class GeotifyRepository @Inject constructor(
         )
         reminderDao.insert(reminder)
         syncGeofenceForLocation(location.id)
-        return@withContext ReminderCreationResult(reminder, warningTriggered)
+        return@withContext ReminderCreationResult(reminder, false)
     }
 
     suspend fun updateReminder(reminder: ReminderEntity, oldLocationId: String): Boolean = withContext(ioDispatcher) {
-        val warningTriggered = checkGeofenceLimitForFutureState(reminder.id, reminder.locationId, reminder.isActive)
         reminderDao.update(reminder)
         syncGeofenceForLocation(reminder.locationId)
         if (oldLocationId != reminder.locationId) {
             syncGeofenceForLocation(oldLocationId)
         }
-        return@withContext warningTriggered
-    }
-
-    private suspend fun checkGeofenceLimitForFutureState(
-        modifiedReminderId: String?,
-        newLocationId: String,
-        newIsActive: Boolean
-    ): Boolean {
-        val activeReminders = reminderDao.getActiveReminders()
-        val currentActiveGeofences = activeReminders.map { it.locationId }.distinct().size
-
-        val activeLocations = activeReminders
-            .filter { it.id != modifiedReminderId }
-            .map { it.locationId }
-            .toMutableSet()
-        if (newIsActive) {
-            activeLocations.add(newLocationId)
-        }
-
-        val futureActiveGeofences = activeLocations.size
-        if (futureActiveGeofences > 100) {
-            throw GeofenceLimitExceededException("Geofence limit reached (maximum 100).")
-        }
-        return futureActiveGeofences == 100 && currentActiveGeofences < 100
+        return@withContext false
     }
 
     suspend fun deactivateReminder(reminderId: String) = withContext(ioDispatcher) {
@@ -180,37 +163,27 @@ class GeotifyRepository @Inject constructor(
     // ── Geofence Re-registration (after boot) ──
 
     suspend fun reRegisterAllActiveGeofences() = withContext(ioDispatcher) {
-        val locations = locationDao.getAll()
-        Log.i(TAG, "reRegisterAllActiveGeofences: Found ${locations.size} locations in database.")
-        for (location in locations) {
-            Log.i(TAG, "reRegisterAllActiveGeofences: Syncing location ${location.alias} (id=${location.id})")
-            syncGeofenceForLocation(location.id)
-        }
+        Log.i(TAG, "reRegisterAllActiveGeofences: Triggering sliding window geofence recalculation...")
+        triggerRecalculation()
     }
 
     // ── Sync Helper ──
 
-    private suspend fun syncGeofenceForLocation(locationId: String) {
-        val location = locationDao.findById(locationId)
-        if (location == null) {
-            Log.w(TAG, "syncGeofenceForLocation: Location $locationId not found in db.")
-            runCatching { geofenceManager.removeGeofences(listOf(locationId)) }
-                .onFailure { Log.w(TAG, "Failed to remove geofence for missing location: $locationId", it) }
-            return
-        }
-        val activeReminders = reminderDao.getActiveByLocationId(locationId)
-        Log.i(TAG, "syncGeofenceForLocation: Location ${location.alias} has ${activeReminders.size} active reminders.")
-        if (activeReminders.isEmpty()) {
-            Log.i(TAG, "syncGeofenceForLocation: No active reminders for ${location.alias}, removing geofence.")
-            runCatching { geofenceManager.removeGeofences(listOf(locationId)) }
-                .onFailure { Log.w(TAG, "Failed to remove geofence for location: $locationId", it) }
-        } else {
-            val combinedTransition = activeReminders.fold(0) { acc, reminder ->
-                acc or reminder.transitionType
-            }
-            Log.i(TAG, "syncGeofenceForLocation: Registering geofence for ${location.alias} with combinedTransition=$combinedTransition")
-            runCatching { geofenceManager.registerGeofenceForLocation(location, combinedTransition) }
-                .onFailure { Log.w(TAG, "Failed to register geofence for location: $locationId", it) }
+    private fun syncGeofenceForLocation(locationId: String) {
+        Log.i(TAG, "syncGeofenceForLocation: Triggering recalculation for change in location $locationId")
+        triggerRecalculation()
+    }
+
+    fun triggerRecalculation() {
+        Log.i(TAG, "triggerRecalculation: Enqueuing GeofenceRecalculationWorker...")
+        try {
+            val workRequest = OneTimeWorkRequestBuilder<GeofenceRecalculationWorker>()
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build()
+            WorkManager.getInstance(context)
+                .enqueueUniqueWork("geofence_recalculation", ExistingWorkPolicy.REPLACE, workRequest)
+        } catch (e: IllegalStateException) {
+            Log.w(TAG, "WorkManager is not initialized (likely running in a JUnit test environment). Skipping enqueue.")
         }
     }
 

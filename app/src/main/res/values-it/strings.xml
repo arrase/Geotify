@@ -87,4 +87,11 @@
     <string name="label_10min">10 min</string>
     <string name="btn_ok">OK</string>
     <string name="info_notification_responsiveness_desc">Definisce la latenza massima consentita per notificare una transizione di geofence. La configurazione di questo intervallo consente al sistema operativo di raggruppare i rilevamenti di posizione con altre attività di rete, riducendo i risvegli della CPU. L\'aumento di questo valore riduce il consumo della batteria.</string>
+    <string name="perm_activity_recognition_message">Geotify richiede l\'autorizzazione al riconoscimento dell\'attività per rilevare quando arrivi a destinazione e ricalcolare i geofence.</string>
+    <string name="settings_geofence_recalc_title">Ricalcolo Spaziale dei Geofence</string>
+    <string name="settings_geofence_recalc_desc">Definisci l\'area attiva per i tuoi promemoria di posizione e risparmia batteria.</string>
+    <string name="info_geofence_recalc_desc">Per superare il limite di 100 geofence del sistema, questa app attiva in modo dinamico i promemoria più vicini a te.\n\n• Raggio di Copertura (N): Definisce l\'area circolare massima intorno a te in cui i promemoria saranno attivi.\n• Raggio Master (r): Definisce il confine che, una volta superato, forza un ricalcolo della tua posizione per aggiornare i geofence attivi.\n\nNota: Un raggio master (r) più ampio riduce la frequenza dei ricalcoli, risparmiando batteria. Inoltre, raggi più ampi consentono al sistema di utilizzare metodi di localizzazione a basso consumo.</string>
+    <string name="label_outer_radius">Raggio di Copertura (N)</string>
+    <string name="label_inner_radius">Raggio Master (r)</string>
+    <string name="label_km_value">%1$.1f km</string>
 </resources>

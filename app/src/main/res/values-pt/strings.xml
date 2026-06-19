@@ -87,4 +87,11 @@
     <string name="label_10min">10 min</string>
     <string name="btn_ok">OK</string>
     <string name="info_notification_responsiveness_desc">Define a latência máxima permitida para notificar uma transição de cerca virtual. Configurar esse intervalo permite ao sistema operacional agrupar escaneamentos de localização com outras tarefas de rede, reduzindo o consumo da CPU. Aumentar este valor reduz o consumo de bateria.</string>
+    <string name="perm_activity_recognition_message">O Geotify precisa de permissão de reconhecimento de atividade para detectar quando você chega aos seus destinos e recalcular as cercas virtuais.</string>
+    <string name="settings_geofence_recalc_title">Recálculo Espacial de Cercas Virtuais</string>
+    <string name="settings_geofence_recalc_desc">Defina a área ativa para seus lembretes de localização e economize bateria.</string>
+    <string name="info_geofence_recalc_desc">Para superar o limite de 100 cercas virtuais do sistema, este aplicativo ativa dinamicamente os lembretes mais próximos de você.\n\n• Raio de Cobertura (N): Define a área circular máxima ao seu redor onde os lembretes estarão ativos.\n• Raio Mestre (r): Define o limite que, ao sair dele, força um recálculo da sua localização para atualizar as cercas virtuais ativas.\n\nNota: Um raio mestre (r) maior reduz a frequência de recálculos, economizando bateria. Além disso, raios maiores permitem que o sistema utilize métodos de localização de baixo consumo.</string>
+    <string name="label_outer_radius">Raio de Cobertura (N)</string>
+    <string name="label_inner_radius">Raio Mestre (r)</string>
+    <string name="label_km_value">%1$.1f km</string>
 </resources>
