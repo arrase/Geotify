@@ -29,7 +29,9 @@ data class ReminderEntity(
     @ColumnInfo(name = "is_active")
     val isActive: Boolean = true,
     @ColumnInfo(name = "created_at")
-    val createdAt: Long
+    val createdAt: Long,
+    @ColumnInfo(name = "is_in_range", defaultValue = "0")
+    val isInRange: Boolean = false
 )
 
 val ReminderEntity.isArrival: Boolean

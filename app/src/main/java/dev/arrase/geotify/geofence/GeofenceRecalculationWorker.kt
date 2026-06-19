@@ -74,6 +74,8 @@ class GeofenceRecalculationWorker(
                 Log.w(TAG, "Error removing old geofences (might be none registered)", e)
             }
 
+            repository.clearAllRemindersInRange()
+
             if (activeCandidates.isNotEmpty() || activeLocationIds.isNotEmpty()) {
                 val innerRadiusMeters = innerRadiusR * 1000f
                 geofenceManager.registerSlidingWindowGeofences(
@@ -82,6 +84,9 @@ class GeofenceRecalculationWorker(
                     centerLon = centerLon,
                     innerRadiusMeters = innerRadiusMeters
                 )
+                if (activeCandidates.isNotEmpty()) {
+                    repository.setRemindersInRangeForLocations(activeCandidates.map { it.id })
+                }
                 Log.i(TAG, "Successfully registered ${activeCandidates.size} POIs + Master Geofence")
             } else {
                 Log.i(TAG, "No active reminders found in database, no geofences registered.")

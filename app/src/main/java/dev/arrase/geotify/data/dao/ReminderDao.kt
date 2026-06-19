@@ -61,4 +61,10 @@ interface ReminderDao {
         """
     )
     suspend fun getActiveReminderIdsByAlias(alias: String): List<String>
+
+    @Query("UPDATE reminders SET is_in_range = 0")
+    suspend fun clearAllInRange()
+
+    @Query("UPDATE reminders SET is_in_range = 1 WHERE location_id IN (:locationIds) AND is_active = 1")
+    suspend fun setInRangeForLocations(locationIds: List<String>)
 }

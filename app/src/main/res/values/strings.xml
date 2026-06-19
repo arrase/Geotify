@@ -94,4 +94,5 @@
     <string name="label_outer_radius">Coverage Radius (N)</string>
     <string name="label_inner_radius">Master Radius (r)</string>
     <string name="label_km_value">%1$.1f km</string>
+    <string name="label_in_range">In Range</string>
 </resources>

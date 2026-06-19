@@ -174,6 +174,14 @@ class GeotifyRepository @Inject constructor(
         triggerRecalculation()
     }
 
+    suspend fun clearAllRemindersInRange() = withContext(ioDispatcher) {
+        reminderDao.clearAllInRange()
+    }
+
+    suspend fun setRemindersInRangeForLocations(locationIds: List<String>) = withContext(ioDispatcher) {
+        reminderDao.setInRangeForLocations(locationIds)
+    }
+
     fun triggerRecalculation() {
         Log.i(TAG, "triggerRecalculation: Enqueuing GeofenceRecalculationWorker...")
         try {

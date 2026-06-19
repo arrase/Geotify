@@ -94,4 +94,5 @@
     <string name="label_outer_radius">Rayon de Couverture (N)</string>
     <string name="label_inner_radius">Rayon Maître (r)</string>
     <string name="label_km_value">%1$.1f km</string>
+    <string name="label_in_range">À portée</string>
 </resources>

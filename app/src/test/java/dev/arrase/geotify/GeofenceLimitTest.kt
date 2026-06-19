@@ -75,6 +75,8 @@ class GeofenceLimitTest {
         override suspend fun getActiveReminderIdsByAlias(alias: String): List<String> = emptyList()
         override suspend fun getActiveGeofenceCount(): Int =
             remindersList.filter { it.isActive }.map { it.locationId }.distinct().size
+        override suspend fun clearAllInRange() {}
+        override suspend fun setInRangeForLocations(locationIds: List<String>) {}
     }
 
     private val fakeGeofenceManager = object : GeofenceManager {

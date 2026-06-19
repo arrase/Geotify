@@ -1,6 +1,8 @@
 package dev.arrase.geotify.ui.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -50,19 +52,40 @@ fun ReminderRow(
             } else {
                 MaterialTheme.colorScheme.surfaceVariant
             }
-            SuggestionChip(
-                onClick = {},
-                label = {
-                    Text(
-                        text = if (reminder.isActive) stringResource(R.string.label_active) else stringResource(R.string.label_completed),
-                        style = MaterialTheme.typography.labelSmall
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SuggestionChip(
+                    onClick = {},
+                    label = {
+                        Text(
+                            text = if (reminder.isActive) stringResource(R.string.label_active) else stringResource(R.string.label_completed),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    },
+                    colors = SuggestionChipDefaults.suggestionChipColors(
+                        containerColor = statusColor
+                    ),
+                    modifier = Modifier.height(24.dp)
+                )
+
+                if (reminder.isActive && reminder.isInRange) {
+                    SuggestionChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                text = stringResource(R.string.label_in_range),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        },
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        ),
+                        modifier = Modifier.height(24.dp)
                     )
-                },
-                colors = SuggestionChipDefaults.suggestionChipColors(
-                    containerColor = statusColor
-                ),
-                modifier = Modifier.height(24.dp)
-            )
+                }
+            }
         },
         leadingContent = {
             Icon(
