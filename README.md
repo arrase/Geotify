@@ -2,6 +2,15 @@
 
 Geotify is a modern, location-aware Android application that allows users to create and manage geofenced reminders. Designed with modern Android development practices, it features a beautiful Jetpack Compose interface, interactive mapping, and exposes advanced system-level **Jetpack AppFunctions**, making it capable of being driven by on-device LLMs or voice assistants.
 
+> [!TIP]
+> **Join the Google Play Internal Beta!** 🚀
+> We are currently running internal tests to refine Geotify. If you want to join and test the app:
+> 1. Join our [Google Group for Testers](https://groups.google.com/g/geotify-testers) (required to grant access).
+> 2. Opt-in to the testing program via the [Google Play Testing Portal](https://play.google.com/apps/testing/dev.arrase.geotify).
+> 3. Download the app from the [Google Play Store](https://play.google.com/store/apps/details?id=dev.arrase.geotify).
+> 
+> Thank you for helping make Geotify better! ⭐
+
 ---
 
 ## Features
