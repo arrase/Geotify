@@ -46,47 +46,24 @@ fun ReminderRow(
                 )
             }
         },
-        supportingContent = {
-            val statusColor = if (reminder.isActive) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+        supportingContent = if (reminder.isActive && reminder.isInRange) {
+            {
                 SuggestionChip(
                     onClick = {},
                     label = {
                         Text(
-                            text = if (reminder.isActive) stringResource(R.string.label_active) else stringResource(R.string.label_completed),
+                            text = stringResource(R.string.label_in_range),
                             style = MaterialTheme.typography.labelSmall
                         )
                     },
                     colors = SuggestionChipDefaults.suggestionChipColors(
-                        containerColor = statusColor
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        labelColor = MaterialTheme.colorScheme.onTertiaryContainer
                     ),
                     modifier = Modifier.height(24.dp)
                 )
-
-                if (reminder.isActive && reminder.isInRange) {
-                    SuggestionChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                text = stringResource(R.string.label_in_range),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        },
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            labelColor = MaterialTheme.colorScheme.onTertiaryContainer
-                        ),
-                        modifier = Modifier.height(24.dp)
-                    )
-                }
             }
-        },
+        } else null,
         leadingContent = {
             Icon(
                 imageVector = Icons.Filled.Notifications,
