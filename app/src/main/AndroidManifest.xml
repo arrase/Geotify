@@ -69,14 +69,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Notification dismiss action receiver -->
-        <receiver
-            android:name=".notification.ReminderDismissReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="dev.arrase.geotify.ACTION_DISMISS_REMINDER" />
-            </intent-filter>
-        </receiver>
 
     </application>
 

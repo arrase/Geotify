@@ -54,7 +54,6 @@
     <string name="perm_bg_location_message">For geofence reminders to work reliably, Geotify needs \"Allow all the time\" location access. Please select it in the next screen.</string>
     <string name="notif_channel_name">Geofence Reminders</string>
     <string name="notif_channel_desc">Notifications triggered when you enter or leave a saved location</string>
-    <string name="notif_action_dismiss">Dismiss</string>
     <string name="err_gps_failed">Failed to obtain GPS coordinates. Please make sure location services are enabled.</string>
     <string name="warn_bg_location_missing">Background location permission is missing. Geofences will not trigger until you grant \"Allow all the time\" permission.</string>
     <string name="btn_fix">Fix</string>

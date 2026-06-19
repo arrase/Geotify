@@ -16,8 +16,6 @@ import dev.arrase.geotify.R
 object NotificationHelper {
 
     const val CHANNEL_GEOFENCE = "geofence_reminders"
-    const val ACTION_DISMISS_REMINDER = "dev.arrase.geotify.ACTION_DISMISS_REMINDER"
-    const val EXTRA_REMINDER_ID = "extra_reminder_id"
     const val EXTRA_TAB = "tab"
     const val TAB_REMINDERS = "reminders"
 
@@ -55,14 +53,6 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val dismissIntent = Intent(ACTION_DISMISS_REMINDER).apply {
-            setPackage(context.packageName)
-            putExtra(EXTRA_REMINDER_ID, reminderId)
-        }
-        val dismissPending = PendingIntent.getBroadcast(
-            context, reminderId.hashCode(), dismissIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_GEOFENCE)
             .setSmallIcon(R.drawable.ic_notification)
@@ -72,7 +62,6 @@ object NotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(openPending)
-            .addAction(R.drawable.ic_dismiss, context.getString(R.string.notif_action_dismiss), dismissPending)
             .build()
 
         NotificationManagerCompat.from(context).notify(notificationId, notification)

@@ -54,7 +54,6 @@
     <string name="perm_bg_location_message">Para que los recordatorios funcionen correctamente, Geotify necesita el permiso de ubicación \"Permitir todo el tiempo\". Por favor, selecciónalo en la siguiente pantalla.</string>
     <string name="notif_channel_name">Recordatorios de geovallas</string>
     <string name="notif_channel_desc">Notificaciones activadas al entrar o salir de un lugar guardado</string>
-    <string name="notif_action_dismiss">Descartar</string>
     <string name="err_gps_failed">No se pudieron obtener las coordenadas GPS. Por favor, asegúrate de que los servicios de ubicación están activados.</string>
     <string name="warn_bg_location_missing">Falta el permiso de ubicación en segundo plano. Las geovallas no se activarán hasta que concedas el permiso \"Permitir todo el tiempo\".</string>
     <string name="btn_fix">Solucionar</string>
