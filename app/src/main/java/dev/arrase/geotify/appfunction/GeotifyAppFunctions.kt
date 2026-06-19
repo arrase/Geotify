@@ -10,8 +10,6 @@ import dev.arrase.geotify.data.GeofenceLimitExceededException
 import dev.arrase.geotify.data.entity.triggerTypeString
 import dev.arrase.geotify.R
 import dev.arrase.geotify.location.LocationProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /** Serializable result returned after initiating a location save. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
@@ -86,7 +84,7 @@ class GeotifyAppFunctions(
     suspend fun saveCurrentLocation(
         appFunctionContext: AppFunctionContext,
         alias: String
-    ): SaveLocationResult = withContext(Dispatchers.IO) {
+    ): SaveLocationResult {
         val existing = repository.findLocationByAlias(alias)
         if (existing != null) {
             throw AppFunctionInvalidArgumentException(
@@ -94,7 +92,7 @@ class GeotifyAppFunctions(
             )
         }
 
-        try {
+        return try {
             val location = locationProvider.getCurrentLocation()
 
             if (location != null) {
@@ -123,7 +121,7 @@ class GeotifyAppFunctions(
         targetAlias: String,
         payloadMessage: String,
         triggerOnArrival: Boolean
-    ): CreateReminderResult = withContext(Dispatchers.IO) {
+    ): CreateReminderResult {
         val location = repository.findLocationByAlias(targetAlias)
             ?: throwAliasNotFound(targetAlias)
 
@@ -133,7 +131,7 @@ class GeotifyAppFunctions(
             Geofence.GEOFENCE_TRANSITION_EXIT
         }
 
-        try {
+        return try {
             val result = repository.createReminder(location, payloadMessage, transitionType)
             val warning = if (result.isLimitWarningTriggered) {
                 appFunctionContext.context.getString(R.string.geofence_limit_warning)
@@ -159,8 +157,8 @@ class GeotifyAppFunctions(
     @AppFunction(isDescribedByKDoc = true)
     suspend fun listLocations(
         appFunctionContext: AppFunctionContext
-    ): List<SavedLocation> = withContext(Dispatchers.IO) {
-        repository.getAllLocations().map { entity ->
+    ): List<SavedLocation> {
+        return repository.getAllLocations().map { entity ->
             SavedLocation(entity.alias, entity.latitude, entity.longitude)
         }
     }
@@ -175,10 +173,10 @@ class GeotifyAppFunctions(
     suspend fun deleteLocation(
         appFunctionContext: AppFunctionContext,
         alias: String
-    ): DeleteResult = withContext(Dispatchers.IO) {
+    ): DeleteResult {
         repository.findLocationByAlias(alias) ?: throwAliasNotFound(alias)
         repository.deleteLocation(alias)
-        DeleteResult(alias, deleted = true)
+        return DeleteResult(alias, deleted = true)
     }
 
     /**
@@ -194,7 +192,7 @@ class GeotifyAppFunctions(
         appFunctionContext: AppFunctionContext,
         targetAlias: String,
         message: String? = null
-    ): DeleteResult = withContext(Dispatchers.IO) {
+    ): DeleteResult {
         val location = repository.findLocationByAlias(targetAlias)
             ?: throwAliasNotFound(targetAlias)
 
@@ -224,7 +222,7 @@ class GeotifyAppFunctions(
         }
 
         repository.cancelReminder(matched.id)
-        DeleteResult(targetAlias, deleted = true)
+        return DeleteResult(targetAlias, deleted = true)
     }
 
     /**
@@ -234,10 +232,10 @@ class GeotifyAppFunctions(
     @AppFunction(isDescribedByKDoc = true)
     suspend fun listActiveReminders(
         appFunctionContext: AppFunctionContext
-    ): List<SavedReminder> = withContext(Dispatchers.IO) {
+    ): List<SavedReminder> {
         val reminders = repository.getActiveReminders()
         val locations = repository.getAllLocations().associateBy { it.id }
-        reminders.map { entity ->
+        return reminders.map { entity ->
             val location = locations[entity.locationId]
             val alias = location?.alias ?: "Unknown"
             SavedReminder(

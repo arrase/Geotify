@@ -93,4 +93,12 @@
     <string name="label_inner_radius">Rayon Maître (r)</string>
     <string name="label_km_value">%1$.1f km</string>
     <string name="label_in_range">À portée</string>
+    <string name="settings_battery_tuning_title">Optimisation de la batterie &amp; performances</string>
+    <string name="settings_battery_tuning_desc">Ajustez les délais GPS et la fréquence de contrôle des géofences pour optimiser la batterie.</string>
+    <string name="label_location_cache_timeout">Délai d\'expiration du cache de localisation</string>
+    <string name="label_recalc_debounce">Délai de recodage (Debounce)</string>
+    <string name="label_master_responsiveness">Réactivité de la géofence maîtresse</string>
+    <string name="label_poi_responsiveness">Réactivité par défaut des POI</string>
+    <string name="label_seconds_value">%1$d s</string>
+    <string name="info_battery_tuning_desc">En ajustant ces paramètres, vous pouvez équilibrer la consommation de batterie et la latence des notifications :\n\n• Délai d\'expiration du cache : Réutilise les scans GPS récents pour éviter d\'activer le matériel GPS à haute puissance de manière répétée.\n• Délai de recodage : Définit l\'attente pour limiter les mises à jour consécutives de la base de données, réduisant ainsi les lancements de tâches système.\n• Réactivité maîtresse : L\'intervalle de temps que GMS utilise pour détecter votre sortie de la zone maîtresse. Des valeurs plus élevées permettent un meilleur regroupement en arrière-plan par le système.\n• Réactivité des POI : La latence par défaut pour la détection d\'entrée dans vos points d\'intérêt.</string>
 </resources>

@@ -93,4 +93,12 @@
     <string name="label_inner_radius">Raggio Master (r)</string>
     <string name="label_km_value">%1$.1f km</string>
     <string name="label_in_range">In intervallo</string>
+    <string name="settings_battery_tuning_title">Ottimizzazione batteria &amp; prestazioni</string>
+    <string name="settings_battery_tuning_desc">Regola i timeout GPS e la frequenza di controllo dei geofence per ottimizzare la batteria.</string>
+    <string name="label_location_cache_timeout">Timeout cache di posizione</string>
+    <string name="label_recalc_debounce">Ritardo di ricalcolo (Debounce)</string>
+    <string name="label_master_responsiveness">Reattività geofence master</string>
+    <string name="label_poi_responsiveness">Reattività POI predefinita</string>
+    <string name="label_seconds_value">%1$d sec</string>
+    <string name="info_battery_tuning_desc">Regolando questi parametri, puoi bilanciare il consumo della batteria e la latenza delle notifiche:\n\n• Timeout cache di posizione: Riutilizza le scansioni GPS recenti per evitare di accendere ripetutamente il GPS ad alta potenza.\n• Ritardo di ricalcolo: Imposta il ritardo per limitare gli aggiornamenti consecutivi rapidi del database, riducendo le esecuzioni dei processi di sistema.\n• Reattività master: L\'intervallo di tempo che GMS utilizza per rilevare l\'uscita dall\'area master. Valori più alti consentono un migliore raggruppamento in background da parte del sistema operativo.\n• Reattività POI: La latenza predefinita per il rilevamento delle transizioni per i punti di interesse.</string>
 </resources>

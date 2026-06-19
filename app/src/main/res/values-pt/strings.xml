@@ -93,4 +93,12 @@
     <string name="label_inner_radius">Raio Mestre (r)</string>
     <string name="label_km_value">%1$.1f km</string>
     <string name="label_in_range">No alcance</string>
+    <string name="settings_battery_tuning_title">Ajustes de bateria &amp; desempenho</string>
+    <string name="settings_battery_tuning_desc">Ajuste os tempos de espera do GPS e a frequência de verificação de cercas virtuais para economizar bateria.</string>
+    <string name="label_location_cache_timeout">Tempo limite do cache de localização</string>
+    <string name="label_recalc_debounce">Atraso de recálculo (Debounce)</string>
+    <string name="label_master_responsiveness">Tempo de resposta da cerca mestre</string>
+    <string name="label_poi_responsiveness">Tempo de resposta padrão do POI</string>
+    <string name="label_seconds_value">%1$d seg</string>
+    <string name="info_battery_tuning_desc">Ao ajustar estes parâmetros, você pode equilibrar o consumo de bateria e a latência de notificações:\n\n• Cache de Localização: Reutiliza buscas de GPS recentes para evitar ativar o hardware de GPS repetidamente.\n• Atraso de Recálculo: Define a espera para limitar atualizações sucessivas e rápidas do banco de dados, reduzindo tarefas do sistema.\n• Cerca Mestre: O intervalo de tempo que GMS usa para detectar quando você sai da área mestre. Valores maiores permitem agrupamento de tarefas em segundo plano.\n• Cerca de POI: A latência padrão para detecção de transições em seus pontos de interesse.</string>
 </resources>

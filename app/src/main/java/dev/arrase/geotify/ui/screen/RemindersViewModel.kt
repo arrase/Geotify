@@ -69,6 +69,12 @@ class RemindersViewModel @Inject constructor(
     }
 
     fun cancelReminder(reminderId: String) {
-        viewModelScope.launch { repository.cancelReminder(reminderId) }
+        viewModelScope.launch {
+            try {
+                repository.cancelReminder(reminderId)
+            } catch (e: Exception) {
+                _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
+            }
+        }
     }
 }

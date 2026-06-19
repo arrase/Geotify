@@ -93,4 +93,12 @@
     <string name="label_inner_radius">Master Radius (r)</string>
     <string name="label_km_value">%1$.1f km</string>
     <string name="label_in_range">In Range</string>
+    <string name="settings_battery_tuning_title">Battery &amp; Performance Tuning</string>
+    <string name="settings_battery_tuning_desc">Expose and adjust location timeouts and geofence check frequencies to optimize power consumption.</string>
+    <string name="label_location_cache_timeout">Location Cache Timeout</string>
+    <string name="label_recalc_debounce">Recalculation Debounce Delay</string>
+    <string name="label_master_responsiveness">Master Geofence Responsiveness</string>
+    <string name="label_poi_responsiveness">Default POI Responsiveness</string>
+    <string name="label_seconds_value">%1$d sec</string>
+    <string name="info_battery_tuning_desc">By adjusting these parameters, you can balance battery consumption and notification latency:\n\n• Location Cache Timeout: Reuses recent GPS scans to avoid turning on the high-power GPS hardware repeatedly.\n• Recalculation Debounce: Sets the delay to throttle rapid consecutive database updates, reducing system job executions.\n• Master Responsiveness: The time interval GMS uses to detect you leaving the master area. Higher values allow better OS background batching.\n• Default POI Responsiveness: The default transition detection latency for points of interest.</string>
 </resources>

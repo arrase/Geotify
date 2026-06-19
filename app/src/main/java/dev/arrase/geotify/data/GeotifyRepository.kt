@@ -16,7 +16,10 @@ import dev.arrase.geotify.di.IoDispatcher
 import dev.arrase.geotify.geofence.GeofenceManager
 import dev.arrase.geotify.geofence.GeofenceRecalculationWorker
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
@@ -35,6 +38,7 @@ class GeotifyRepository @Inject constructor(
     private val locationDao: LocationDao,
     private val reminderDao: ReminderDao,
     private val geofenceManager: GeofenceManager,
+    private val settingsManager: SettingsManager,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
@@ -132,10 +136,12 @@ class GeotifyRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun deactivateReminder(reminderId: String) = withContext(ioDispatcher) {
+    suspend fun deactivateReminder(reminderId: String, shouldSyncGeofence: Boolean = true) = withContext(ioDispatcher) {
         val reminder = reminderDao.findById(reminderId) ?: return@withContext
         reminderDao.deactivate(reminderId)
-        syncGeofenceForLocation(reminder.locationId)
+        if (shouldSyncGeofence) {
+            syncGeofenceForLocation(reminder.locationId)
+        }
     }
 
     suspend fun cancelReminder(reminderId: String) = withContext(ioDispatcher) {
@@ -178,16 +184,25 @@ class GeotifyRepository @Inject constructor(
         reminderDao.updateInRangeStatus(locationIds)
     }
 
-    fun triggerRecalculation() {
-        Log.i(TAG, "triggerRecalculation: Enqueuing GeofenceRecalculationWorker...")
-        try {
-            val workRequest = OneTimeWorkRequestBuilder<GeofenceRecalculationWorker>()
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .build()
-            WorkManager.getInstance(context)
-                .enqueueUniqueWork("geofence_recalculation", ExistingWorkPolicy.REPLACE, workRequest)
-        } catch (e: IllegalStateException) {
-            Log.w(TAG, "WorkManager is not initialized (likely running in a JUnit test environment). Skipping enqueue.")
+    fun triggerRecalculation(isExpedited: Boolean = false) {
+        Log.i(TAG, "triggerRecalculation: Enqueuing GeofenceRecalculationWorker (isExpedited=$isExpedited)...")
+        CoroutineScope(ioDispatcher).launch {
+            try {
+                val builder = OneTimeWorkRequestBuilder<GeofenceRecalculationWorker>()
+                if (isExpedited) {
+                    builder.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                } else {
+                    val debounceSecs = settingsManager.recalculationDebounceSecs.first().toLong()
+                    builder.setInitialDelay(debounceSecs, java.util.concurrent.TimeUnit.SECONDS)
+                }
+                val workRequest = builder.build()
+                WorkManager.getInstance(context)
+                    .enqueueUniqueWork("geofence_recalculation", ExistingWorkPolicy.REPLACE, workRequest)
+            } catch (e: IllegalStateException) {
+                Log.w(TAG, "WorkManager is not initialized (likely running in a JUnit test environment). Skipping enqueue.")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to enqueue recalculation worker", e)
+            }
         }
     }
 

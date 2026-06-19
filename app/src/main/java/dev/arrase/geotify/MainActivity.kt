@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import dagger.hilt.android.AndroidEntryPoint
 import dev.arrase.geotify.data.ThemeSetting
@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val appTheme by viewModel.appTheme.collectAsState()
+            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
             val useDarkTheme = when (appTheme) {
                 ThemeSetting.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
                 ThemeSetting.LIGHT -> false

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -31,7 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +51,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     modifier: Modifier = Modifier
 ) {
-    val appTheme by viewModel.appTheme.collectAsState()
-    val mapTheme by viewModel.mapTheme.collectAsState()
+    val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
+    val mapTheme by viewModel.mapTheme.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     var showRecalcInfo by remember { mutableStateOf(false) }
 
@@ -92,11 +93,23 @@ fun SettingsScreen(
         }
 
         // Geofence Spatial Recalculation Card
-        val outerRadiusN by viewModel.outerRadiusN.collectAsState()
-        val innerRadiusR by viewModel.innerRadiusR.collectAsState()
+        val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
+        val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
 
         var localOuterRadius by remember(outerRadiusN) { mutableStateOf(outerRadiusN) }
         var localInnerRadius by remember(innerRadiusR) { mutableStateOf(innerRadiusR) }
+
+        // Battery & Performance Tuning Card
+        val cacheTimeout by viewModel.locationCacheTimeoutSecs.collectAsStateWithLifecycle()
+        val debounceDelay by viewModel.recalculationDebounceSecs.collectAsStateWithLifecycle()
+        val masterResponsiveness by viewModel.masterGeofenceResponsivenessSecs.collectAsStateWithLifecycle()
+        val poiResponsiveness by viewModel.poiGeofenceResponsivenessSecs.collectAsStateWithLifecycle()
+
+        var localCacheTimeout by remember(cacheTimeout) { mutableStateOf(cacheTimeout) }
+        var localDebounceDelay by remember(debounceDelay) { mutableStateOf(debounceDelay) }
+        var localMasterResponsiveness by remember(masterResponsiveness) { mutableStateOf(masterResponsiveness) }
+        var localPoiResponsiveness by remember(poiResponsiveness) { mutableStateOf(poiResponsiveness) }
+        var showBatteryTuningInfo by remember { mutableStateOf(false) }
 
         SettingsCard(
             icon = Icons.Filled.LocationOn,
@@ -180,6 +193,131 @@ fun SettingsScreen(
             }
         }
 
+        // Battery & Performance Tuning Settings Card
+        SettingsCard(
+            icon = Icons.Filled.Tune,
+            title = stringResource(R.string.settings_battery_tuning_title),
+            description = stringResource(R.string.settings_battery_tuning_desc),
+            onInfoClick = { showBatteryTuningInfo = true }
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Location Cache Timeout
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.label_location_cache_timeout),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.label_seconds_value, localCacheTimeout),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    androidx.compose.material3.Slider(
+                        value = localCacheTimeout.toFloat(),
+                        onValueChange = { localCacheTimeout = it.toInt() },
+                        onValueChangeFinished = { viewModel.setLocationCacheTimeoutSecs(localCacheTimeout) },
+                        valueRange = 10f..600f,
+                        steps = 58
+                    )
+                }
+
+                // Recalculation Debounce
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.label_recalc_debounce),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.label_seconds_value, localDebounceDelay),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    androidx.compose.material3.Slider(
+                        value = localDebounceDelay.toFloat(),
+                        onValueChange = { localDebounceDelay = it.toInt() },
+                        onValueChangeFinished = { viewModel.setRecalculationDebounceSecs(localDebounceDelay) },
+                        valueRange = 1f..30f,
+                        steps = 28
+                    )
+                }
+
+                // Master Geofence Responsiveness
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.label_master_responsiveness),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.label_seconds_value, localMasterResponsiveness),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    androidx.compose.material3.Slider(
+                        value = localMasterResponsiveness.toFloat(),
+                        onValueChange = { localMasterResponsiveness = it.toInt() },
+                        onValueChangeFinished = { viewModel.setMasterGeofenceResponsivenessSecs(localMasterResponsiveness) },
+                        valueRange = 10f..600f,
+                        steps = 58
+                    )
+                }
+
+                // POI Geofence Responsiveness
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.label_poi_responsiveness),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.label_seconds_value, localPoiResponsiveness),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    androidx.compose.material3.Slider(
+                        value = localPoiResponsiveness.toFloat(),
+                        onValueChange = { localPoiResponsiveness = it.toInt() },
+                        onValueChangeFinished = { viewModel.setPoiGeofenceResponsivenessSecs(localPoiResponsiveness) },
+                        valueRange = 5f..300f,
+                        steps = 58
+                    )
+                }
+            }
+        }
+
         if (showRecalcInfo) {
             AlertDialog(
                 onDismissRequest = { showRecalcInfo = false },
@@ -197,6 +335,30 @@ fun SettingsScreen(
                 confirmButton = {
                     Button(
                         onClick = { showRecalcInfo = false }
+                    ) {
+                        Text(stringResource(R.string.btn_ok))
+                    }
+                }
+            )
+        }
+
+        if (showBatteryTuningInfo) {
+            AlertDialog(
+                onDismissRequest = { showBatteryTuningInfo = false },
+                title = {
+                    Text(
+                        text = stringResource(R.string.settings_battery_tuning_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(R.string.info_battery_tuning_desc)
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showBatteryTuningInfo = false }
                     ) {
                         Text(stringResource(R.string.btn_ok))
                     }

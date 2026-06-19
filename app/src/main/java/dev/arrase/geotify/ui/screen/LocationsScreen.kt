@@ -56,8 +56,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import dev.arrase.geotify.ui.UiText
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,17 +94,30 @@ fun LocationsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val mapThemeSetting by viewModel.mapTheme.collectAsState()
+    val mapThemeSetting by viewModel.mapTheme.collectAsStateWithLifecycle()
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
     val isMapDarkTheme = when (mapThemeSetting) {
         ThemeSetting.SYSTEM -> isSystemDark
         ThemeSetting.LIGHT -> false
         ThemeSetting.DARK -> true
     }
-    val locations by viewModel.locations.collectAsState()
-    val activeReminderCounts by viewModel.activeReminderCounts.collectAsState()
+    val locations by viewModel.locations.collectAsStateWithLifecycle()
+    val activeReminderCounts by viewModel.activeReminderCounts.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(viewModel) {
+        viewModel.snackbarMessage.collect { uiText ->
+            val msg = when (uiText) {
+                is UiText.DynamicString -> uiText.value
+                is UiText.StringResource -> context.getString(uiText.resId)
+            }
+            snackbarHostState.showSnackbar(
+                message = msg,
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     // Dialog state
     var showDialog by remember { mutableStateOf(false) }

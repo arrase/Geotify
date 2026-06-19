@@ -30,7 +30,6 @@ abstract class GeotifyDatabase : RoomDatabase() {
                     GeotifyDatabase::class.java,
                     "geotify.db"
                 )
-                .fallbackToDestructiveMigration(dropAllTables = true)
                 .build().also { INSTANCE = it }
             }
     }

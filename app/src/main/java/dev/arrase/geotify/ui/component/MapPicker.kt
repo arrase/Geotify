@@ -104,45 +104,40 @@ fun MapPicker(
         )
     }
 
-    val mapView = remember {
-        MapView(context).apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            setMultiTouchControls(true)
-            zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
-            controller.setZoom(16.0)
-        }
-    }
+    var mapViewRef by remember { mutableStateOf<MapView?>(null) }
 
     // Center on selectedPoint initially and query GPS if no initial location is provided
-    LaunchedEffect(Unit) {
+    LaunchedEffect(mapViewRef) {
+        val map = mapViewRef ?: return@LaunchedEffect
         if (initialLatitude != null && initialLongitude != null) {
-            mapView.controller.setCenter(selectedPoint)
+            map.controller.setCenter(selectedPoint)
         } else {
             // Set initial center to Madrid while loading current GPS position
-            mapView.controller.setCenter(selectedPoint)
+            map.controller.setCenter(selectedPoint)
             val loc = onGetCurrentLocation()
             if (loc != null) {
                 val point = GeoPoint(loc.latitude, loc.longitude)
                 selectedPoint = point
-                mapView.controller.animateTo(point)
+                map.controller.animateTo(point)
             }
         }
     }
 
     // Lifecycle management to avoid memory and thread leaks
     val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(mapView, lifecycle) {
+    DisposableEffect(mapViewRef, lifecycle) {
+        val map = mapViewRef ?: return@DisposableEffect onDispose {}
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             when (event) {
-                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> mapView.onResume()
-                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> map.onResume()
+                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> map.onPause()
                 else -> {}
             }
         }
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
-            mapView.onDetach()
+            map.onDetach()
         }
     }
 
@@ -166,7 +161,15 @@ fun MapPicker(
         ) {
             Box(modifier = modifier.fillMaxSize()) {
                 AndroidView(
-                    factory = { mapView },
+                    factory = { ctx ->
+                        MapView(ctx).apply {
+                            setTileSource(TileSourceFactory.MAPNIK)
+                            setMultiTouchControls(true)
+                            zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
+                            controller.setZoom(16.0)
+                            mapViewRef = this
+                        }
+                    },
                     modifier = Modifier.fillMaxSize(),
                     update = { map ->
                         // Apply dark mode styling to map tiles
@@ -245,7 +248,7 @@ fun MapPicker(
                             if (loc != null) {
                                 val point = GeoPoint(loc.latitude, loc.longitude)
                                 selectedPoint = point
-                                mapView.controller.animateTo(point)
+                                mapViewRef?.controller?.animateTo(point)
                             }
                         }
                     },

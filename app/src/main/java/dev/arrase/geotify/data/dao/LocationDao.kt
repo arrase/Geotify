@@ -35,6 +35,14 @@ interface LocationDao {
     @Query("DELETE FROM locations WHERE alias = :alias COLLATE NOCASE")
     suspend fun deleteByAlias(alias: String): Int
 
-    @Query("SELECT * FROM locations WHERE latitude BETWEEN :minLat AND :maxLat AND longitude BETWEEN :minLon AND :maxLon")
+    @Query("""
+        SELECT * FROM locations 
+        WHERE latitude BETWEEN :minLat AND :maxLat 
+          AND (
+            (:minLon <= :maxLon AND longitude BETWEEN :minLon AND :maxLon)
+            OR 
+            (:minLon > :maxLon AND (longitude >= :minLon OR longitude <= :maxLon))
+          )
+    """)
     suspend fun getLocationsInBoundingBox(minLat: Double, maxLat: Double, minLon: Double, maxLon: Double): List<LocationEntity>
 }

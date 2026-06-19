@@ -93,4 +93,12 @@
     <string name="label_inner_radius">Radio Maestro (r)</string>
     <string name="label_km_value">%1$.1f km</string>
     <string name="label_in_range">En rango</string>
+    <string name="settings_battery_tuning_title">Ajustes de Batería y Rendimiento</string>
+    <string name="settings_battery_tuning_desc">Ajusta los tiempos de espera del GPS y la frecuencia de comprobación de geocercas para optimizar la batería.</string>
+    <string name="label_location_cache_timeout">Caché de Ubicación</string>
+    <string name="label_recalc_debounce">Retraso de Recálculo (Debounce)</string>
+    <string name="label_master_responsiveness">Responsividad de Geocerca Maestra</string>
+    <string name="label_poi_responsiveness">Responsividad por Defecto de POI</string>
+    <string name="label_seconds_value">%1$d seg</string>
+    <string name="info_battery_tuning_desc">Al ajustar estos parámetros, puedes equilibrar el consumo de batería y la latencia de las notificaciones:\n\n• Caché de Ubicación: Reutiliza lecturas de GPS recientes para evitar activar el hardware de GPS repetidamente.\n• Retraso de Recálculo: Define la espera antes de re-evaluar la ventana deslizante tras cambios rápidos, evitando cancelaciones de trabajo.\n• Responsividad Maestra: El intervalo para detectar la salida de la zona de cobertura. Un valor más alto permite al sistema agrupar lecturas de red.\n• Responsividad de POI: El intervalo por defecto para detectar la entrada a tus puntos de interés.</string>
 </resources>

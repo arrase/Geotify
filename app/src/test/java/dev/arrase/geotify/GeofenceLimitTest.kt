@@ -88,11 +88,16 @@ class GeofenceLimitTest {
 
     private val mockContext = mock(Context::class.java)
 
+    private val mockSettingsManager = mock(dev.arrase.geotify.data.SettingsManager::class.java).apply {
+        org.mockito.Mockito.`when`(recalculationDebounceSecs).thenReturn(flowOf(5))
+    }
+
     private val repository = GeotifyRepository(
         mockContext,
         fakeLocationDao,
         fakeReminderDao,
         fakeGeofenceManager,
+        mockSettingsManager,
         kotlinx.coroutines.Dispatchers.Unconfined
     )
 

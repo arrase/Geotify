@@ -54,7 +54,7 @@
         <!-- Geofence transition receiver -->
         <receiver
             android:name=".geofence.GeofenceBroadcastReceiver"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="dev.arrase.geotify.ACTION_RECEIVE_GEOFENCE" />
             </intent-filter>

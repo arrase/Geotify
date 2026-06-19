@@ -30,6 +30,18 @@ class SettingsViewModel @Inject constructor(
     val innerRadiusR: StateFlow<Float> = settingsManager.innerRadiusR
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 4.0f)
 
+    val locationCacheTimeoutSecs: StateFlow<Int> = settingsManager.locationCacheTimeoutSecs
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 120)
+
+    val recalculationDebounceSecs: StateFlow<Int> = settingsManager.recalculationDebounceSecs
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 5)
+
+    val masterGeofenceResponsivenessSecs: StateFlow<Int> = settingsManager.masterGeofenceResponsivenessSecs
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 120)
+
+    val poiGeofenceResponsivenessSecs: StateFlow<Int> = settingsManager.poiGeofenceResponsivenessSecs
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 30)
+
     fun setAppTheme(theme: ThemeSetting) {
         viewModelScope.launch {
             settingsManager.setAppTheme(theme)
@@ -52,6 +64,32 @@ class SettingsViewModel @Inject constructor(
     fun setInnerRadiusR(radius: Float) {
         viewModelScope.launch {
             settingsManager.setInnerRadiusR(radius)
+            repository.triggerRecalculation()
+        }
+    }
+
+    fun setLocationCacheTimeoutSecs(secs: Int) {
+        viewModelScope.launch {
+            settingsManager.setLocationCacheTimeoutSecs(secs)
+        }
+    }
+
+    fun setRecalculationDebounceSecs(secs: Int) {
+        viewModelScope.launch {
+            settingsManager.setRecalculationDebounceSecs(secs)
+        }
+    }
+
+    fun setMasterGeofenceResponsivenessSecs(secs: Int) {
+        viewModelScope.launch {
+            settingsManager.setMasterGeofenceResponsivenessSecs(secs)
+            repository.triggerRecalculation()
+        }
+    }
+
+    fun setPoiGeofenceResponsivenessSecs(secs: Int) {
+        viewModelScope.launch {
+            settingsManager.setPoiGeofenceResponsivenessSecs(secs)
             repository.triggerRecalculation()
         }
     }

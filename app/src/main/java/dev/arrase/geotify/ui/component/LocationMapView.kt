@@ -54,35 +54,29 @@ fun LocationMapView(
         }
     }
 
-    val mapView = remember {
-        MapView(context).apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            setMultiTouchControls(true)
-            zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
-            controller.setZoom(15.0)
-        }
-    }
+    var mapViewRef by remember { mutableStateOf<MapView?>(null) }
 
     // Centering state
     var hasCentered by remember { mutableStateOf(false) }
 
     // Initial centering and zooming: fits bounds if multiple locations, centers on first if single
-    LaunchedEffect(locations) {
+    LaunchedEffect(locations, mapViewRef) {
+        val map = mapViewRef ?: return@LaunchedEffect
         if (!hasCentered && locations.isNotEmpty()) {
             if (locations.size == 1) {
                 val loc = locations.first()
-                mapView.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
-                mapView.controller.setZoom(15.0)
+                map.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
+                map.controller.setZoom(15.0)
             } else {
                 val points = locations.map { GeoPoint(it.latitude, it.longitude) }
-                mapView.post {
+                map.post {
                     try {
                         val box = org.osmdroid.util.BoundingBox.fromGeoPoints(points)
-                        mapView.zoomToBoundingBox(box, true, 120)
+                        map.zoomToBoundingBox(box, true, 120)
                     } catch (e: Exception) {
                         val loc = locations.first()
-                        mapView.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
-                        mapView.controller.setZoom(15.0)
+                        map.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
+                        map.controller.setZoom(15.0)
                     }
                 }
             }
@@ -91,26 +85,28 @@ fun LocationMapView(
     }
 
     // Smoothly animate centering when selectedLocation changes
-    LaunchedEffect(selectedLocation) {
+    LaunchedEffect(selectedLocation, mapViewRef) {
+        val map = mapViewRef ?: return@LaunchedEffect
         selectedLocation?.let {
-            mapView.controller.animateTo(GeoPoint(it.latitude, it.longitude))
+            map.controller.animateTo(GeoPoint(it.latitude, it.longitude))
         }
     }
 
     // Lifecycle management to avoid memory and thread leaks
     val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(mapView, lifecycle) {
+    DisposableEffect(mapViewRef, lifecycle) {
+        val map = mapViewRef ?: return@DisposableEffect onDispose {}
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             when (event) {
-                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> mapView.onResume()
-                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> map.onResume()
+                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> map.onPause()
                 else -> {}
             }
         }
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
-            mapView.onDetach()
+            map.onDetach()
         }
     }
 
@@ -133,7 +129,15 @@ fun LocationMapView(
     val defaultStrokeColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f).toArgb()
 
     AndroidView(
-        factory = { mapView },
+        factory = { ctx ->
+            MapView(ctx).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+                zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
+                controller.setZoom(15.0)
+                mapViewRef = this
+            }
+        },
         modifier = modifier.fillMaxSize(),
         update = { map ->
             // Apply dark mode styling to map tiles

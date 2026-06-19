@@ -8,9 +8,13 @@ import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.location.LocationProvider
+import dev.arrase.geotify.ui.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -22,6 +26,9 @@ class LocationsViewModel @Inject constructor(
     private val locationProvider: LocationProvider,
     settingsManager: SettingsManager
 ) : ViewModel() {
+
+    private val _snackbarMessage = MutableSharedFlow<UiText>()
+    val snackbarMessage: SharedFlow<UiText> = _snackbarMessage.asSharedFlow()
 
     val locations: StateFlow<List<LocationEntity>> = repository.observeLocations()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -35,18 +42,32 @@ class LocationsViewModel @Inject constructor(
 
     fun saveLocation(alias: String, latitude: Double, longitude: Double, radiusMeters: Float, notificationResponsivenessMs: Int) {
         viewModelScope.launch {
-            repository.saveLocation(alias, latitude, longitude, radiusMeters, notificationResponsivenessMs)
+            try {
+                repository.saveLocation(alias, latitude, longitude, radiusMeters, notificationResponsivenessMs)
+            } catch (e: Exception) {
+                _snackbarMessage.emit(UiText.DynamicString(e.localizedMessage ?: "Unknown error saving location"))
+            }
         }
     }
 
     fun updateLocation(location: LocationEntity) {
         viewModelScope.launch {
-            repository.updateLocation(location)
+            try {
+                repository.updateLocation(location)
+            } catch (e: Exception) {
+                _snackbarMessage.emit(UiText.DynamicString(e.localizedMessage ?: "Unknown error updating location"))
+            }
         }
     }
 
     fun deleteLocation(alias: String) {
-        viewModelScope.launch { repository.deleteLocation(alias) }
+        viewModelScope.launch {
+            try {
+                repository.deleteLocation(alias)
+            } catch (e: Exception) {
+                _snackbarMessage.emit(UiText.DynamicString(e.localizedMessage ?: "Unknown error deleting location"))
+            }
+        }
     }
 
     suspend fun getCurrentLocation(): Location? = locationProvider.getCurrentLocation()

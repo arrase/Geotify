@@ -93,4 +93,12 @@
     <string name="label_inner_radius">Master-Radius (r)</string>
     <string name="label_km_value">%1$.1f km</string>
     <string name="label_in_range">In Reichweite</string>
+    <string name="settings_battery_tuning_title">Akku- &amp; Leistungsoptimierung</string>
+    <string name="settings_battery_tuning_desc">Passen Sie GPS-Timeouts und Geofence-Prüffrequenzen an, um die Batterielaufzeit zu optimieren.</string>
+    <string name="label_location_cache_timeout">Standort-Cache-Timeout</string>
+    <string name="label_recalc_debounce">Verzögerung für Neuberechnung (Debounce)</string>
+    <string name="label_master_responsiveness">Reaktionszeit für Master-Geofence</string>
+    <string name="label_poi_responsiveness">Standard-Reaktionszeit für POI</string>
+    <string name="label_seconds_value">%1$d Sek.</string>
+    <string name="info_battery_tuning_desc">Durch Anpassen dieser Parameter können Sie den Batterieverbrauch und die Benachrichtigungslatenz ausgleichen:\n\n• Standort-Cache-Timeout: Reaktiviert kürzliche GPS-Scans, um ein wiederholtes Einschalten des GPS-Empfängers zu vermeiden.\n• Neuberechnungs-Debounce: Legt die Verzögerung fest, um schnelle aufeinanderfolgende Datenbankaktualisierungen zu drosseln, was Systemlaufzeiten verringert.\n• Master-Reaktionszeit: Das Zeitintervall, das GMS verwendet, um das Verlassen des Master-Bereichs zu erkennen. Höhere Werte ermöglichen eine bessere Bündelung im Hintergrund durch das Betriebssystem.\n• POI-Reaktionszeit: Die Standard-Latenzzeit für die Erkennung von Übergängen an interessanten Orten (POIs).</string>
 </resources>

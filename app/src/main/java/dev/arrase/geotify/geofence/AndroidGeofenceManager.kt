@@ -17,12 +17,15 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.location.LocationProvider
+import kotlinx.coroutines.flow.first
 
 @Singleton
 class AndroidGeofenceManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val locationProvider: LocationProvider
+    private val locationProvider: LocationProvider,
+    private val settingsManager: SettingsManager
 ) : GeofenceManager {
 
     private val geofencingClient: GeofencingClient =
@@ -52,12 +55,13 @@ class AndroidGeofenceManager @Inject constructor(
             return
         }
 
+        val defaultPoiResponsivenessMs = settingsManager.poiGeofenceResponsivenessSecs.first() * 1000
         val geofence = Geofence.Builder()
             .setRequestId(location.id)
             .setCircularRegion(location.latitude, location.longitude, location.radiusMeters)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(transitionTypes)
-            .setNotificationResponsiveness(location.notificationResponsivenessMs)
+            .setNotificationResponsiveness(maxOf(defaultPoiResponsivenessMs, location.notificationResponsivenessMs))
             .build()
 
         val request = GeofencingRequest.Builder()
@@ -72,15 +76,6 @@ class AndroidGeofenceManager @Inject constructor(
         } catch (e: Exception) {
             Log.e("GeofenceManager", "Failed to register geofence in GMS for: ${location.alias}", e)
             throw e
-        }
-
-        // Force GMS to evaluate the geofence by requesting a high-accuracy location update
-        Log.i("GeofenceManager", "Requesting current location to force GMS geofence evaluation...")
-        runCatching {
-            val loc = locationProvider.getCurrentLocation()
-            Log.i("GeofenceManager", "Location update received: $loc")
-        }.onFailure { e ->
-            Log.w("GeofenceManager", "Failed to force location update", e)
         }
     }
 
@@ -123,23 +118,25 @@ class AndroidGeofenceManager @Inject constructor(
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
 
         // 1. Create and add Master Geofence
+        val masterResponsivenessMs = settingsManager.masterGeofenceResponsivenessSecs.first() * 1000
         val masterGeofence = Geofence.Builder()
             .setRequestId("MASTER_GEOFENCE_TRIGGER")
             .setCircularRegion(centerLat, centerLon, innerRadiusMeters)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT)
-            .setNotificationResponsiveness(0)
+            .setNotificationResponsiveness(masterResponsivenessMs)
             .build()
         requestBuilder.addGeofence(masterGeofence)
 
         // 2. Create and add POIs geofences
+        val defaultPoiResponsivenessMs = settingsManager.poiGeofenceResponsivenessSecs.first() * 1000
         for (location in locations) {
             val geofence = Geofence.Builder()
                 .setRequestId(location.id)
                 .setCircularRegion(location.latitude, location.longitude, location.radiusMeters)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .setNotificationResponsiveness(location.notificationResponsivenessMs)
+                .setNotificationResponsiveness(maxOf(defaultPoiResponsivenessMs, location.notificationResponsivenessMs)) // batching
                 .build()
             requestBuilder.addGeofence(geofence)
         }
@@ -153,15 +150,6 @@ class AndroidGeofenceManager @Inject constructor(
         } catch (e: Exception) {
             Log.e("GeofenceManager", "Failed to register sliding window geofences in GMS", e)
             throw e
-        }
-
-        // Force GMS to evaluate the geofence by requesting a high-accuracy location update
-        Log.i("GeofenceManager", "Requesting current location to force GMS geofence evaluation...")
-        runCatching {
-            val loc = locationProvider.getCurrentLocation()
-            Log.i("GeofenceManager", "Location update received: $loc")
-        }.onFailure { e ->
-            Log.w("GeofenceManager", "Failed to force location update", e)
         }
     }
 }

@@ -42,11 +42,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
         if (hasMasterExit) {
             Log.i(TAG, "Master geofence exit triggered. Enqueuing recalculation...")
-            val workRequest = OneTimeWorkRequestBuilder<GeofenceRecalculationWorker>()
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .build()
-            WorkManager.getInstance(context)
-                .enqueueUniqueWork("geofence_recalculation", ExistingWorkPolicy.REPLACE, workRequest)
+            context.geotifyRepository.triggerRecalculation(isExpedited = true)
         }
 
         val poiGeofences = triggeringGeofences.filter { it.requestId != "MASTER_GEOFENCE_TRIGGER" }
@@ -73,7 +69,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
                     for (reminder in matchingReminders) {
                         Log.d(TAG, "Deactivating and showing notification for reminder ID: ${reminder.id}")
-                        repository.deactivateReminder(reminder.id)
+                        repository.deactivateReminder(reminder.id, shouldSyncGeofence = false)
 
                         NotificationHelper.showGeofenceNotification(
                             context,

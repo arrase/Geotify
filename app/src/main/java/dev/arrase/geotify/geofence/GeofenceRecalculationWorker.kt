@@ -1,9 +1,13 @@
 package dev.arrase.geotify.geofence
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.android.gms.location.Priority
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -42,10 +46,20 @@ class GeofenceRecalculationWorker(
         val geofenceManager = entryPoint.geofenceManager()
 
         try {
-            val location = locationProvider.getCurrentLocation()
-            if (location == null) {
-                Log.w(TAG, "Could not obtain current location. Cannot recalculate sliding window.")
+            // Check location permission first
+            val fineLocationPermission = ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+            if (fineLocationPermission != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "Location permission not granted. Cannot recalculate sliding window.")
                 return Result.failure()
+            }
+
+            val location = locationProvider.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
+            if (location == null) {
+                Log.w(TAG, "Could not obtain current location. Retrying...")
+                return Result.retry()
             }
 
             val centerLat = location.latitude
