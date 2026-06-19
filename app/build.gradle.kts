@@ -8,6 +8,7 @@ plugins {
 }
 
 fun getSecretFromKWallet(entryName: String): String? {
+    if (System.getenv("CI") == "true" || System.getenv("GITHUB_ACTIONS") == "true") return null
     return try {
         providers.exec {
             commandLine("kwallet-query", "-r", entryName, "-f", "Geotify", "kdewallet")
