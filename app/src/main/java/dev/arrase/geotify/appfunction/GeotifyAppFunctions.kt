@@ -1,5 +1,6 @@
 package dev.arrase.geotify.appfunction
 
+/*
 import androidx.appfunctions.AppFunctionContext
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionSerializable
@@ -257,3 +258,4 @@ class GeotifyAppFunctions(
         throw AppFunctionInvalidArgumentException(message)
     }
 }
+*/

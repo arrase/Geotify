@@ -31,9 +31,9 @@
         android:theme="@style/Theme.Geotify">
 
         <!-- AppFunctions metadata for LLM discovery -->
-        <property
+        <!-- <property
             android:name="android.app.appfunctions.app_metadata"
-            android:resource="@xml/app_metadata" />
+            android:resource="@xml/app_metadata" /> -->
 
 
         <!-- Main Activity -->
