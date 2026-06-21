@@ -6,10 +6,9 @@ import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionSerializable
 import androidx.appfunctions.service.AppFunction
 import com.google.android.gms.location.Geofence
-import dev.arrase.geotify.data.GeotifyRepository
-import dev.arrase.geotify.data.GeofenceLimitExceededException
+import dev.arrase.geotify.data.LocationRepository
+import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.entity.triggerTypeString
-import dev.arrase.geotify.R
 import dev.arrase.geotify.location.LocationProvider
 
 /** Serializable result returned after initiating a location save. */
@@ -31,9 +30,7 @@ data class CreateReminderResult(
     /** The reminder message that will be displayed when triggered. */
     val payloadMessage: String,
     /** Whether the reminder triggers on "arrival" or "departure". */
-    val triggerType: String,
-    /** A warning message if the geofence limit is reached. */
-    val warning: String? = null
+    val triggerType: String
 )
 
 /** Serializable representation of a saved location. */
@@ -70,7 +67,8 @@ data class SavedReminder(
 )
 
 class GeotifyAppFunctions(
-    private val repository: GeotifyRepository,
+    private val locationRepository: LocationRepository,
+    private val reminderRepository: ReminderRepository,
     private val locationProvider: LocationProvider
 ) {
 
@@ -86,7 +84,7 @@ class GeotifyAppFunctions(
         appFunctionContext: AppFunctionContext,
         alias: String
     ): SaveLocationResult {
-        val existing = repository.findLocationByAlias(alias)
+        val existing = locationRepository.findLocationByAlias(alias)
         if (existing != null) {
             throw AppFunctionInvalidArgumentException(
                 "Location alias '$alias' already exists. Choose a unique name or delete the existing one first."
@@ -97,7 +95,7 @@ class GeotifyAppFunctions(
             val location = locationProvider.getCurrentLocation()
 
             if (location != null) {
-                repository.saveLocation(alias, location.latitude, location.longitude)
+                locationRepository.saveLocation(alias, location.latitude, location.longitude)
                 SaveLocationResult(alias, "Location successfully saved.")
             } else {
                 SaveLocationResult(alias, "Failed to obtain GPS fix.")
@@ -123,7 +121,7 @@ class GeotifyAppFunctions(
         payloadMessage: String,
         triggerOnArrival: Boolean
     ): CreateReminderResult {
-        val location = repository.findLocationByAlias(targetAlias)
+        val location = locationRepository.findLocationByAlias(targetAlias)
             ?: throwAliasNotFound(targetAlias)
 
         val transitionType = if (triggerOnArrival) {
@@ -132,23 +130,13 @@ class GeotifyAppFunctions(
             Geofence.GEOFENCE_TRANSITION_EXIT
         }
 
-        return try {
-            val result = repository.createReminder(location, payloadMessage, transitionType)
-            val warning = if (result.isLimitWarningTriggered) {
-                appFunctionContext.context.getString(R.string.geofence_limit_warning)
-            } else null
-            CreateReminderResult(
-                reminderId = result.reminder.id,
-                targetAlias = targetAlias,
-                payloadMessage = payloadMessage,
-                triggerType = if (triggerOnArrival) "arrival" else "departure",
-                warning = warning
-            )
-        } catch (e: GeofenceLimitExceededException) {
-            throw AppFunctionInvalidArgumentException(
-                appFunctionContext.context.getString(R.string.geofence_limit_error)
-            )
-        }
+        val reminder = reminderRepository.createReminder(location, payloadMessage, transitionType)
+        return CreateReminderResult(
+            reminderId = reminder.id,
+            targetAlias = targetAlias,
+            payloadMessage = payloadMessage,
+            triggerType = if (triggerOnArrival) "arrival" else "departure"
+        )
     }
 
     /**
@@ -159,7 +147,7 @@ class GeotifyAppFunctions(
     suspend fun listLocations(
         appFunctionContext: AppFunctionContext
     ): List<SavedLocation> {
-        return repository.getAllLocations().map { entity ->
+        return locationRepository.getAllLocations().map { entity ->
             SavedLocation(entity.alias, entity.latitude, entity.longitude)
         }
     }
@@ -175,8 +163,8 @@ class GeotifyAppFunctions(
         appFunctionContext: AppFunctionContext,
         alias: String
     ): DeleteResult {
-        repository.findLocationByAlias(alias) ?: throwAliasNotFound(alias)
-        repository.deleteLocation(alias)
+        locationRepository.findLocationByAlias(alias) ?: throwAliasNotFound(alias)
+        locationRepository.deleteLocation(alias)
         return DeleteResult(alias, deleted = true)
     }
 
@@ -194,10 +182,10 @@ class GeotifyAppFunctions(
         targetAlias: String,
         message: String? = null
     ): DeleteResult {
-        val location = repository.findLocationByAlias(targetAlias)
+        val location = locationRepository.findLocationByAlias(targetAlias)
             ?: throwAliasNotFound(targetAlias)
 
-        val activeReminders = repository.getActiveReminders()
+        val activeReminders = reminderRepository.getActiveReminders()
             .filter { it.locationId == location.id }
 
         if (activeReminders.isEmpty()) {
@@ -222,7 +210,7 @@ class GeotifyAppFunctions(
             )
         }
 
-        repository.cancelReminder(matched.id)
+        reminderRepository.cancelReminder(matched.id)
         return DeleteResult(targetAlias, deleted = true)
     }
 
@@ -234,11 +222,11 @@ class GeotifyAppFunctions(
     suspend fun listActiveReminders(
         appFunctionContext: AppFunctionContext
     ): List<SavedReminder> {
-        val reminders = repository.getActiveReminders()
-        val locations = repository.getAllLocations().associateBy { it.id }
+        val reminders = reminderRepository.getActiveReminders()
+        val locations = locationRepository.getAllLocations().associateBy { it.id }
         return reminders.map { entity ->
-            val location = locations[entity.locationId]
-            val alias = location?.alias ?: "Unknown"
+            val loc = locations[entity.locationId]
+            val alias = loc?.alias ?: "Unknown"
             SavedReminder(
                 reminderId = entity.id,
                 targetAlias = alias,
@@ -249,7 +237,7 @@ class GeotifyAppFunctions(
     }
 
     private suspend fun throwAliasNotFound(alias: String): Nothing {
-        val aliases = repository.getAllAliases()
+        val aliases = locationRepository.getAllAliases()
         val message = if (aliases.isEmpty()) {
             "Alias '$alias' not found. No locations are saved yet. Please save a location first using saveCurrentLocation."
         } else {

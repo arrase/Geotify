@@ -2,9 +2,9 @@ package dev.arrase.geotify.ui.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.arrase.geotify.data.GeotifyRepository
 import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.data.ThemeSetting
+import dev.arrase.geotify.geofence.GeofenceOrchestrator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsManager: SettingsManager,
-    private val repository: GeotifyRepository
+    private val geofenceOrchestrator: GeofenceOrchestrator
 ) : ViewModel() {
 
     val appTheme: StateFlow<ThemeSetting> = settingsManager.appTheme
@@ -57,14 +57,14 @@ class SettingsViewModel @Inject constructor(
     fun setOuterRadiusN(radius: Float) {
         viewModelScope.launch {
             settingsManager.setOuterRadiusN(radius)
-            repository.triggerRecalculation()
+            geofenceOrchestrator.triggerRecalculation()
         }
     }
 
     fun setInnerRadiusR(radius: Float) {
         viewModelScope.launch {
             settingsManager.setInnerRadiusR(radius)
-            repository.triggerRecalculation()
+            geofenceOrchestrator.triggerRecalculation()
         }
     }
 
@@ -83,14 +83,14 @@ class SettingsViewModel @Inject constructor(
     fun setMasterGeofenceResponsivenessSecs(secs: Int) {
         viewModelScope.launch {
             settingsManager.setMasterGeofenceResponsivenessSecs(secs)
-            repository.triggerRecalculation()
+            geofenceOrchestrator.triggerRecalculation()
         }
     }
 
     fun setPoiGeofenceResponsivenessSecs(secs: Int) {
         viewModelScope.launch {
             settingsManager.setPoiGeofenceResponsivenessSecs(secs)
-            repository.triggerRecalculation()
+            geofenceOrchestrator.triggerRecalculation()
         }
     }
 }

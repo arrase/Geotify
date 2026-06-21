@@ -12,7 +12,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import dev.arrase.geotify.data.GeotifyRepository
+import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.domain.SpatialSearchUseCase
 import dev.arrase.geotify.location.LocationProvider
@@ -26,7 +26,7 @@ class GeofenceRecalculationWorker(
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface RecalculationWorkerEntryPoint {
-        fun repository(): GeotifyRepository
+        fun reminderRepository(): ReminderRepository
         fun settingsManager(): SettingsManager
         fun spatialSearchUseCase(): SpatialSearchUseCase
         fun locationProvider(): LocationProvider
@@ -39,14 +39,13 @@ class GeofenceRecalculationWorker(
             applicationContext,
             RecalculationWorkerEntryPoint::class.java
         )
-        val repository = entryPoint.repository()
+        val reminderRepository = entryPoint.reminderRepository()
         val settingsManager = entryPoint.settingsManager()
         val spatialSearchUseCase = entryPoint.spatialSearchUseCase()
         val locationProvider = entryPoint.locationProvider()
         val geofenceManager = entryPoint.geofenceManager()
 
         try {
-            // Check location permission first
             val fineLocationPermission = ContextCompat.checkSelfPermission(
                 applicationContext,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -72,7 +71,7 @@ class GeofenceRecalculationWorker(
 
             val spatialCandidates = spatialSearchUseCase.execute(centerLat, centerLon, outerRadiusN)
 
-            val activeReminders = repository.getActiveReminders()
+            val activeReminders = reminderRepository.getActiveReminders()
             val activeLocationIds = activeReminders.map { it.locationId }.toSet()
 
             val activeCandidates = spatialCandidates.filter { candidate ->
@@ -88,9 +87,9 @@ class GeofenceRecalculationWorker(
                 Log.w(TAG, "Error removing old geofences (might be none registered)", e)
             }
 
-            repository.updateInRangeStatus(activeCandidates.map { it.id })
+            reminderRepository.updateInRangeStatus(activeCandidates.map { it.id })
 
-            if (activeCandidates.isNotEmpty() || activeLocationIds.isNotEmpty()) {
+            if (activeCandidates.isNotEmpty()) {
                 val innerRadiusMeters = innerRadiusR * 1000f
                 geofenceManager.registerSlidingWindowGeofences(
                     locations = activeCandidates,
@@ -100,7 +99,7 @@ class GeofenceRecalculationWorker(
                 )
                 Log.i(TAG, "Successfully registered ${activeCandidates.size} POIs + Master Geofence")
             } else {
-                Log.i(TAG, "No active reminders found in database, no geofences registered.")
+                Log.i(TAG, "No active candidates in range. No geofences registered.")
             }
 
             return Result.success()

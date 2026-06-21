@@ -46,7 +46,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
-
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -66,7 +65,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import kotlin.math.round
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -145,6 +143,26 @@ fun LocationsScreen(
     val isLatitudeValid = lat != null && lat in -90.0..90.0
     val isLongitudeValid = lng != null && lng in -180.0..180.0
 
+    fun openFormForNew() {
+        editingLocation = null
+        alias = ""
+        latitudeString = ""
+        longitudeString = ""
+        radiusMeters = 150f
+        responsivenessMinutes = 0f
+        showDialog = true
+    }
+
+    fun openFormForEditing(location: LocationEntity) {
+        editingLocation = location
+        alias = location.alias
+        latitudeString = location.latitude.toString()
+        longitudeString = location.longitude.toString()
+        radiusMeters = location.radiusMeters
+        responsivenessMinutes = location.notificationResponsivenessMs / 60000f
+        showDialog = true
+    }
+
     Column(modifier.fillMaxSize()) {
         BackgroundLocationWarningBanner()
 
@@ -192,15 +210,7 @@ fun LocationsScreen(
                             modifier = Modifier.animateItem()
                         ) {
                             Box(
-                                modifier = Modifier.clickable {
-                                    editingLocation = location
-                                    alias = location.alias
-                                    latitudeString = location.latitude.toString()
-                                    longitudeString = location.longitude.toString()
-                                    radiusMeters = location.radiusMeters
-                                    responsivenessMinutes = location.notificationResponsivenessMs / 60000f
-                                    showDialog = true
-                                }
+                                modifier = Modifier.clickable { openFormForEditing(location) }
                             ) {
                                 LocationRow(
                                     location = location,
@@ -225,124 +235,32 @@ fun LocationsScreen(
                         isDarkTheme = isMapDarkTheme
                     )
 
-                    // Floating card at the bottom to show selected location details
                     if (selectedLocationOnMap != null) {
-                        val selLoc = selectedLocationOnMap!!
-                        Card(
+                        SelectedLocationCard(
+                            location = selectedLocationOnMap!!,
+                            onEdit = { openFormForEditing(selectedLocationOnMap!!) },
+                            onDelete = {
+                                viewModel.deleteLocation(selectedLocationOnMap!!.alias)
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = context.getString(R.string.toast_location_deleted, selectedLocationOnMap!!.alias),
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                                selectedLocationOnMap = null
+                            },
+                            onDismiss = { selectedLocationOnMap = null },
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
                                 .padding(16.dp)
-                                .fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = selLoc.alias,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(Modifier.height(2.dp))
-                                    Text(
-                                        text = stringResource(R.string.label_geofence_radius) + ": " + stringResource(R.string.label_meters, selLoc.radiusMeters.toInt()),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.label_notification_responsiveness) + ": " +
-                                                if (selLoc.notificationResponsivenessMs == 0) {
-                                                    stringResource(R.string.label_0min)
-                                                } else {
-                                                    stringResource(R.string.label_minutes_value, selLoc.notificationResponsivenessMs / 60000)
-                                                },
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = String.format(Locale.US, "Lat: %.5f, Lng: %.5f", selLoc.latitude, selLoc.longitude),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    IconButton(
-                                        onClick = {
-                                            editingLocation = selLoc
-                                            alias = selLoc.alias
-                                            latitudeString = selLoc.latitude.toString()
-                                            longitudeString = selLoc.longitude.toString()
-                                            radiusMeters = selLoc.radiusMeters
-                                            responsivenessMinutes = selLoc.notificationResponsivenessMs / 60000f
-                                            showDialog = true
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Edit,
-                                            contentDescription = "Edit location",
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-
-                                    IconButton(
-                                        onClick = {
-                                            viewModel.deleteLocation(selLoc.alias)
-                                            scope.launch {
-                                                snackbarHostState.showSnackbar(
-                                                    message = context.getString(R.string.toast_location_deleted, selLoc.alias),
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                            }
-                                            selectedLocationOnMap = null
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Delete,
-                                            contentDescription = "Delete location",
-                                            tint = MaterialTheme.colorScheme.error
-                                        )
-                                    }
-
-                                    IconButton(
-                                        onClick = { selectedLocationOnMap = null }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Close,
-                                            contentDescription = "Dismiss",
-                                            tint = MaterialTheme.colorScheme.outline
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        )
                     }
                 }
             }
 
             if (selectedLocationOnMap == null) {
                 FloatingActionButton(
-                    onClick = {
-                        editingLocation = null
-                        alias = ""
-                        latitudeString = ""
-                        longitudeString = ""
-                        radiusMeters = 150f
-                        responsivenessMinutes = 0f
-                        showDialog = true
-                    },
+                    onClick = { openFormForNew() },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(16.dp)
@@ -351,68 +269,14 @@ fun LocationsScreen(
                 }
             }
 
-            // Floating capsule-shaped switcher at the top center
-            Row(
+            ViewModeSwitcher(
+                isMapView = isMapView,
+                onListSelected = { isMapView = false },
+                onMapSelected = { isMapView = true },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 12.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                val containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
-                val selectedColor = MaterialTheme.colorScheme.primary
-                val contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                val onSelectedColor = MaterialTheme.colorScheme.onPrimary
-
-                Surface(
-                    shape = RoundedCornerShape(24.dp),
-                    color = containerColor,
-                    shadowElevation = 6.dp,
-                    modifier = Modifier.height(40.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                      ) {
-                        // List tab
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = if (!isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
-                            modifier = Modifier
-                                .width(100.dp)
-                                .fillMaxHeight()
-                                .clickable { isMapView = false }
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = stringResource(R.string.tab_list),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = if (!isMapView) onSelectedColor else contentColor,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-
-                        // Map tab
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = if (isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
-                            modifier = Modifier
-                                .width(100.dp)
-                                .fillMaxHeight()
-                                .clickable { isMapView = true }
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = stringResource(R.string.tab_map),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = if (isMapView) onSelectedColor else contentColor,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+                    .padding(top = 12.dp)
+            )
 
         if (showDialog) {
             ModalBottomSheet(
@@ -422,296 +286,84 @@ fun LocationsScreen(
                 },
                 sheetState = sheetState
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 24.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        text = if (editingLocation == null) stringResource(R.string.dialog_new_location) else stringResource(R.string.dialog_edit_location),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    OutlinedTextField(
-                        value = alias,
-                        onValueChange = { alias = it },
-                        label = { Text(stringResource(R.string.alias_hint)) },
-                        singleLine = true,
-                        isError = aliasExists,
-                        supportingText = {
-                            if (aliasExists) {
-                                Text(stringResource(R.string.err_alias_exists), color = MaterialTheme.colorScheme.error)
-                            }
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    OutlinedTextField(
-                        value = latitudeString,
-                        onValueChange = { latitudeString = it },
-                        label = { Text(stringResource(R.string.lat_hint)) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        isError = latitudeString.isNotEmpty() && !isLatitudeValid,
-                        supportingText = {
-                            if (latitudeString.isNotEmpty() && !isLatitudeValid) {
-                                Text(stringResource(R.string.err_lat_invalid), color = MaterialTheme.colorScheme.error)
-                            }
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    OutlinedTextField(
-                        value = longitudeString,
-                        onValueChange = { longitudeString = it },
-                        label = { Text(stringResource(R.string.lng_hint)) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        isError = longitudeString.isNotEmpty() && !isLongitudeValid,
-                        supportingText = {
-                            if (longitudeString.isNotEmpty() && !isLongitudeValid) {
-                                Text(stringResource(R.string.err_lng_invalid), color = MaterialTheme.colorScheme.error)
-                            }
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                isGpsLoading = true
-                                scope.launch {
-                                    val loc = viewModel.getCurrentLocation()
-                                    if (loc != null) {
-                                        latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
-                                        longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
-                                    } else {
-                                        snackbarHostState.showSnackbar(
-                                            message = context.getString(R.string.err_gps_failed),
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                    isGpsLoading = false
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.weight(1f),
-                            enabled = !isGpsLoading
-                        ) {
-                            if (isGpsLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.btn_querying_gps), maxLines = 1)
+                LocationFormContent(
+                    alias = alias,
+                    onAliasChange = { alias = it },
+                    aliasExists = aliasExists,
+                    latitudeString = latitudeString,
+                    onLatitudeChange = { latitudeString = it },
+                    isLatitudeValid = isLatitudeValid,
+                    longitudeString = longitudeString,
+                    onLongitudeChange = { longitudeString = it },
+                    isLongitudeValid = isLongitudeValid,
+                    radiusMeters = radiusMeters,
+                    onRadiusChange = { radiusMeters = it },
+                    responsivenessMinutes = responsivenessMinutes,
+                    onResponsivenessChange = { responsivenessMinutes = it },
+                    isEditing = editingLocation != null,
+                    isGpsLoading = isGpsLoading,
+                    onUseGps = {
+                        isGpsLoading = true
+                        scope.launch {
+                            val loc = viewModel.getCurrentLocation()
+                            if (loc != null) {
+                                latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
+                                longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
                             } else {
-                                Icon(
-                                    imageVector = Icons.Filled.MyLocation,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
+                                snackbarHostState.showSnackbar(
+                                    message = context.getString(R.string.err_gps_failed),
+                                    duration = SnackbarDuration.Short
                                 )
-                                Spacer(Modifier.width(4.dp))
-                                Text(stringResource(R.string.btn_use_gps), maxLines = 1)
                             }
+                            isGpsLoading = false
                         }
-
-                        Button(
-                            onClick = {
-                                showMapPicker = true
-                                showDialog = false
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.LocationOn,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_select_on_map), maxLines = 1)
-                        }
-                    }
-
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.label_geofence_radius),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = stringResource(R.string.label_meters, radiusMeters.toInt()),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Slider(
-                            value = radiusMeters,
-                            onValueChange = { radiusMeters = it },
-                            valueRange = 50f..1000f,
-                            steps = 18,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary,
-                                activeTrackColor = MaterialTheme.colorScheme.primary,
-                                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(stringResource(R.string.label_50m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                            Text(stringResource(R.string.label_1000m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                        }
-                    }
-
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.label_notification_responsiveness),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                IconButton(
-                                    onClick = { showResponsivenessInfo = true },
-                                    modifier = Modifier.size(30.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Info,
-                                        contentDescription = "Info",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
+                    },
+                    onPickFromMap = {
+                        showMapPicker = true
+                        showDialog = false
+                    },
+                    onSave = {
+                        if (lat != null && lng != null) {
+                            val currentEditing = editingLocation
+                            val responsivenessMs = (responsivenessMinutes * 60000).toInt()
+                            if (currentEditing == null) {
+                                viewModel.saveLocation(alias, lat, lng, radiusMeters, responsivenessMs)
+                            } else {
+                                viewModel.updateLocation(
+                                    currentEditing.copy(
+                                        alias = alias,
+                                        latitude = lat,
+                                        longitude = lng,
+                                        radiusMeters = radiusMeters,
+                                        notificationResponsivenessMs = responsivenessMs
                                     )
-                                }
+                                )
                             }
-                            Text(
-                                text = if (responsivenessMinutes.toInt() == 0) {
-                                    stringResource(R.string.label_0min)
-                                } else {
-                                    stringResource(R.string.label_minutes_value, responsivenessMinutes.toInt())
-                                },
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
-                            )
+                            showDialog = false
+                            editingLocation = null
                         }
-                        Spacer(Modifier.height(4.dp))
-                        Slider(
-                            value = responsivenessMinutes,
-                            onValueChange = { responsivenessMinutes = it },
-                            valueRange = 0f..10f,
-                            steps = 9,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary,
-                                activeTrackColor = MaterialTheme.colorScheme.primary,
-                                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(stringResource(R.string.label_0min), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                            Text(stringResource(R.string.label_10min), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val editing = editingLocation
-                        DialogDismissButtons(
-                            isEditing = editing != null,
-                            onDelete = {
-                                if (editing != null) {
-                                    viewModel.deleteLocation(editing.alias)
-                                    showDialog = false
-                                    editingLocation = null
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = context.getString(R.string.toast_location_deleted, alias),
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                }
-                            },
-                            onCancel = {
-                                showDialog = false
-                                editingLocation = null
+                    },
+                    onDelete = if (editingLocation != null) {
+                        {
+                            viewModel.deleteLocation(editingLocation!!.alias)
+                            showDialog = false
+                            editingLocation = null
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = context.getString(R.string.toast_location_deleted, alias),
+                                    duration = SnackbarDuration.Short
+                                )
                             }
-                        )
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        val isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists
-                        Button(
-                            onClick = {
-                                if (lat != null && lng != null) {
-                                    val currentEditing = editingLocation
-                                    val responsivenessMs = (responsivenessMinutes * 60000).toInt()
-                                    if (currentEditing == null) {
-                                        viewModel.saveLocation(alias, lat, lng, radiusMeters, responsivenessMs)
-                                    } else {
-                                        viewModel.updateLocation(
-                                            currentEditing.copy(
-                                                alias = alias,
-                                                latitude = lat,
-                                                longitude = lng,
-                                                radiusMeters = radiusMeters,
-                                                notificationResponsivenessMs = responsivenessMs
-                                            )
-                                        )
-                                    }
-                                    showDialog = false
-                                    editingLocation = null
-                                }
-                            },
-                            enabled = isValid,
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text(stringResource(R.string.btn_save))
                         }
-                    }
-                }
+                    } else null,
+                    onCancel = {
+                        showDialog = false
+                        editingLocation = null
+                    },
+                    isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists,
+                    showResponsivenessInfo = showResponsivenessInfo,
+                    onResponsivenessInfoChange = { showResponsivenessInfo = it }
+                )
             }
         }
 
@@ -719,30 +371,6 @@ fun LocationsScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
-
-        if (showResponsivenessInfo) {
-            AlertDialog(
-                onDismissRequest = { showResponsivenessInfo = false },
-                title = {
-                    Text(
-                        text = stringResource(R.string.label_notification_responsiveness),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(
-                        text = stringResource(R.string.info_notification_responsiveness_desc)
-                    )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = { showResponsivenessInfo = false }
-                    ) {
-                        Text(stringResource(R.string.btn_ok))
-                    }
-                }
-            )
-        }
 
         if (showMapPicker) {
             MapPicker(
@@ -765,4 +393,469 @@ fun LocationsScreen(
         }
     }
 }
+}
+
+// ── Extracted Composables ──
+
+@Composable
+private fun LocationFormContent(
+    alias: String,
+    onAliasChange: (String) -> Unit,
+    aliasExists: Boolean,
+    latitudeString: String,
+    onLatitudeChange: (String) -> Unit,
+    isLatitudeValid: Boolean,
+    longitudeString: String,
+    onLongitudeChange: (String) -> Unit,
+    isLongitudeValid: Boolean,
+    radiusMeters: Float,
+    onRadiusChange: (Float) -> Unit,
+    responsivenessMinutes: Float,
+    onResponsivenessChange: (Float) -> Unit,
+    isEditing: Boolean,
+    isGpsLoading: Boolean,
+    onUseGps: () -> Unit,
+    onPickFromMap: () -> Unit,
+    onSave: () -> Unit,
+    onDelete: (() -> Unit)?,
+    onCancel: () -> Unit,
+    isValid: Boolean,
+    showResponsivenessInfo: Boolean,
+    onResponsivenessInfoChange: (Boolean) -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 24.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = if (!isEditing) stringResource(R.string.dialog_new_location) else stringResource(R.string.dialog_edit_location),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = alias,
+            onValueChange = onAliasChange,
+            label = { Text(stringResource(R.string.alias_hint)) },
+            singleLine = true,
+            isError = aliasExists,
+            supportingText = {
+                if (aliasExists) {
+                    Text(stringResource(R.string.err_alias_exists), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = latitudeString,
+            onValueChange = onLatitudeChange,
+            label = { Text(stringResource(R.string.lat_hint)) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isError = latitudeString.isNotEmpty() && !isLatitudeValid,
+            supportingText = {
+                if (latitudeString.isNotEmpty() && !isLatitudeValid) {
+                    Text(stringResource(R.string.err_lat_invalid), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = longitudeString,
+            onValueChange = onLongitudeChange,
+            label = { Text(stringResource(R.string.lng_hint)) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isError = longitudeString.isNotEmpty() && !isLongitudeValid,
+            supportingText = {
+                if (longitudeString.isNotEmpty() && !isLongitudeValid) {
+                    Text(stringResource(R.string.err_lng_invalid), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = onUseGps,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f),
+                enabled = !isGpsLoading
+            ) {
+                if (isGpsLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.btn_querying_gps), maxLines = 1)
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.MyLocation,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.btn_use_gps), maxLines = 1)
+                }
+            }
+
+            Button(
+                onClick = onPickFromMap,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.LocationOn,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.btn_select_on_map), maxLines = 1)
+            }
+        }
+
+        RadiusSlider(
+            value = radiusMeters,
+            onValueChange = onRadiusChange
+        )
+
+        ResponsivenessSlider(
+            value = responsivenessMinutes,
+            onValueChange = onResponsivenessChange,
+            onInfoClick = { onResponsivenessInfoChange(true) }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            DialogDismissButtons(
+                isEditing = isEditing,
+                onDelete = { onDelete?.invoke() },
+                onCancel = onCancel
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = onSave,
+                enabled = isValid,
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text(stringResource(R.string.btn_save))
+            }
+        }
+    }
+
+    if (showResponsivenessInfo) {
+        AlertDialog(
+            onDismissRequest = { onResponsivenessInfoChange(false) },
+            title = {
+                Text(
+                    text = stringResource(R.string.label_notification_responsiveness),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.info_notification_responsiveness_desc)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { onResponsivenessInfoChange(false) }
+                ) {
+                    Text(stringResource(R.string.btn_ok))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun RadiusSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.label_geofence_radius),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(R.string.label_meters, value.toInt()),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = 50f..1000f,
+            steps = 18,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(stringResource(R.string.label_50m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            Text(stringResource(R.string.label_1000m), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+        }
+    }
+}
+
+@Composable
+private fun ResponsivenessSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    onInfoClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.label_notification_responsiveness),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                IconButton(
+                    onClick = onInfoClick,
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = "Info",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            Text(
+                text = if (value.toInt() == 0) {
+                    stringResource(R.string.label_0min)
+                } else {
+                    stringResource(R.string.label_minutes_value, value.toInt())
+                },
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = 0f..10f,
+            steps = 9,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(stringResource(R.string.label_0min), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            Text(stringResource(R.string.label_10min), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+        }
+    }
+}
+
+@Composable
+private fun SelectedLocationCard(
+    location: LocationEntity,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = location.alias,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.label_geofence_radius) + ": " + stringResource(R.string.label_meters, location.radiusMeters.toInt()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(R.string.label_notification_responsiveness) + ": " +
+                            if (location.notificationResponsivenessMs == 0) {
+                                stringResource(R.string.label_0min)
+                            } else {
+                                stringResource(R.string.label_minutes_value, location.notificationResponsivenessMs / 60000)
+                            },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = String.format(Locale.US, "Lat: %.5f, Lng: %.5f", location.latitude, location.longitude),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Edit location",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Delete location",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Dismiss",
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ViewModeSwitcher(
+    isMapView: Boolean,
+    onListSelected: () -> Unit,
+    onMapSelected: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        val containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
+        val selectedColor = MaterialTheme.colorScheme.primary
+        val contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        val onSelectedColor = MaterialTheme.colorScheme.onPrimary
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = containerColor,
+            shadowElevation = 6.dp,
+            modifier = Modifier.height(40.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (!isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
+                    modifier = Modifier
+                        .width(100.dp)
+                        .fillMaxHeight()
+                        .clickable(onClick = onListSelected)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = stringResource(R.string.tab_list),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (!isMapView) onSelectedColor else contentColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
+                    modifier = Modifier
+                        .width(100.dp)
+                        .fillMaxHeight()
+                        .clickable(onClick = onMapSelected)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = stringResource(R.string.tab_map),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (isMapView) onSelectedColor else contentColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

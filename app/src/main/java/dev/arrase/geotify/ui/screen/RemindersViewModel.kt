@@ -2,11 +2,11 @@ package dev.arrase.geotify.ui.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.arrase.geotify.R
-import dev.arrase.geotify.data.GeotifyRepository
-import dev.arrase.geotify.data.GeofenceLimitExceededException
+import dev.arrase.geotify.data.LocationRepository
+import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
+import dev.arrase.geotify.geofence.GeofenceOrchestrator
 import dev.arrase.geotify.ui.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,32 +21,30 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RemindersViewModel @Inject constructor(
-    private val repository: GeotifyRepository
+    private val locationRepository: LocationRepository,
+    private val reminderRepository: ReminderRepository,
+    private val geofenceOrchestrator: GeofenceOrchestrator
 ) : ViewModel() {
 
     private val _snackbarMessage = MutableSharedFlow<UiText>()
     val snackbarMessage: SharedFlow<UiText> = _snackbarMessage.asSharedFlow()
 
-    val locations: StateFlow<List<LocationEntity>> = repository.observeLocations()
+    val locations: StateFlow<List<LocationEntity>> = locationRepository.observeLocations()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val reminders: StateFlow<List<ReminderEntity>> = repository.observeReminders()
+    val reminders: StateFlow<List<ReminderEntity>> = reminderRepository.observeReminders()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val activeReminderCounts: StateFlow<Map<String, Int>> = repository.observeActiveReminderCounts()
+    val activeReminderCounts: StateFlow<Map<String, Int>> = reminderRepository.observeActiveReminderCounts()
         .map { list -> list.associate { it.locationId to it.count } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     fun createReminder(locationId: String, message: String, transitionType: Int) {
         viewModelScope.launch {
             try {
-                val location = repository.findLocationById(locationId) ?: return@launch
-                val result = repository.createReminder(location, message, transitionType)
-                if (result.isLimitWarningTriggered) {
-                    _snackbarMessage.emit(UiText.StringResource(R.string.geofence_limit_warning))
-                }
-            } catch (e: GeofenceLimitExceededException) {
-                _snackbarMessage.emit(UiText.StringResource(R.string.geofence_limit_error))
+                val location = locationRepository.findLocationById(locationId) ?: return@launch
+                reminderRepository.createReminder(location, message, transitionType)
+                geofenceOrchestrator.triggerRecalculation()
             } catch (e: Exception) {
                 _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
             }
@@ -56,12 +54,8 @@ class RemindersViewModel @Inject constructor(
     fun updateReminder(reminder: ReminderEntity, oldLocationId: String) {
         viewModelScope.launch {
             try {
-                val warningTriggered = repository.updateReminder(reminder, oldLocationId)
-                if (warningTriggered) {
-                    _snackbarMessage.emit(UiText.StringResource(R.string.geofence_limit_warning))
-                }
-            } catch (e: GeofenceLimitExceededException) {
-                _snackbarMessage.emit(UiText.StringResource(R.string.geofence_limit_error))
+                reminderRepository.updateReminder(reminder)
+                geofenceOrchestrator.triggerRecalculation()
             } catch (e: Exception) {
                 _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
             }
@@ -71,7 +65,8 @@ class RemindersViewModel @Inject constructor(
     fun cancelReminder(reminderId: String) {
         viewModelScope.launch {
             try {
-                repository.cancelReminder(reminderId)
+                reminderRepository.cancelReminder(reminderId)
+                geofenceOrchestrator.triggerRecalculation()
             } catch (e: Exception) {
                 _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
             }
