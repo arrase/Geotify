@@ -1,6 +1,7 @@
 package dev.arrase.geotify.di
 
 import android.content.Context
+import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,10 +10,6 @@ import dagger.hilt.components.SingletonComponent
 import dev.arrase.geotify.data.GeotifyDatabase
 import dev.arrase.geotify.data.dao.LocationDao
 import dev.arrase.geotify.data.dao.ReminderDao
-import dev.arrase.geotify.geofence.AndroidGeofenceManager
-import dev.arrase.geotify.geofence.GeofenceManager
-import dev.arrase.geotify.location.DefaultLocationProvider
-import dev.arrase.geotify.location.LocationProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
@@ -39,7 +36,13 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): GeotifyDatabase {
-        return GeotifyDatabase.getInstance(context)
+        return Room.databaseBuilder(
+            context.applicationContext,
+            GeotifyDatabase::class.java,
+            "geotify.db"
+        )
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
     }
 
     @Provides
@@ -47,16 +50,4 @@ object AppModule {
 
     @Provides
     fun provideReminderDao(database: GeotifyDatabase): ReminderDao = database.reminderDao()
-
-    @Provides
-    @Singleton
-    fun provideGeofenceManager(impl: AndroidGeofenceManager): GeofenceManager {
-        return impl
-    }
-
-    @Provides
-    @Singleton
-    fun provideLocationProvider(impl: DefaultLocationProvider): LocationProvider {
-        return impl
-    }
 }

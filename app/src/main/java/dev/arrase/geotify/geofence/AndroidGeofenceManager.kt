@@ -31,6 +31,11 @@ class AndroidGeofenceManager @Inject constructor(
     private val geofencingClient: GeofencingClient =
         LocationServices.getGeofencingClient(context)
 
+    /**
+     * FLAG_MUTABLE is required here because the GMS GeofencingClient needs to populate
+     * the PendingIntent's extras with geofence transition data (triggering geofences,
+     * transition type, etc.). FLAG_IMMUTABLE would prevent this and cause silent failures.
+     */
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
             action = "dev.arrase.geotify.ACTION_RECEIVE_GEOFENCE"

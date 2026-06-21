@@ -33,6 +33,15 @@ object NotificationHelper {
         manager.createNotificationChannels(listOf(geofenceChannel))
     }
 
+    /**
+     * Shows a geofence notification for a specific reminder.
+     *
+     * @param notificationId An integer ID for this notification. Note: If using `reminderId.hashCode()`,
+     *                       there is a small theoretical risk of hash collision where another active reminder
+     *                       shares the same hashCode and overwrites its notification. For this app, this is
+     *                       a reasonable trade-off to map string UUIDs to 32-bit Android notification IDs,
+     *                       as the number of simultaneously active notifications is small.
+     */
     fun showGeofenceNotification(
         context: Context,
         notificationId: Int,

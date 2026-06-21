@@ -1,48 +1,22 @@
 package dev.arrase.geotify
 
 import android.content.Context
-import dev.arrase.geotify.data.GeotifyRepository
+import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.dao.LocationDao
 import dev.arrase.geotify.data.dao.ReminderDao
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.LocationReminderCount
 import dev.arrase.geotify.data.entity.ReminderEntity
-import dev.arrase.geotify.geofence.GeofenceManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
-import org.mockito.Mockito.mock
 
 class GeofenceLimitTest {
 
     private val locationsList = mutableListOf<LocationEntity>()
     private val remindersList = mutableListOf<ReminderEntity>()
-
-    private val fakeLocationDao = object : LocationDao {
-        override fun observeAll(): Flow<List<LocationEntity>> = flowOf(locationsList)
-        override suspend fun getAll(): List<LocationEntity> = locationsList
-        override suspend fun findByAlias(alias: String): LocationEntity? =
-            locationsList.find { it.alias.equals(alias, ignoreCase = true) }
-        override suspend fun findById(id: String): LocationEntity? =
-            locationsList.find { it.id == id }
-        override suspend fun getAllAliases(): List<String> =
-            locationsList.map { it.alias }
-        override suspend fun insert(location: LocationEntity) {
-            locationsList.add(location)
-        }
-        override suspend fun update(location: LocationEntity) {
-            val idx = locationsList.indexOfFirst { it.id == location.id }
-            if (idx != -1) locationsList[idx] = location
-        }
-        override suspend fun deleteByAlias(alias: String): Int {
-            val count = locationsList.size
-            locationsList.removeAll { it.alias.equals(alias, ignoreCase = true) }
-            return count - locationsList.size
-        }
-        override suspend fun getLocationsInBoundingBox(minLat: Double, maxLat: Double, minLon: Double, maxLon: Double): List<LocationEntity> = emptyList()
-    }
 
     private val fakeReminderDao = object : ReminderDao {
         override fun observeActiveReminderCounts(): Flow<List<LocationReminderCount>> = flowOf(emptyList())
@@ -79,34 +53,16 @@ class GeofenceLimitTest {
         override suspend fun setInRangeForLocations(locationIds: List<String>) {}
     }
 
-    private val fakeGeofenceManager = object : GeofenceManager {
-        override suspend fun registerGeofenceForLocation(location: LocationEntity, transitionTypes: Int) {}
-        override suspend fun removeGeofences(requestIds: List<String>) {}
-        override suspend fun removeAllGeofences() {}
-        override suspend fun registerSlidingWindowGeofences(locations: List<LocationEntity>, centerLat: Double, centerLon: Double, innerRadiusMeters: Float) {}
-    }
-
-    private val mockContext = mock(Context::class.java)
-
-    private val mockSettingsManager = mock(dev.arrase.geotify.data.SettingsManager::class.java).apply {
-        org.mockito.Mockito.`when`(recalculationDebounceSecs).thenReturn(flowOf(5))
-    }
-
-    private val repository = GeotifyRepository(
-        mockContext,
-        fakeLocationDao,
+    private val reminderRepository = ReminderRepository(
         fakeReminderDao,
-        fakeGeofenceManager,
-        mockSettingsManager,
         kotlinx.coroutines.Dispatchers.Unconfined
     )
 
     @Test
-    fun testGeofenceLimitExceededNoLongerEnforced() = runBlocking {
+    fun testCreateManyRemindersWithoutLimit() = runBlocking {
         locationsList.clear()
         remindersList.clear()
 
-        // Create 150 locations and reminders to show limit is bypassed
         val locations = (1..150).map { i ->
             LocationEntity(
                 id = "loc_$i",
@@ -118,14 +74,14 @@ class GeofenceLimitTest {
         }
 
         for (i in 0 until 150) {
-            val result = repository.createReminder(locations[i], "Reminder $i", 1)
-            assertFalse(result.isLimitWarningTriggered)
+            val reminder = reminderRepository.createReminder(locations[i], "Reminder $i", 1)
+            assertNotNull(reminder)
         }
         assertEquals(150, fakeReminderDao.getActiveGeofenceCount())
     }
 
     @Test
-    fun testGeofenceLimitOnUpdateReminderNoLongerEnforced() = runBlocking {
+    fun testDeactivateAndUpdateReminder() = runBlocking {
         locationsList.clear()
         remindersList.clear()
 
@@ -140,17 +96,16 @@ class GeofenceLimitTest {
         }
 
         for (i in 0 until 149) {
-            repository.createReminder(locations[i], "Reminder $i", 1)
+            reminderRepository.createReminder(locations[i], "Reminder $i", 1)
         }
 
-        val reminder150 = repository.createReminder(locations[149], "Reminder 150", 1).reminder
+        val reminder150 = reminderRepository.createReminder(locations[149], "Reminder 150", 1)
         assertEquals(150, fakeReminderDao.getActiveGeofenceCount())
 
-        repository.deactivateReminder(reminder150.id)
+        reminderRepository.deactivateReminder(reminder150.id)
         assertEquals(149, fakeReminderDao.getActiveGeofenceCount())
 
-        val warningTriggered = repository.updateReminder(reminder150.copy(isActive = true), reminder150.locationId)
-        assertFalse(warningTriggered)
+        reminderRepository.updateReminder(reminder150.copy(isActive = true))
         assertEquals(150, fakeReminderDao.getActiveGeofenceCount())
     }
 }

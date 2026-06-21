@@ -51,6 +51,11 @@ class SpatialSearchUseCase @Inject constructor(
         return resultsWithDistance
             .sortedBy { it.second }
             .map { it.first }
-            .take(99)
+            .take(MAX_POI_GEOFENCES)
+    }
+
+    companion object {
+        /** GMS allows a maximum of 100 geofences per app; 1 is reserved for the master geofence. */
+        const val MAX_POI_GEOFENCES = 99
     }
 }

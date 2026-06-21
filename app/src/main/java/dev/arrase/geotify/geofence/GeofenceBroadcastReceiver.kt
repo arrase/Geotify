@@ -1,20 +1,32 @@
 package dev.arrase.geotify.geofence
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.util.Log
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
-import androidx.work.WorkManager
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import dev.arrase.geotify.data.LocationRepository
+import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.notification.NotificationHelper
-import dev.arrase.geotify.util.geotifyRepository
 import dev.arrase.geotify.util.goAsyncCoroutine
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface ReceiverEntryPoint {
+        fun locationRepository(): LocationRepository
+        fun reminderRepository(): ReminderRepository
+        fun geofenceOrchestrator(): GeofenceOrchestrator
+    }
 
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "onReceive triggered with intent: $intent")
@@ -38,11 +50,15 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val transitionType = geofencingEvent.geofenceTransition
         Log.d(TAG, "Triggered geofences count: ${triggeringGeofences.size}, transitionType: $transitionType")
 
+        val entryPoint = EntryPointAccessors.fromApplication(
+            context, ReceiverEntryPoint::class.java
+        )
+
         val hasMasterExit = triggeringGeofences.any { it.requestId == "MASTER_GEOFENCE_TRIGGER" } &&
                 transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
         if (hasMasterExit) {
-            Log.i(TAG, "Master geofence exit triggered. Enqueuing recalculation...")
-            context.geotifyRepository.triggerRecalculation(isExpedited = true)
+            Log.i(TAG, "Master geofence exit triggered. Enqueuing expedited recalculation...")
+            entryPoint.geofenceOrchestrator().triggerExpeditedRecalculation()
         }
 
         val poiGeofences = triggeringGeofences.filter { it.requestId != "MASTER_GEOFENCE_TRIGGER" }
@@ -50,18 +66,19 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
         goAsyncCoroutine {
             try {
-                val repository = context.geotifyRepository
+                val locationRepo = entryPoint.locationRepository()
+                val reminderRepo = entryPoint.reminderRepository()
 
                 for (geofence in poiGeofences) {
                     val locationId = geofence.requestId
-                    val location = repository.findLocationById(locationId)
+                    val location = locationRepo.findLocationById(locationId)
                     if (location == null) {
                         Log.d(TAG, "Location not found in database for geofence ID: $locationId")
                         continue
                     }
                     Log.d(TAG, "Processing geofence for location: ${location.alias} (ID: $locationId)")
 
-                    val activeReminders = repository.getActiveRemindersForLocation(locationId)
+                    val activeReminders = reminderRepo.getActiveRemindersForLocation(locationId)
                     Log.d(TAG, "Found ${activeReminders.size} active reminders for location ID: $locationId")
                     
                     val matchingReminders = activeReminders.filter { it.transitionType == transitionType }
@@ -69,7 +86,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
                     for (reminder in matchingReminders) {
                         Log.d(TAG, "Deactivating and showing notification for reminder ID: ${reminder.id}")
-                        repository.deactivateReminder(reminder.id, shouldSyncGeofence = false)
+                        reminderRepo.deactivateReminder(reminder.id)
 
                         NotificationHelper.showGeofenceNotification(
                             context,
