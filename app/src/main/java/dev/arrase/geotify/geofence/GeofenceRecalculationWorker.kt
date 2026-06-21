@@ -64,6 +64,9 @@ class GeofenceRecalculationWorker(
             val centerLat = location.latitude
             val centerLon = location.longitude
 
+            // Save the last recalculation center
+            settingsManager.setLastRecalcLocation(centerLat, centerLon)
+
             val outerRadiusN = settingsManager.outerRadiusN.first()
             val innerRadiusR = settingsManager.innerRadiusR.first()
 

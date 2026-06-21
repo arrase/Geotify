@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,10 +27,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Button
@@ -51,6 +61,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,11 +72,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.R
+import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
+import dev.arrase.geotify.data.entity.isArrival
 import dev.arrase.geotify.ui.UiText
 import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
+import dev.arrase.geotify.ui.component.ReminderMapView
 import dev.arrase.geotify.ui.component.ReminderRow
 import dev.arrase.geotify.ui.component.SwipeToDeleteContainer
 import kotlinx.coroutines.launch
@@ -83,6 +97,17 @@ fun RemindersScreen(
     val activeGeofencesCount = remember(activeReminderCounts) { activeReminderCounts.size }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val mapThemeSetting by viewModel.mapTheme.collectAsStateWithLifecycle()
+    val lastRecalcLat by viewModel.lastRecalcLat.collectAsStateWithLifecycle()
+    val lastRecalcLng by viewModel.lastRecalcLng.collectAsStateWithLifecycle()
+    val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
+    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val isMapDarkTheme = when (mapThemeSetting) {
+        dev.arrase.geotify.data.ThemeSetting.SYSTEM -> isSystemDark
+        dev.arrase.geotify.data.ThemeSetting.LIGHT -> false
+        dev.arrase.geotify.data.ThemeSetting.DARK -> true
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.snackbarMessage.collect { uiText ->
@@ -108,6 +133,23 @@ fun RemindersScreen(
         reminders.filter { !it.isActive }
     }
 
+    // View switcher state
+    var isMapView by rememberSaveable { mutableStateOf(false) }
+    var selectedLocationOnMap by remember { mutableStateOf<LocationEntity?>(null) }
+    var currentUserLocation by remember { mutableStateOf<android.location.Location?>(null) }
+
+    LaunchedEffect(isMapView) {
+        if (isMapView) {
+            currentUserLocation = viewModel.getCurrentLocation()
+        }
+    }
+
+    val showEmptyState = if (isMapView) {
+        activeReminders.isEmpty()
+    } else {
+        reminders.isEmpty()
+    }
+
     // Dialog State
     var showDialog by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -124,9 +166,10 @@ fun RemindersScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
+                .clipToBounds()
         ) {
             androidx.compose.animation.AnimatedVisibility(
-                visible = reminders.isEmpty(),
+                visible = showEmptyState,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -137,54 +180,121 @@ fun RemindersScreen(
                 )
             }
 
-        androidx.compose.animation.AnimatedVisibility(
-            visible = reminders.isNotEmpty(),
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            LazyColumn(Modifier.fillMaxSize()) {
-                if (activeReminders.isNotEmpty()) {
-                    stickyHeader(key = "header_active") {
-                        SectionHeader(stringResource(R.string.label_active))
+            // List View
+            androidx.compose.animation.AnimatedVisibility(
+                visible = !isMapView && reminders.isNotEmpty(),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(top = 64.dp, bottom = 16.dp)
+                ) {
+                    if (activeReminders.isNotEmpty()) {
+                        stickyHeader(key = "header_active") {
+                            SectionHeader(stringResource(R.string.label_active))
+                        }
+                        items(
+                            items = activeReminders,
+                            key = { it.id }
+                        ) { reminder ->
+                            ActiveReminderItem(
+                                reminder = reminder,
+                                locationAliasMap = locationAliasMap,
+                                onCancel = {
+                                    viewModel.cancelReminder(reminder.id)
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = context.applicationContext.getString(R.string.toast_reminder_cancelled),
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    editingReminder = reminder
+                                    selectedLocationId = reminder.locationId
+                                    message = reminder.message
+                                    transitionType = reminder.transitionType
+                                    showDialog = true
+                                },
+                                modifier = Modifier.animateItem()
+                            )
+                        }
                     }
-                    items(
-                        items = activeReminders,
-                        key = { it.id }
-                    ) { reminder ->
-                        ActiveReminderItem(
-                            reminder = reminder,
-                            locationAliasMap = locationAliasMap,
-                            onCancel = {
-                                viewModel.cancelReminder(reminder.id)
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = context.applicationContext.getString(R.string.toast_reminder_cancelled),
-                                        duration = SnackbarDuration.Short
+
+                    if (completedReminders.isNotEmpty()) {
+                        stickyHeader(key = "header_completed") {
+                            SectionHeader(stringResource(R.string.label_completed))
+                        }
+                        items(
+                            items = completedReminders,
+                            key = { it.id }
+                        ) { reminder ->
+                            SwipeToDeleteContainer(
+                                onDelete = {
+                                    viewModel.cancelReminder(reminder.id)
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = context.applicationContext.getString(R.string.toast_reminder_deleted),
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .alpha(0.6f)
+                                    .animateItem()
+                            ) {
+                                Box(
+                                    modifier = Modifier.clickable {
+                                        editingReminder = reminder
+                                        selectedLocationId = reminder.locationId
+                                        message = reminder.message
+                                        transitionType = reminder.transitionType
+                                        showDialog = true
+                                    }
+                                ) {
+                                    ReminderRow(
+                                        reminder = reminder,
+                                        locationAliasMap = locationAliasMap
                                     )
                                 }
-                            },
-                            onClick = {
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Map View
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isMapView && activeReminders.isNotEmpty(),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    ReminderMapView(
+                        reminders = activeReminders,
+                        locations = locations,
+                        selectedLocation = selectedLocationOnMap,
+                        onLocationSelected = { selectedLocationOnMap = it },
+                        lastRecalcLat = lastRecalcLat,
+                        lastRecalcLng = lastRecalcLng,
+                        innerRadiusMeters = innerRadiusR * 1000f,
+                        currentUserLocation = currentUserLocation,
+                        isDarkTheme = isMapDarkTheme
+                    )
+
+                    if (selectedLocationOnMap != null) {
+                        SelectedReminderLocationCard(
+                            location = selectedLocationOnMap!!,
+                            reminders = activeReminders.filter { it.locationId == selectedLocationOnMap!!.id },
+                            onEdit = { reminder ->
                                 editingReminder = reminder
                                 selectedLocationId = reminder.locationId
                                 message = reminder.message
                                 transitionType = reminder.transitionType
                                 showDialog = true
                             },
-                            modifier = Modifier.animateItem()
-                        )
-                    }
-                }
-
-                if (completedReminders.isNotEmpty()) {
-                    stickyHeader(key = "header_completed") {
-                        SectionHeader(stringResource(R.string.label_completed))
-                    }
-                    items(
-                        items = completedReminders,
-                        key = { it.id }
-                    ) { reminder ->
-                        SwipeToDeleteContainer(
-                            onDelete = {
+                            onDelete = { reminder ->
                                 viewModel.cancelReminder(reminder.id)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
@@ -192,44 +302,50 @@ fun RemindersScreen(
                                         duration = SnackbarDuration.Short
                                     )
                                 }
-                            },
-                            modifier = Modifier
-                                .alpha(0.6f)
-                                .animateItem()
-                        ) {
-                            Box(
-                                modifier = Modifier.clickable {
-                                    editingReminder = reminder
-                                    selectedLocationId = reminder.locationId
-                                    message = reminder.message
-                                    transitionType = reminder.transitionType
-                                    showDialog = true
+                                val remaining = activeReminders.filter { it.locationId == selectedLocationOnMap!!.id && it.id != reminder.id }
+                                if (remaining.isEmpty()) {
+                                    selectedLocationOnMap = null
                                 }
-                            ) {
-                                ReminderRow(
-                                    reminder = reminder,
-                                    locationAliasMap = locationAliasMap
-                                )
-                            }
-                        }
+                            },
+                            onDismiss = { selectedLocationOnMap = null },
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(16.dp)
+                        )
                     }
                 }
             }
-        }
 
-        FloatingActionButton(
-            onClick = {
-                editingReminder = null
-                selectedLocationId = locations.firstOrNull()?.id ?: ""
-                message = ""
-                transitionType = Geofence.GEOFENCE_TRANSITION_ENTER
-                showDialog = true
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_description_add_reminder))
+            if (selectedLocationOnMap == null) {
+                FloatingActionButton(
+                    onClick = {
+                        editingReminder = null
+                        selectedLocationId = locations.firstOrNull()?.id ?: ""
+                        message = ""
+                        transitionType = Geofence.GEOFENCE_TRANSITION_ENTER
+                        showDialog = true
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_description_add_reminder))
+                }
+            }
+
+            ViewModeSwitcher(
+                isMapView = isMapView,
+                onListSelected = { isMapView = false },
+                onMapSelected = { isMapView = true },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 12.dp)
+            )
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
 
         if (showDialog) {
@@ -445,13 +561,7 @@ fun RemindersScreen(
                 }
             }
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
-}
 }
 
 @Composable
@@ -489,5 +599,220 @@ private fun SectionHeader(title: String) {
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary
         )
+    }
+}
+
+@Composable
+private fun ViewModeSwitcher(
+    isMapView: Boolean,
+    onListSelected: () -> Unit,
+    onMapSelected: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        val containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
+        val selectedColor = MaterialTheme.colorScheme.primary
+        val contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        val onSelectedColor = MaterialTheme.colorScheme.onPrimary
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = containerColor,
+            shadowElevation = 6.dp,
+            modifier = Modifier.height(40.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (!isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
+                    modifier = Modifier
+                        .width(100.dp)
+                        .fillMaxHeight()
+                        .clickable(onClick = onListSelected)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = stringResource(R.string.tab_list),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (!isMapView) onSelectedColor else contentColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
+                    modifier = Modifier
+                        .width(100.dp)
+                        .fillMaxHeight()
+                        .clickable(onClick = onMapSelected)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = stringResource(R.string.tab_map),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (isMapView) onSelectedColor else contentColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectedReminderLocationCard(
+    location: LocationEntity,
+    reminders: List<ReminderEntity>,
+    onEdit: (ReminderEntity) -> Unit,
+    onDelete: (ReminderEntity) -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.LocationOn,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = location.alias,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Dismiss",
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            if (reminders.isEmpty()) {
+                Text(
+                    text = "No active reminders for this location",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    reminders.forEachIndexed { index, reminder ->
+                        if (index > 0) {
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = reminder.message,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    androidx.compose.material3.SuggestionChip(
+                                        onClick = {},
+                                        label = {
+                                            Text(
+                                                text = if (reminder.isArrival) {
+                                                    stringResource(R.string.label_transition_arrival)
+                                                } else {
+                                                    stringResource(R.string.label_transition_departure)
+                                                },
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        },
+                                        modifier = Modifier.height(24.dp)
+                                    )
+
+                                    if (reminder.isInRange) {
+                                        androidx.compose.material3.SuggestionChip(
+                                            onClick = {},
+                                            label = {
+                                                Text(
+                                                    text = stringResource(R.string.label_in_range),
+                                                    style = MaterialTheme.typography.labelSmall
+                                                )
+                                            },
+                                            colors = androidx.compose.material3.SuggestionChipDefaults.suggestionChipColors(
+                                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                                labelColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                            ),
+                                            modifier = Modifier.height(24.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(onClick = { onEdit(reminder) }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Edit,
+                                        contentDescription = "Edit reminder",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                IconButton(onClick = { onDelete(reminder) }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Delete,
+                                        contentDescription = "Delete reminder",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
