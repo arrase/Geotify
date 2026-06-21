@@ -108,7 +108,7 @@ fun LocationsScreen(
         viewModel.snackbarMessage.collect { uiText ->
             val msg = when (uiText) {
                 is UiText.DynamicString -> uiText.value
-                is UiText.StringResource -> context.getString(uiText.resId)
+                is UiText.StringResource -> context.applicationContext.getString(uiText.resId)
             }
             snackbarHostState.showSnackbar(
                 message = msg,
@@ -202,7 +202,7 @@ fun LocationsScreen(
                                 viewModel.deleteLocation(location.alias)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = context.getString(R.string.toast_location_deleted, location.alias),
+                                        message = context.applicationContext.getString(R.string.toast_location_deleted, location.alias),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -243,7 +243,7 @@ fun LocationsScreen(
                                 viewModel.deleteLocation(selectedLocationOnMap!!.alias)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = context.getString(R.string.toast_location_deleted, selectedLocationOnMap!!.alias),
+                                        message = context.applicationContext.getString(R.string.toast_location_deleted, selectedLocationOnMap!!.alias),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -311,7 +311,7 @@ fun LocationsScreen(
                                 longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
                             } else {
                                 snackbarHostState.showSnackbar(
-                                    message = context.getString(R.string.err_gps_failed),
+                                    message = context.applicationContext.getString(R.string.err_gps_failed),
                                     duration = SnackbarDuration.Short
                                 )
                             }
@@ -350,7 +350,7 @@ fun LocationsScreen(
                             editingLocation = null
                             scope.launch {
                                 snackbarHostState.showSnackbar(
-                                    message = context.getString(R.string.toast_location_deleted, alias),
+                                    message = context.applicationContext.getString(R.string.toast_location_deleted, alias),
                                     duration = SnackbarDuration.Short
                                 )
                             }

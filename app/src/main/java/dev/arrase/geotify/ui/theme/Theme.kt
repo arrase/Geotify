@@ -17,10 +17,12 @@ fun GeotifyTheme(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val colorScheme = if (darkTheme) {
-        dynamicDarkColorScheme(context)
-    } else {
-        dynamicLightColorScheme(context)
+    val colorScheme = when {
+        android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S -> {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        darkTheme -> androidx.compose.material3.darkColorScheme()
+        else -> androidx.compose.material3.lightColorScheme()
     }
 
     val view = LocalView.current

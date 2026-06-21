@@ -213,7 +213,7 @@ fun MapPicker(
                         // Marker representing the currently selected point
                         val marker = Marker(map).apply {
                             position = selectedPoint
-                            title = context.getString(R.string.label_selected_location)
+                            title = context.applicationContext.getString(R.string.label_selected_location)
                             icon = markerIcon
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                         }

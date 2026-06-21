@@ -88,7 +88,7 @@ fun RemindersScreen(
         viewModel.snackbarMessage.collect { uiText ->
             val msg = when (uiText) {
                 is UiText.DynamicString -> uiText.value
-                is UiText.StringResource -> context.getString(uiText.resId)
+                is UiText.StringResource -> context.applicationContext.getString(uiText.resId)
             }
             snackbarHostState.showSnackbar(
                 message = msg,
@@ -158,7 +158,7 @@ fun RemindersScreen(
                                 viewModel.cancelReminder(reminder.id)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = context.getString(R.string.toast_reminder_cancelled),
+                                        message = context.applicationContext.getString(R.string.toast_reminder_cancelled),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -188,7 +188,7 @@ fun RemindersScreen(
                                 viewModel.cancelReminder(reminder.id)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = context.getString(R.string.toast_reminder_deleted),
+                                        message = context.applicationContext.getString(R.string.toast_reminder_deleted),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -402,7 +402,7 @@ fun RemindersScreen(
                                     editingReminder = null
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
-                                            message = context.getString(R.string.toast_reminder_deleted),
+                                            message = context.applicationContext.getString(R.string.toast_reminder_deleted),
                                             duration = SnackbarDuration.Short
                                         )
                                     }

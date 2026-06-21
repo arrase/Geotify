@@ -20,17 +20,19 @@ object NotificationHelper {
     const val TAB_REMINDERS = "reminders"
 
     fun createNotificationChannels(context: Context) {
-        val manager = context.getSystemService(NotificationManager::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val manager = context.getSystemService(NotificationManager::class.java)
 
-        val geofenceChannel = NotificationChannel(
-            CHANNEL_GEOFENCE,
-            context.getString(R.string.notif_channel_name),
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = context.getString(R.string.notif_channel_desc)
+            val geofenceChannel = NotificationChannel(
+                CHANNEL_GEOFENCE,
+                context.getString(R.string.notif_channel_name),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = context.getString(R.string.notif_channel_desc)
+            }
+
+            manager.createNotificationChannels(listOf(geofenceChannel))
         }
-
-        manager.createNotificationChannels(listOf(geofenceChannel))
     }
 
     /**
