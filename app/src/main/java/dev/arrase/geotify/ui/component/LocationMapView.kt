@@ -92,7 +92,9 @@ fun LocationMapView(
         }
     }
 
-    // Lifecycle management to avoid memory and thread leaks
+    // Lifecycle management: onDetach() must only be called on real Activity destruction,
+    // NOT when AnimatedVisibility hides this composable, because onDetach() permanently
+    // destroys the osmdroid tile cache writer making future MapView instances unable to load tiles.
     val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
     DisposableEffect(mapViewRef, lifecycle) {
         val map = mapViewRef ?: return@DisposableEffect onDispose {}
@@ -100,13 +102,16 @@ fun LocationMapView(
             when (event) {
                 androidx.lifecycle.Lifecycle.Event.ON_RESUME -> map.onResume()
                 androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> map.onPause()
+                androidx.lifecycle.Lifecycle.Event.ON_DESTROY -> map.onDetach()
                 else -> {}
             }
         }
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
-            map.onDetach()
+            // Only pause when leaving composition (e.g. AnimatedVisibility toggling).
+            // Do NOT call onDetach() here — it destroys the shared tile cache writer.
+            map.onPause()
         }
     }
 
@@ -135,6 +140,7 @@ fun LocationMapView(
                 setMultiTouchControls(true)
                 zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
                 controller.setZoom(15.0)
+                onResume()
                 mapViewRef = this
             }
         },
