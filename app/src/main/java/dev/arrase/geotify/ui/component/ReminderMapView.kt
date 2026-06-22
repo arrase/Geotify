@@ -209,8 +209,8 @@ fun ReminderMapView(
                 // 1a. Outer radius — spatial search area (dashed, subtle)
                 val outerCircle = Polygon().apply {
                     points = Polygon.pointsAsCircle(centerPoint, outerRadiusMeters.toDouble())
-                    fillPaint.color = android.graphics.Color.argb(10, 0, 0, 0)
-                    outlinePaint.color = android.graphics.Color.argb(120, 80, 80, 80)
+                    fillPaint.color = android.graphics.Color.argb(25, 0, 0, 0)
+                    outlinePaint.color = android.graphics.Color.argb(180, 60, 60, 60)
                     outlinePaint.strokeWidth = 3f
                     outlinePaint.pathEffect = DashPathEffect(floatArrayOf(20f, 15f), 0f)
                 }
