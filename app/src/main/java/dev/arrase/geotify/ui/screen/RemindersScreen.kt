@@ -102,6 +102,7 @@ fun RemindersScreen(
     val lastRecalcLat by viewModel.lastRecalcLat.collectAsStateWithLifecycle()
     val lastRecalcLng by viewModel.lastRecalcLng.collectAsStateWithLifecycle()
     val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
+    val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
     val isMapDarkTheme = when (mapThemeSetting) {
         dev.arrase.geotify.data.ThemeSetting.SYSTEM -> isSystemDark
@@ -279,6 +280,7 @@ fun RemindersScreen(
                         lastRecalcLat = lastRecalcLat,
                         lastRecalcLng = lastRecalcLng,
                         innerRadiusMeters = innerRadiusR * 1000f,
+                        outerRadiusMeters = outerRadiusN * 1000f,
                         currentUserLocation = currentUserLocation,
                         isDarkTheme = isMapDarkTheme
                     )

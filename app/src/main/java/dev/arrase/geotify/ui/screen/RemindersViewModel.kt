@@ -56,6 +56,9 @@ class RemindersViewModel @Inject constructor(
     val innerRadiusR: StateFlow<Float> = settingsManager.innerRadiusR
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 4.0f)
 
+    val outerRadiusN: StateFlow<Float> = settingsManager.outerRadiusN
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 5.0f)
+
     suspend fun getCurrentLocation(): android.location.Location? {
         return locationProvider.getCurrentLocation()
     }
