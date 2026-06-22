@@ -100,6 +100,10 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing geofence event", e)
             }
+
+            // Re-evaluate geofences after deactivating triggered reminders.
+            // If no active reminders remain, this will purge all geofences to save battery.
+            entryPoint.geofenceOrchestrator().triggerExpeditedRecalculation()
         }
     }
 
