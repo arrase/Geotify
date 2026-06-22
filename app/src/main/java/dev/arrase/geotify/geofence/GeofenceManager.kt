@@ -12,4 +12,9 @@ interface GeofenceManager {
         centerLon: Double,
         innerRadiusMeters: Float
     )
+    suspend fun registerMasterGeofence(
+        centerLat: Double,
+        centerLon: Double,
+        innerRadiusMeters: Float
+    )
 }

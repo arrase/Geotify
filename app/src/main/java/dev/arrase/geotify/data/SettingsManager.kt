@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -49,6 +50,12 @@ class SettingsManager @Inject constructor(
 
     val poiGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_POI_RESPONSIVENESS_SECS, 30)
 
+    val lastRecalcLat: Flow<Double?> = preference(KEY_LAST_RECALC_LAT, 0.0)
+        .map { if (it == 0.0) null else it }
+
+    val lastRecalcLng: Flow<Double?> = preference(KEY_LAST_RECALC_LNG, 0.0)
+        .map { if (it == 0.0) null else it }
+
     // ── Write Preferences ──
 
     suspend fun setAppTheme(theme: ThemeSetting) = setPreference(KEY_APP_THEME, theme.name)
@@ -66,6 +73,11 @@ class SettingsManager @Inject constructor(
     suspend fun setMasterGeofenceResponsivenessSecs(secs: Int) = setPreference(KEY_MASTER_RESPONSIVENESS_SECS, secs)
 
     suspend fun setPoiGeofenceResponsivenessSecs(secs: Int) = setPreference(KEY_POI_RESPONSIVENESS_SECS, secs)
+
+    suspend fun setLastRecalcLocation(lat: Double, lng: Double) {
+        setPreference(KEY_LAST_RECALC_LAT, lat)
+        setPreference(KEY_LAST_RECALC_LNG, lng)
+    }
 
     // ── Private Helpers ──
 
@@ -101,5 +113,7 @@ class SettingsManager @Inject constructor(
         private val KEY_DEBOUNCE_DELAY_SECS = intPreferencesKey("debounce_delay_secs")
         private val KEY_MASTER_RESPONSIVENESS_SECS = intPreferencesKey("master_responsiveness_secs")
         private val KEY_POI_RESPONSIVENESS_SECS = intPreferencesKey("poi_responsiveness_secs")
+        private val KEY_LAST_RECALC_LAT = doublePreferencesKey("last_recalc_lat")
+        private val KEY_LAST_RECALC_LNG = doublePreferencesKey("last_recalc_lng")
     }
 }

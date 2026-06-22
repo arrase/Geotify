@@ -64,6 +64,9 @@ class GeofenceRecalculationWorker(
             val centerLat = location.latitude
             val centerLon = location.longitude
 
+            // Save the last recalculation center
+            settingsManager.setLastRecalcLocation(centerLat, centerLon)
+
             val outerRadiusN = settingsManager.outerRadiusN.first()
             val innerRadiusR = settingsManager.innerRadiusR.first()
 
@@ -89,7 +92,9 @@ class GeofenceRecalculationWorker(
 
             reminderRepository.updateInRangeStatus(activeCandidates.map { it.id })
 
-            if (activeCandidates.isNotEmpty()) {
+            if (activeReminders.isEmpty()) {
+                Log.i(TAG, "No active reminders. Skipping geofence registration to save battery.")
+            } else if (activeCandidates.isNotEmpty()) {
                 val innerRadiusMeters = innerRadiusR * 1000f
                 geofenceManager.registerSlidingWindowGeofences(
                     locations = activeCandidates,
@@ -99,7 +104,13 @@ class GeofenceRecalculationWorker(
                 )
                 Log.i(TAG, "Successfully registered ${activeCandidates.size} POIs + Master Geofence")
             } else {
-                Log.i(TAG, "No active candidates in range. No geofences registered.")
+                val innerRadiusMeters = innerRadiusR * 1000f
+                geofenceManager.registerMasterGeofence(
+                    centerLat = centerLat,
+                    centerLon = centerLon,
+                    innerRadiusMeters = innerRadiusMeters
+                )
+                Log.i(TAG, "No candidates in range but active reminders exist. Registered Master Geofence only.")
             }
 
             return Result.success()
