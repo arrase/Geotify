@@ -32,13 +32,13 @@ Geotify is a modern, location-aware Android application that allows users to cre
 
 ## Screenshots
 
-| Reminders (Default Screen) | Locations (List View) |
+| Reminders (List View) | Reminders (Map View) |
 |:---:|:---:|
-| ![Reminders Screen](screenshots/reminders_en.png) | ![Locations Screen](screenshots/locations_en.png) |
+| ![Reminders List](screenshots/reminders_en.png) | ![Reminders Map](screenshots/reminders_map_en.png) |
 
-| Locations (Map View) | Settings |
-|:---:|:---:|
-| ![Locations Map Screen](screenshots/map_en.png) | ![Settings Screen](screenshots/settings_en.png) |
+| Locations (List View) | Locations (Map Picker) | Settings |
+|:---:|:---:|:---:|
+| ![Locations List](screenshots/locations_en.png) | ![Locations Map Picker](screenshots/map_en.png) | ![Settings Screen](screenshots/settings_en.png) |
 
 ---
 
