@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
+import dev.arrase.geotify.data.SettingsDefaults
 import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
@@ -42,7 +43,7 @@ class LocationsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     val mapTheme: StateFlow<ThemeSetting> = settingsManager.mapTheme
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeSetting.SYSTEM)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.MAP_THEME)
 
     fun saveLocation(alias: String, latitude: Double, longitude: Double, radiusMeters: Float, notificationResponsivenessMs: Int) {
         viewModelScope.launch {
