@@ -2,6 +2,7 @@ package dev.arrase.geotify.ui.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.arrase.geotify.data.SettingsDefaults
 import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.geofence.GeofenceOrchestrator
@@ -19,28 +20,28 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val appTheme: StateFlow<ThemeSetting> = settingsManager.appTheme
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeSetting.SYSTEM)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.APP_THEME)
 
     val mapTheme: StateFlow<ThemeSetting> = settingsManager.mapTheme
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeSetting.SYSTEM)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.MAP_THEME)
 
     val outerRadiusN: StateFlow<Float> = settingsManager.outerRadiusN
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 5.0f)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.OUTER_RADIUS_N)
 
     val innerRadiusR: StateFlow<Float> = settingsManager.innerRadiusR
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 4.0f)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.INNER_RADIUS_R)
 
     val locationCacheTimeoutSecs: StateFlow<Int> = settingsManager.locationCacheTimeoutSecs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 120)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.LOCATION_CACHE_TIMEOUT_SECS)
 
     val recalculationDebounceSecs: StateFlow<Int> = settingsManager.recalculationDebounceSecs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 5)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.RECALCULATION_DEBOUNCE_SECS)
 
     val masterGeofenceResponsivenessSecs: StateFlow<Int> = settingsManager.masterGeofenceResponsivenessSecs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 120)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.MASTER_GEOFENCE_RESPONSIVENESS_SECS)
 
     val poiGeofenceResponsivenessSecs: StateFlow<Int> = settingsManager.poiGeofenceResponsivenessSecs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 30)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.POI_GEOFENCE_RESPONSIVENESS_SECS)
 
     fun setAppTheme(theme: ThemeSetting) {
         viewModelScope.launch {

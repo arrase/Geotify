@@ -2,6 +2,7 @@ package dev.arrase.geotify.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.arrase.geotify.data.SettingsDefaults
 import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.data.ThemeSetting
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,5 +17,5 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     val appTheme: StateFlow<ThemeSetting> = settingsManager.appTheme
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeSetting.SYSTEM)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.APP_THEME)
 }

@@ -32,23 +32,23 @@ class SettingsManager @Inject constructor(
 
     // ── Read Preferences ──
 
-    val appTheme: Flow<ThemeSetting> = preference(KEY_APP_THEME, ThemeSetting.SYSTEM.name)
-        .map { name -> ThemeSetting.entries.find { it.name == name } ?: ThemeSetting.SYSTEM }
+    val appTheme: Flow<ThemeSetting> = preference(KEY_APP_THEME, SettingsDefaults.APP_THEME.name)
+        .map { name -> ThemeSetting.entries.find { it.name == name } ?: SettingsDefaults.APP_THEME }
 
-    val mapTheme: Flow<ThemeSetting> = preference(KEY_MAP_THEME, ThemeSetting.SYSTEM.name)
-        .map { name -> ThemeSetting.entries.find { it.name == name } ?: ThemeSetting.SYSTEM }
+    val mapTheme: Flow<ThemeSetting> = preference(KEY_MAP_THEME, SettingsDefaults.MAP_THEME.name)
+        .map { name -> ThemeSetting.entries.find { it.name == name } ?: SettingsDefaults.MAP_THEME }
 
-    val outerRadiusN: Flow<Float> = preference(KEY_OUTER_RADIUS_N, 5.0f)
+    val outerRadiusN: Flow<Float> = preference(KEY_OUTER_RADIUS_N, SettingsDefaults.OUTER_RADIUS_N)
 
-    val innerRadiusR: Flow<Float> = preference(KEY_INNER_RADIUS_R, 3.0f)
+    val innerRadiusR: Flow<Float> = preference(KEY_INNER_RADIUS_R, SettingsDefaults.INNER_RADIUS_R)
 
-    val locationCacheTimeoutSecs: Flow<Int> = preference(KEY_LOCATION_CACHE_TIMEOUT_SECS, 30)
+    val locationCacheTimeoutSecs: Flow<Int> = preference(KEY_LOCATION_CACHE_TIMEOUT_SECS, SettingsDefaults.LOCATION_CACHE_TIMEOUT_SECS)
 
-    val recalculationDebounceSecs: Flow<Int> = preference(KEY_DEBOUNCE_DELAY_SECS, 8)
+    val recalculationDebounceSecs: Flow<Int> = preference(KEY_DEBOUNCE_DELAY_SECS, SettingsDefaults.RECALCULATION_DEBOUNCE_SECS)
 
-    val masterGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_MASTER_RESPONSIVENESS_SECS, 60)
+    val masterGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_MASTER_RESPONSIVENESS_SECS, SettingsDefaults.MASTER_GEOFENCE_RESPONSIVENESS_SECS)
 
-    val poiGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_POI_RESPONSIVENESS_SECS, 10)
+    val poiGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_POI_RESPONSIVENESS_SECS, SettingsDefaults.POI_GEOFENCE_RESPONSIVENESS_SECS)
 
     val lastRecalcLat: Flow<Double?> = preference(KEY_LAST_RECALC_LAT, 0.0)
         .map { if (it == 0.0) null else it }

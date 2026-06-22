@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.entity.LocationEntity
+import dev.arrase.geotify.data.SettingsDefaults
 import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.ReminderEntity
@@ -45,7 +46,7 @@ class RemindersViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     val mapTheme: StateFlow<ThemeSetting> = settingsManager.mapTheme
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeSetting.SYSTEM)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.MAP_THEME)
 
     val lastRecalcLat: StateFlow<Double?> = settingsManager.lastRecalcLat
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -54,10 +55,10 @@ class RemindersViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val innerRadiusR: StateFlow<Float> = settingsManager.innerRadiusR
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 4.0f)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.INNER_RADIUS_R)
 
     val outerRadiusN: StateFlow<Float> = settingsManager.outerRadiusN
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 5.0f)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.OUTER_RADIUS_N)
 
     suspend fun getCurrentLocation(): android.location.Location? {
         return locationProvider.getCurrentLocation()
