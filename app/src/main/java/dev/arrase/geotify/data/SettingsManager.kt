@@ -40,15 +40,15 @@ class SettingsManager @Inject constructor(
 
     val outerRadiusN: Flow<Float> = preference(KEY_OUTER_RADIUS_N, 5.0f)
 
-    val innerRadiusR: Flow<Float> = preference(KEY_INNER_RADIUS_R, 4.0f)
+    val innerRadiusR: Flow<Float> = preference(KEY_INNER_RADIUS_R, 3.0f)
 
-    val locationCacheTimeoutSecs: Flow<Int> = preference(KEY_LOCATION_CACHE_TIMEOUT_SECS, 120)
+    val locationCacheTimeoutSecs: Flow<Int> = preference(KEY_LOCATION_CACHE_TIMEOUT_SECS, 30)
 
-    val recalculationDebounceSecs: Flow<Int> = preference(KEY_DEBOUNCE_DELAY_SECS, 5)
+    val recalculationDebounceSecs: Flow<Int> = preference(KEY_DEBOUNCE_DELAY_SECS, 8)
 
-    val masterGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_MASTER_RESPONSIVENESS_SECS, 120)
+    val masterGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_MASTER_RESPONSIVENESS_SECS, 60)
 
-    val poiGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_POI_RESPONSIVENESS_SECS, 30)
+    val poiGeofenceResponsivenessSecs: Flow<Int> = preference(KEY_POI_RESPONSIVENESS_SECS, 10)
 
     val lastRecalcLat: Flow<Double?> = preference(KEY_LAST_RECALC_LAT, 0.0)
         .map { if (it == 0.0) null else it }
