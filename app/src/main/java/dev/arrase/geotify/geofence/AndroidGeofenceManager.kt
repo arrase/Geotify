@@ -157,4 +157,45 @@ class AndroidGeofenceManager @Inject constructor(
             throw e
         }
     }
+
+    override suspend fun registerMasterGeofence(
+        centerLat: Double,
+        centerLon: Double,
+        innerRadiusMeters: Float
+    ) {
+        val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        val backgroundLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+
+        Log.i("GeofenceManager", "registerMasterGeofence: centerLat=$centerLat, centerLon=$centerLon, innerRadiusMeters=$innerRadiusMeters")
+
+        if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
+            backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.w("GeofenceManager", "Aborting registration: Permissions not granted!")
+            return
+        }
+
+        val masterResponsivenessMs = settingsManager.masterGeofenceResponsivenessSecs.first() * 1000
+        val masterGeofence = Geofence.Builder()
+            .setRequestId("MASTER_GEOFENCE_TRIGGER")
+            .setCircularRegion(centerLat, centerLon, innerRadiusMeters)
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT)
+            .setNotificationResponsiveness(masterResponsivenessMs)
+            .build()
+
+        val request = GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofence(masterGeofence)
+            .build()
+
+        Log.i("GeofenceManager", "Calling addGeofences for master geofence only...")
+        try {
+            geofencingClient.addGeofences(request, geofencePendingIntent).await()
+            Log.i("GeofenceManager", "Successfully registered master geofence only in GMS")
+        } catch (e: Exception) {
+            Log.e("GeofenceManager", "Failed to register master geofence in GMS", e)
+            throw e
+        }
+    }
 }
