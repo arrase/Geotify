@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Odjezd</string>
     <string name="empty_locations_title">Žádné uložené lokalizace</string>
     <string name="empty_locations_suggestion">Dotkněte se + pro přidání lokace nebo řekněte Gemini: \"Uložit tuto lokalizaci jako domov\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Dotkněte se + pro přidání lokace nebo</string>
     <string name="empty_reminders_title">Žádné upomínky</string>
     <string name="empty_reminders_suggestion">Dotkněte se + pro vytvoření upomínky nebo řekněte Gemini: \"Upomínej mi na nákup mléka, když dorazím do supermarketu\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Dotkněte se + pro vytvoření upomínky nebo řekněte Gemini: \"Upomínej mi na nákup mléka</string>
     <string name="alias_hint">Alias (např. Domov, Kancelář)</string>
     <string name="err_alias_exists">Tento alias již existuje</string>
     <string name="lat_hint">Šířka geografická ([-90.0, 90.0])</string>

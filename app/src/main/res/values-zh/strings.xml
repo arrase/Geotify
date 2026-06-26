@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ 离开</string>
     <string name="empty_locations_title">未保存任何位置</string>
     <string name="empty_locations_suggestion">点击 + 添加位置，或对 Gemini 说：“将此位置保存为家”</string>
+    <string name="empty_locations_suggestion_no_gemini">点击 +</string>
     <string name="empty_reminders_title">尚无提醒</string>
     <string name="empty_reminders_suggestion">点击 + 创建提醒，或对 Gemini 说：“当我到达超市时提醒我买牛奶”</string>
+    <string name="empty_reminders_suggestion_no_gemini">点击 +</string>
     <string name="alias_hint">别名（例如：家、办公室）</string>
     <string name="err_alias_exists">别名已存在</string>
     <string name="lat_hint">纬度 ([-90.0, 90.0])</string>

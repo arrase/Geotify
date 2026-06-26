@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ ออกเดินทาง</string>
     <string name="empty_locations_title">ไม่มีสถานที่ที่บันทึกไว้</string>
     <string name="empty_locations_suggestion">แตะ + เพื่อเพิ่มสถานที่ หรือบอก Gemini ว่า \"บันทึกสถานที่นี้เป็นบ้าน\"</string>
+    <string name="empty_locations_suggestion_no_gemini">แตะ + เพื่อเพิ่มสถานที่</string>
     <string name="empty_reminders_title">ยังไม่มีการแจ้งเตือน</string>
     <string name="empty_reminders_suggestion">แตะ + เพื่อสร้างการแจ้งเตือน หรือบอก Gemini ว่า \"เตือนฉันให้ซื้อนมเมื่อฉันไปถึงซูเปอร์มาร์เก็ต\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">แตะ + เพื่อสร้างการแจ้งเตือน</string>
     <string name="alias_hint">นามแฝง (เช่น บ้าน, สำนักงาน)</string>
     <string name="err_alias_exists">มีนามแฝงนี้อยู่แล้ว</string>
     <string name="lat_hint">ละติจูด ([-90.0, 90.0])</string>

@@ -7,7 +7,7 @@ interface GeofenceManager {
     suspend fun removeGeofences(requestIds: List<String>)
     suspend fun removeAllGeofences()
     suspend fun registerSlidingWindowGeofences(
-        locations: List<LocationEntity>,
+        locations: Map<LocationEntity, Int>,
         centerLat: Double,
         centerLon: Double,
         innerRadiusMeters: Float

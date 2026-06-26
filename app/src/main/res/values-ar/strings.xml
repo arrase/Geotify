@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ مغادرة</string>
     <string name="empty_locations_title">لا توجد مواقع محفوظة</string>
     <string name="empty_locations_suggestion">انقر على + لإضافة موقع، أو قل لـ Gemini: \"احفظ هذا الموقع كمنزل\"</string>
+    <string name="empty_locations_suggestion_no_gemini">انقر على + لإضافة موقع، أو قل</string>
     <string name="empty_reminders_title">لا توجد تذكيرات بعد</string>
     <string name="empty_reminders_suggestion">انقر على + لإنشاء تذكير، أو قل لـ Gemini: \"ذكرني بشراء الحليب عندما أصل إلى السوبر ماركت\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">انقر على + لإنشاء تذكير، أو قل</string>
     <string name="alias_hint">اسم مستعار (مثل: المنزل، المكتب)</string>
     <string name="err_alias_exists">الاسم المستعار موجود بالفعل</string>
     <string name="lat_hint">خط العرض ([-90.0, 90.0])</string>

@@ -45,7 +45,7 @@ Geotify is a modern, location-aware Android application that allows users to cre
 ## Expose AppFunctions (AI / Agentic Integration)
 
 > [!WARNING]
-> **TEMPORARILY DISABLED**: The AppFunctions integration is currently commented out and disabled to lower the `minSdk` to 24 (Android 7) for Google Play Store compatibility testing. It will be restored in a future production release to enable on-device AI agent interactions for Android 16+ devices.
+> **EXPERIMENTAL**: The AppFunctions integration is enabled for devices running the correct Android version (Android 16+), but please note that it will not fully function until Google officially releases the Jetpack AppFunctions library to General Availability (GA).
 
 Geotify implements **Jetpack AppFunctions** (via the `androidx.appfunctions` APIs). This acts as a bridge that allows system services, voice assistants, and local Large Language Models (LLMs) to discover and execute actions within the app context.
 

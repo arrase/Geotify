@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Departure</string>
     <string name="empty_locations_title">No locations saved</string>
     <string name="empty_locations_suggestion">Tap + to add a location, or tell Gemini: \"Save this location as home\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Tap + to add a location</string>
     <string name="empty_reminders_title">No reminders yet</string>
     <string name="empty_reminders_suggestion">Tap + to create a reminder, or tell Gemini: \"Remind me to buy milk when I arrive at the supermarket\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Tap + to create a reminder</string>
     <string name="alias_hint">Alias (e.g. Home, Office)</string>
     <string name="err_alias_exists">Alias already exists</string>
     <string name="lat_hint">Latitude ([-90.0, 90.0])</string>
