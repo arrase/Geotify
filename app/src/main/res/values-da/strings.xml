@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Afrejse</string>
     <string name="empty_locations_title">Ingen gemte lokationer</string>
     <string name="empty_locations_suggestion">Tryk på + for at tilføje en lokation, eller sig til Gemini: \"Gem denne lokation som hjem\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Tryk på + for at tilføje en lokation</string>
     <string name="empty_reminders_title">Ingen påmindelser endnu</string>
     <string name="empty_reminders_suggestion">Tryk på + for at oprette en påmindelse, eller sig til Gemini: \"Mind mig om at købe mælk, når jeg ankommer til supermarkedet\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Tryk på + for at oprette en påmindelse</string>
     <string name="alias_hint">Alias (f.eks. Hjem, Kontor)</string>
     <string name="err_alias_exists">Dette alias findes allerede</string>
     <string name="lat_hint">Breddegrad ([-90.0, 90.0])</string>

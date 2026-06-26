@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Avresa</string>
     <string name="empty_locations_title">Inga sparade platser</string>
     <string name="empty_locations_suggestion">Tryck på + för att lägga till en plats, eller säg till Gemini: \"Spara den här platsen som hem\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Tryck på + för att lägga till en plats</string>
     <string name="empty_reminders_title">Inga påminnelser ännu</string>
     <string name="empty_reminders_suggestion">Tryck på + för att skapa en påminnelse, eller säg till Gemini: \"Påminn mig om att köpa mjölk när jag kommer till mataffären\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Tryck på + för att skapa en påminnelse</string>
     <string name="alias_hint">Alias (t.ex. Hem, Kontor)</string>
     <string name="err_alias_exists">Det här aliaset finns redan</string>
     <string name="lat_hint">Latitud ([-90.0, 90.0])</string>

@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ 출발</string>
     <string name="empty_locations_title">저장된 장소가 없습니다</string>
     <string name="empty_locations_suggestion">+를 탭하여 장소를 추가하거나 Gemini에게 \"이 장소를 집으로 저장해줘\"라고 말하세요</string>
+    <string name="empty_locations_suggestion_no_gemini">+를 탭하여 장소를</string>
     <string name="empty_reminders_title">아직 리마인더가 없습니다</string>
     <string name="empty_reminders_suggestion">+를 탭하여 리마인더를 생성하거나 Gemini에게 \"슈퍼마켓에 도착하면 우유 사라고 리마인드해줘\"라고 말하세요</string>
+    <string name="empty_reminders_suggestion_no_gemini">+를 탭하여 리마인더를</string>
     <string name="alias_hint">별칭 (예: 집, 사무실)</string>
     <string name="err_alias_exists">이미 존재하는 별칭입니다</string>
     <string name="lat_hint">위도 ([-90.0, 90.0])</string>

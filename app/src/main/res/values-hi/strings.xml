@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ प्रस्थान</string>
     <string name="empty_locations_title">कोई स्थान सहेजा नहीं गया है</string>
     <string name="empty_locations_suggestion">+ पर टैप करके स्थान जोड़ें, या Gemini से कहें: \"इस स्थान को घर के रूप में सहेजें\"</string>
+    <string name="empty_locations_suggestion_no_gemini">+ पर टैप करके स्थान जोड़ें</string>
     <string name="empty_reminders_title">अभी कोई रिमाइंडर नहीं है</string>
     <string name="empty_reminders_suggestion">+ पर टैप करके रिमाइंडर बनाएं, या Gemini से कहें: \"जब मैं सुपरमार्केट पहुँचूँ तो मुझे दूध खरीदने के लिए याद दिलाएं\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">+ पर टैप करके रिमाइंडर बनाएं</string>
     <string name="alias_hint">उपनाम (जैसे: घर, कार्यालय)</string>
     <string name="err_alias_exists">उपनाम पहले से मौजूद है</string>
     <string name="lat_hint">अक्षांश ([-90.0, 90.0])</string>

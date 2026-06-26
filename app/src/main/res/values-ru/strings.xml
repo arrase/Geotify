@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Отъезд</string>
     <string name="empty_locations_title">Сохраненных мест нет</string>
     <string name="empty_locations_suggestion">Нажмите + чтобы добавить место или скажите Gemini: \"Сохрани это место как дом\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Нажмите + чтобы добавить место или</string>
     <string name="empty_reminders_title">Пока нет напоминаний</string>
     <string name="empty_reminders_suggestion">Нажмите + чтобы создать напоминание или скажите Gemini: \"Напомни мне купить молоко, когда я приеду в супермаркет\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Нажмите + чтобы создать напоминание или скажите Gemini: \"Напомни мне купить молоко</string>
     <string name="alias_hint">Псевдоним (например, Дом, Офис)</string>
     <string name="err_alias_exists">Псевдоним уже существует</string>
     <string name="lat_hint">Широта ([-90.0, 90.0])</string>

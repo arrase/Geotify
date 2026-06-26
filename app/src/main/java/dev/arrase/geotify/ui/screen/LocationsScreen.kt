@@ -177,10 +177,15 @@ fun LocationsScreen(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
+                val suggestionRes = if (android.os.Build.VERSION.SDK_INT >= 36) {
+                    R.string.empty_locations_suggestion
+                } else {
+                    R.string.empty_locations_suggestion_no_gemini
+                }
                 EmptyState(
                     icon = Icons.Filled.LocationOn,
                     title = stringResource(R.string.empty_locations_title),
-                    suggestion = stringResource(R.string.empty_locations_suggestion)
+                    suggestion = stringResource(suggestionRes)
                 )
             }
 

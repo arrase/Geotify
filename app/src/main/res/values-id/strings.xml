@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Keberangkatan</string>
     <string name="empty_locations_title">Tidak ada lokasi yang disimpan</string>
     <string name="empty_locations_suggestion">Ketuk + untuk menambahkan lokasi, atau katakan pada Gemini: \"Simpan lokasi ini sebagai rumah\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Ketuk + untuk menambahkan lokasi</string>
     <string name="empty_reminders_title">Belum ada pengingat</string>
     <string name="empty_reminders_suggestion">Ketuk + untuk membuat pengingat, atau katakan pada Gemini: \"Ingatkan saya untuk membeli susu saat saya tiba di supermarket\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Ketuk + untuk membuat pengingat</string>
     <string name="alias_hint">Alias (misal: Rumah, Kantor)</string>
     <string name="err_alias_exists">Alias sudah ada</string>
     <string name="lat_hint">Lintang ([-90.0, 90.0])</string>

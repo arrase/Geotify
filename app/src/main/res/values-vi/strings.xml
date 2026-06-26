@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Khởi hành</string>
     <string name="empty_locations_title">Không có địa điểm nào được lưu</string>
     <string name="empty_locations_suggestion">Nhấn + để thêm địa điểm, hoặc nói với Gemini: \"Lưu địa điểm này làm nhà\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Nhấn + để thêm địa điểm</string>
     <string name="empty_reminders_title">Chưa có nhắc nhở nào</string>
     <string name="empty_reminders_suggestion">Nhấn + để tạo nhắc nhở, hoặc nói với Gemini: \"Nhắc tôi mua sữa khi đến siêu thị\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Nhấn + để tạo nhắc nhở</string>
     <string name="alias_hint">Biệt danh (ví dụ: Nhà, Văn phòng)</string>
     <string name="err_alias_exists">Biệt danh đã tồn tại</string>
     <string name="lat_hint">Vĩ độ ([-90.0, 90.0])</string>

@@ -1,6 +1,5 @@
 package dev.arrase.geotify.appfunction
 
-/*
 import androidx.appfunctions.AppFunctionContext
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionSerializable
@@ -10,6 +9,7 @@ import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.entity.triggerTypeString
 import dev.arrase.geotify.location.LocationProvider
+import javax.inject.Inject
 
 /** Serializable result returned after initiating a location save. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
@@ -66,7 +66,7 @@ data class SavedReminder(
     val triggerType: String
 )
 
-class GeotifyAppFunctions(
+class GeotifyAppFunctions @Inject constructor(
     private val locationRepository: LocationRepository,
     private val reminderRepository: ReminderRepository,
     private val locationProvider: LocationProvider
@@ -246,4 +246,3 @@ class GeotifyAppFunctions(
         throw AppFunctionInvalidArgumentException(message)
     }
 }
-*/

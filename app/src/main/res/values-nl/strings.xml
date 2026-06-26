@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Vertrek</string>
     <string name="empty_locations_title">Geen opgeslagen locaties</string>
     <string name="empty_locations_suggestion">Tik op + om een locatie toe te voegen, of zeg tegen Gemini: \"Sla deze locatie op als thuis\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Tik op + om een locatie toe te voegen</string>
     <string name="empty_reminders_title">Nog geen herinneringen</string>
     <string name="empty_reminders_suggestion">Tik op + om een herinnering aan te maken, of zeg tegen Gemini: \"Herinner me eraan om melk te kopen als ik in de supermarkt aankom\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Tik op + om een herinnering aan te maken</string>
     <string name="alias_hint">Alias (bijv. Thuis, Kantoor)</string>
     <string name="err_alias_exists">Deze alias bestaat al</string>
     <string name="lat_hint">Breedtegraad ([-90.0, 90.0])</string>

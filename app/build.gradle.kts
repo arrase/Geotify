@@ -94,7 +94,7 @@ android {
 }
 
 ksp {
-    // arg("appfunctions:aggregateAppFunctions", "true")
+    arg("appfunctions:aggregateAppFunctions", "true")
     arg("room.schemaLocation", "${projectDir}/schemas")
 }
 
@@ -132,9 +132,9 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     // AppFunctions
-    // implementation(libs.androidx.appfunctions)
-    // implementation(libs.androidx.appfunctions.service)
-    // ksp(libs.androidx.appfunctions.compiler)
+    implementation(libs.androidx.appfunctions)
+    implementation(libs.androidx.appfunctions.service)
+    ksp(libs.androidx.appfunctions.compiler)
 
     // Play Services Location (FusedLocationProvider + GeofencingClient)
     implementation(libs.play.services.location)

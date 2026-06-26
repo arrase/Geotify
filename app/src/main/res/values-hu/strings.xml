@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Indulás</string>
     <string name="empty_locations_title">Nincs mentett helyszín</string>
     <string name="empty_locations_suggestion">Nyomjtsd meg a + jelzetet, hogy egy helyszínt ments el, vagy mondd meg a Gemini-nek: \"Mentse el ezt a helyszínt otthonként\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Nyomjtsd meg a + jelzetet</string>
     <string name="empty_reminders_title">Nincs még emlékeztető</string>
     <string name="empty_reminders_suggestion">Nyomjtsd meg a + jelzetet, hogy hozzájárulsz egy emlékeztetőhez, vagy mondd meg a Gemini-nek: \"Emlékeztessen meg, hogy vegyek tejt, amikor megérlek a szupermarketet\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Nyomjtsd meg a + jelzetet</string>
     <string name="alias_hint">Alias (pl. Otthon, Iroda)</string>
     <string name="err_alias_exists">Ez az alias már létezik</string>
     <string name="lat_hint">Szélességfok (-90.0, 90.0]</string>

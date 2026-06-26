@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Wyjazd</string>
     <string name="empty_locations_title">Brak zapisanych lokalizacji</string>
     <string name="empty_locations_suggestion">Dotknij + aby dodać lokalizację lub powiedz Gemini: \"Zapisz tę lokalizację jako dom\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Dotknij + aby dodać lokalizację lub</string>
     <string name="empty_reminders_title">Brak przypomnień</string>
     <string name="empty_reminders_suggestion">Dotknij + aby utworzyć przypomnienie lub powiedz Gemini: \"Przypomnij mi o kupieniu mleka, gdy przyjadę do supermarketu\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Dotknij + aby utworzyć przypomnienie lub powiedz Gemini: \"Przypomnij mi o kupieniu mleka</string>
     <string name="alias_hint">Alias (np. Dom, Biuro)</string>
     <string name="err_alias_exists">Ten alias już istnieje</string>
     <string name="lat_hint">Szerokość geograficzna ([-90.0, 90.0])</string>

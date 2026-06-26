@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ 出発</string>
     <string name="empty_locations_title">保存された場所はありません</string>
     <string name="empty_locations_suggestion">+ をタップして場所を追加するか、Geminiに「この場所を自宅として保存して」と伝えてください</string>
+    <string name="empty_locations_suggestion_no_gemini">+ をタップして場所を追加するか、Geminiに「この場所を自宅として保存して」と伝えてください</string>
     <string name="empty_reminders_title">リマインダーはまだありません</string>
     <string name="empty_reminders_suggestion">+ をタップしてリマインダーを作成するか、Geminiに「スーパーマーケットに着いたら牛乳を買うようにリマインドして」と伝えてください</string>
+    <string name="empty_reminders_suggestion_no_gemini">+ をタップしてリマインダーを作成するか、Geminiに「スーパーマーケットに着いたら牛乳を買うようにリマインドして」と伝えてください</string>
     <string name="alias_hint">エイリアス（例：自宅、オフィス）</string>
     <string name="err_alias_exists">エイリアスは既に存在します</string>
     <string name="lat_hint">緯度 ([-90.0, 90.0])</string>

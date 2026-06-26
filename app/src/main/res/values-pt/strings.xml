@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Partida</string>
     <string name="empty_locations_title">Nenhum local salvo</string>
     <string name="empty_locations_suggestion">Toque em + para adicionar um local, ou diga ao Gemini: \"Salve esta localização como casa\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Toque em + para adicionar um local</string>
     <string name="empty_reminders_title">Nenhum lembrete ainda</string>
     <string name="empty_reminders_suggestion">Toque em + para criar um lembrete, ou diga ao Gemini: \"Lembre-me de comprar leite quando eu chegar ao supermercado\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Toque em + para criar um lembrete</string>
     <string name="alias_hint">Nome (ex: Casa, Trabalho)</string>
     <string name="err_alias_exists">Este nome já existe</string>
     <string name="lat_hint">Latitude ([-90.0, 90.0])</string>

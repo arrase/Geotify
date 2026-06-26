@@ -174,10 +174,15 @@ fun RemindersScreen(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
+                val suggestionRes = if (android.os.Build.VERSION.SDK_INT >= 36) {
+                    R.string.empty_reminders_suggestion
+                } else {
+                    R.string.empty_reminders_suggestion_no_gemini
+                }
                 EmptyState(
                     icon = Icons.Filled.Notifications,
                     title = stringResource(R.string.empty_reminders_title),
-                    suggestion = stringResource(R.string.empty_reminders_suggestion)
+                    suggestion = stringResource(suggestionRes)
                 )
             }
 

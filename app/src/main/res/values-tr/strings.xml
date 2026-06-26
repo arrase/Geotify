@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Kalkış</string>
     <string name="empty_locations_title">Kaydedilmiş konum yok</string>
     <string name="empty_locations_suggestion">+ işaretine dokunarak bir konum ekleyin veya Gemini\'ye \"Bu konumu ev olarak kaydet\" deyin</string>
+    <string name="empty_locations_suggestion_no_gemini">+ işaretine dokunarak bir konum ekleyin</string>
     <string name="empty_reminders_title">Henüz hatırlatıcı yok</string>
     <string name="empty_reminders_suggestion">+ işaretine dokunarak bir hatırlatıcı oluşturun veya Gemini\'ye \"Süpermarkete vardığımda bana süt almamı hatırlat\" deyin</string>
+    <string name="empty_reminders_suggestion_no_gemini">+ işaretine dokunarak bir hatırlatıcı oluşturun</string>
     <string name="alias_hint">Takma ad (örneğin: Ev, Ofis)</string>
     <string name="err_alias_exists">Bu takma ad zaten mevcut</string>
     <string name="lat_hint">Enlem ([-90.0, 90.0])</string>

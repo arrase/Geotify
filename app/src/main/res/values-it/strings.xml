@@ -18,8 +18,10 @@
     <string name="label_transition_departure">↑ Partenza</string>
     <string name="empty_locations_title">Nessun luogo salvato</string>
     <string name="empty_locations_suggestion">Tocca + per aggiungere un luogo, o dì a Gemini: \"Salva questo luogo come casa\"</string>
+    <string name="empty_locations_suggestion_no_gemini">Tocca + per aggiungere un luogo</string>
     <string name="empty_reminders_title">Nessun promemoria attivo</string>
     <string name="empty_reminders_suggestion">Tocca + per creare un promemoria, o dì a Gemini: \"Ricordami di comprare il latte quando arrivo al supermercato\"</string>
+    <string name="empty_reminders_suggestion_no_gemini">Tocca + per creare un promemoria</string>
     <string name="alias_hint">Nome (es. Casa, Ufficio)</string>
     <string name="err_alias_exists">Questo nome esiste già</string>
     <string name="lat_hint">Latitudine ([-90.0, 90.0])</string>
