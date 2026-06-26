@@ -101,7 +101,7 @@ class AndroidGeofenceManager @Inject constructor(
     }
 
     override suspend fun registerSlidingWindowGeofences(
-        locations: List<LocationEntity>,
+        locations: Map<LocationEntity, Int>,
         centerLat: Double,
         centerLon: Double,
         innerRadiusMeters: Float
@@ -135,12 +135,12 @@ class AndroidGeofenceManager @Inject constructor(
 
         // 2. Create and add POIs geofences
         val defaultPoiResponsivenessMs = settingsManager.poiGeofenceResponsivenessSecs.first() * 1000
-        for (location in locations) {
+        for ((location, transitionTypes) in locations) {
             val geofence = Geofence.Builder()
                 .setRequestId(location.id)
                 .setCircularRegion(location.latitude, location.longitude, location.radiusMeters)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .setTransitionTypes(transitionTypes)
                 .setNotificationResponsiveness(maxOf(defaultPoiResponsivenessMs, location.notificationResponsivenessMs)) // batching
                 .build()
             requestBuilder.addGeofence(geofence)

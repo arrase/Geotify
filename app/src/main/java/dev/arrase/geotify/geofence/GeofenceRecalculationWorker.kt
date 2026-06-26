@@ -81,6 +81,13 @@ class GeofenceRecalculationWorker(
                 activeLocationIds.contains(candidate.id)
             }
 
+            val activeCandidatesWithTransitions = activeCandidates.associateWith { candidate ->
+                activeReminders
+                    .filter { it.locationId == candidate.id }
+                    .map { it.transitionType }
+                    .fold(0) { acc, type -> acc or type }
+            }
+
             Log.i(TAG, "Found ${spatialCandidates.size} spatial candidate locations. Filtered to ${activeCandidates.size} with active reminders.")
 
             Log.i(TAG, "Purging previous geofences...")
@@ -94,15 +101,15 @@ class GeofenceRecalculationWorker(
 
             if (activeReminders.isEmpty()) {
                 Log.i(TAG, "No active reminders. Skipping geofence registration to save battery.")
-            } else if (activeCandidates.isNotEmpty()) {
+            } else if (activeCandidatesWithTransitions.isNotEmpty()) {
                 val innerRadiusMeters = innerRadiusR * 1000f
                 geofenceManager.registerSlidingWindowGeofences(
-                    locations = activeCandidates,
+                    locations = activeCandidatesWithTransitions,
                     centerLat = centerLat,
                     centerLon = centerLon,
                     innerRadiusMeters = innerRadiusMeters
                 )
-                Log.i(TAG, "Successfully registered ${activeCandidates.size} POIs + Master Geofence")
+                Log.i(TAG, "Successfully registered ${activeCandidatesWithTransitions.size} POIs + Master Geofence")
             } else {
                 val innerRadiusMeters = innerRadiusR * 1000f
                 geofenceManager.registerMasterGeofence(
