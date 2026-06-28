@@ -35,6 +35,8 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -96,8 +98,8 @@ fun SettingsScreen(
         val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
         val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
 
-        var localOuterRadius by remember(outerRadiusN) { mutableStateOf(outerRadiusN) }
-        var localInnerRadius by remember(innerRadiusR) { mutableStateOf(innerRadiusR) }
+        var localOuterRadius by remember(outerRadiusN) { mutableFloatStateOf(outerRadiusN) }
+        var localInnerRadius by remember(innerRadiusR) { mutableFloatStateOf(innerRadiusR) }
 
         // Battery & Performance Tuning Card
         val cacheTimeout by viewModel.locationCacheTimeoutSecs.collectAsStateWithLifecycle()
@@ -105,10 +107,10 @@ fun SettingsScreen(
         val masterResponsiveness by viewModel.masterGeofenceResponsivenessSecs.collectAsStateWithLifecycle()
         val poiResponsiveness by viewModel.poiGeofenceResponsivenessSecs.collectAsStateWithLifecycle()
 
-        var localCacheTimeout by remember(cacheTimeout) { mutableStateOf(cacheTimeout) }
-        var localDebounceDelay by remember(debounceDelay) { mutableStateOf(debounceDelay) }
-        var localMasterResponsiveness by remember(masterResponsiveness) { mutableStateOf(masterResponsiveness) }
-        var localPoiResponsiveness by remember(poiResponsiveness) { mutableStateOf(poiResponsiveness) }
+        var localCacheTimeout by remember(cacheTimeout) { mutableIntStateOf(cacheTimeout) }
+        var localDebounceDelay by remember(debounceDelay) { mutableIntStateOf(debounceDelay) }
+        var localMasterResponsiveness by remember(masterResponsiveness) { mutableIntStateOf(masterResponsiveness) }
+        var localPoiResponsiveness by remember(poiResponsiveness) { mutableIntStateOf(poiResponsiveness) }
         var showBatteryTuningInfo by remember { mutableStateOf(false) }
 
         SettingsCard(

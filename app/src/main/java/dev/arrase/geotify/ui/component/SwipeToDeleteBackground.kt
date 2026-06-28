@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SwipeToDeleteBackground(
-    contentDescription: String = "Delete",
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentDescription: String = "Delete"
 ) {
     Box(
         modifier = modifier

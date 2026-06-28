@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
@@ -161,6 +162,9 @@ fun ReminderMapView(
     val inactiveFillColor = android.graphics.Color.argb(35, 63, 81, 181)
     val inactiveStrokeColor = inactiveColor
 
+    val labelSlidingWindowCenter = stringResource(R.string.label_sliding_window_center)
+    val labelMyLocation = stringResource(R.string.label_my_location)
+
     AndroidView(
         factory = { ctx ->
             MapView(ctx).apply {
@@ -228,7 +232,7 @@ fun ReminderMapView(
                 // Master geofence center marker
                 val centerMarker = Marker(map).apply {
                     position = centerPoint
-                    title = context.getString(R.string.label_sliding_window_center)
+                    title = labelSlidingWindowCenter
                     icon = centerMarkerIcon
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                     setInfoWindow(null)
@@ -241,7 +245,7 @@ fun ReminderMapView(
                 val userPoint = GeoPoint(currentUserLocation.latitude, currentUserLocation.longitude)
                 val userMarker = Marker(map).apply {
                     position = userPoint
-                    title = context.getString(R.string.label_my_location)
+                    title = labelMyLocation
                     icon = userMarkerIcon
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                     setInfoWindow(null)

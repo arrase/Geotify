@@ -4,6 +4,7 @@ import android.location.Location
 import dev.arrase.geotify.data.dao.LocationDao
 import dev.arrase.geotify.data.entity.LocationEntity
 import javax.inject.Inject
+import kotlin.math.cos
 
 class SpatialSearchUseCase @Inject constructor(
     private val locationDao: LocationDao
@@ -17,7 +18,7 @@ class SpatialSearchUseCase @Inject constructor(
         val latDegreesChange = radiusInMeters / 111320.0
         
         val latRad = Math.toRadians(centerLat)
-        val cosLat = Math.cos(latRad)
+        val cosLat = cos(latRad)
         val lonDegreesChange = if (cosLat > 0.0) {
             radiusInMeters / (111320.0 * cosLat)
         } else {
