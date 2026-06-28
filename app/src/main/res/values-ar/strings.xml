@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d ثانية</string>
     <string name="info_battery_tuning_desc">من خلال ضبط هذه المعلمات، يمكنك تحقيق التوازن بين استهلاك البطارية وزمن انتقال الإشعارات:\n\n• مهلة ذاكرة التخزين المؤقت للموقع: تعيد استخدام عمليات مسح GPS الأخيرة لتجنب تشغيل أجهزة GPS عالية الطاقة بشكل متكرر.\n• تصفية إعادة الحساب: تحدد التأخير للحد من تحديثات قاعدة البيانات المتتالية السريعة، مما يقلل من تشغيل وظائف النظام.\n• استجابة Geofence الرئيسية: الفاصل الزمني الذي تستخدمه خدمات Google Play للكشف عن مغادرتك للمنطقة الرئيسية. تتيح القيم الأعلى تجميعًا أفضل لعمليات مسح في الخلفية بواسطة نظام التشغيل.\n• استجابة POI الافتراضية: زمن انتقال اكتشاف الانتقال الافتراضي لنقاط الاهتمام.</string>
 
+    <string name="content_description_info">معلومات</string>
+    <string name="content_description_edit_location">تعديل الموقع</string>
+    <string name="content_description_delete_location">حذف الموقع</string>
+    <string name="content_description_dismiss">إغلاق</string>
+    <string name="no_active_reminders_for_location">لا توجد تذكيرات نشطة لهذا الموقع</string>
+    <string name="content_description_edit_reminder">تعديل التذكير</string>
+    <string name="content_description_delete_reminder">حذف التذكير</string>
+    <string name="label_sliding_window_center">مركز النافذة المنزلقة</string>
+    <string name="label_my_location">موقعي</string>
+    <string name="content_description_back">رجوع</string>
+    <string name="content_description_center_on_gps">التركيز على نظام تحديد المواقع</string>
+
 </resources>

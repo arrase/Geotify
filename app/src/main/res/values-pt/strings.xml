@@ -103,4 +103,15 @@
     <string name="label_poi_responsiveness">Tempo de resposta padrão do POI</string>
     <string name="label_seconds_value">%1$d seg</string>
     <string name="info_battery_tuning_desc">Ao ajustar estes parâmetros, você pode equilibrar o consumo de bateria e a latência de notificações:\n\n• Cache de Localização: Reutiliza buscas de GPS recentes para evitar ativar o hardware de GPS repetidamente.\n• Atraso de Recálculo: Define a espera para limitar atualizações sucessivas e rápidas do banco de dados, reduzindo tarefas do sistema.\n• Cerca Mestre: O intervalo de tempo que GMS usa para detectar quando você sai da área mestre. Valores maiores permitem agrupamento de tarefas em segundo plano.\n• Cerca de POI: A latência padrão para detecção de transições em seus pontos de interesse.</string>
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Editar localização</string>
+    <string name="content_description_delete_location">Excluir localização</string>
+    <string name="content_description_dismiss">Fechar</string>
+    <string name="no_active_reminders_for_location">Nenhum lembrete ativo para esta localização</string>
+    <string name="content_description_edit_reminder">Editar lembrete</string>
+    <string name="content_description_delete_reminder">Excluir lembrete</string>
+    <string name="label_sliding_window_center">Centro da janela deslizante</string>
+    <string name="label_my_location">Minha localização</string>
+    <string name="content_description_back">Voltar</string>
+    <string name="content_description_center_on_gps">Centrar no GPS</string>
 </resources>

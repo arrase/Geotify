@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d sek</string>
     <string name="info_battery_tuning_desc">Genom att justera dessa parametrar kan du balansera batteriförbrukning och aviseringsfördröjning:\n\n• Timeout för platscache: Återanvänder nyligen gjorda GPS-sökningar för att undvika att slå på den strömkrävande GPS-hårdvaran upprepade gånger.\n• Fördröjning för omberäkning: Ställer in fördröjningen för att begränsa snabba på varandra följande databasuppdateringar, vilket minskar körningen av systemjobb.\n• Master Geofence-responsivitet: Det tidsintervall som GMS använder för att upptäcka att du lämnar masterområdet. Högre värden tillåter operativsystemet att gruppera platssökningar i bakgrunden mer effektivt.\n• Standard POI-responsivitet: Standardfördröjningen för övergångsdetektering för intressepunkter (POI).</string>
 
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Redigera plats</string>
+    <string name="content_description_delete_location">Ta bort plats</string>
+    <string name="content_description_dismiss">Avfärda</string>
+    <string name="no_active_reminders_for_location">Inga aktiva påminnelser för denna plats</string>
+    <string name="content_description_edit_reminder">Redigera påminnelse</string>
+    <string name="content_description_delete_reminder">Ta bort påmindelse</string>
+    <string name="label_sliding_window_center">Centrum för glidande fönster</string>
+    <string name="label_my_location">Min plats</string>
+    <string name="content_description_back">Tillbaka</string>
+    <string name="content_description_center_on_gps">Centrera på GPS</string>
+
 </resources>

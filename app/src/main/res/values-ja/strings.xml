@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d 秒</string>
     <string name="info_battery_tuning_desc">これらのパラメータを調整することで、バッテリー消費と通知の遅延のバランスを取ることができます：\n\n• 位置キャッシュのタイムアウト：最近のGPSスキャンを再利用して、高電力GPSハードウェアを繰り返しオンにすることを避けます。\n• 再計算のデバウンス遅延：連続したデータベース更新をスロットルするための遅延を設定し、システムジョブの実行を削減します。\n• マスタージオフェンスの応答性：マスターエリアからの離脱を検出するためにGMSが使用する時間間隔。値が大きいほど、OSによるバックグラウンドバッチ処理が向上します。\n• デフォルトのPOI応答性：興味のあるポイント（POI）のデフォルトの遷移検出遅延。</string>
 
+    <string name="content_description_info">詳細情報</string>
+    <string name="content_description_edit_location">場所を編集</string>
+    <string name="content_description_delete_location">場所を削除</string>
+    <string name="content_description_dismiss">閉じる</string>
+    <string name="no_active_reminders_for_location">この場所のアクティブなリマインダーはありません</string>
+    <string name="content_description_edit_reminder">リマインダーを編集</string>
+    <string name="content_description_delete_reminder">リマインダーを削除</string>
+    <string name="label_sliding_window_center">スライディングウィンドウの中心</string>
+    <string name="label_my_location">現在地</string>
+    <string name="content_description_back">戻る</string>
+    <string name="content_description_center_on_gps">GPS位置に合わせる</string>
+
 </resources>

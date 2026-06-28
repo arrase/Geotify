@@ -103,4 +103,15 @@
     <string name="label_poi_responsiveness">Réactivité par défaut des POI</string>
     <string name="label_seconds_value">%1$d s</string>
     <string name="info_battery_tuning_desc">En ajustant ces paramètres, vous pouvez équilibrer la consommation de batterie et la latence des notifications :\n\n• Délai d\'expiration du cache : Réutilise les scans GPS récents pour éviter d\'activer le matériel GPS à haute puissance de manière répétée.\n• Délai de recodage : Définit l\'attente pour limiter les mises à jour consécutives de la base de données, réduisant ainsi les lancements de tâches système.\n• Réactivité maîtresse : L\'intervalle de temps que GMS utilise pour détecter votre sortie de la zone maîtresse. Des valeurs plus élevées permettent un meilleur regroupement en arrière-plan par le système.\n• Réactivité des POI : La latence par défaut pour la détection d\'entrée dans vos points d\'intérêt.</string>
+    <string name="content_description_info">Infos</string>
+    <string name="content_description_edit_location">Modifier le lieu</string>
+    <string name="content_description_delete_location">Supprimer le lieu</string>
+    <string name="content_description_dismiss">Fermer</string>
+    <string name="no_active_reminders_for_location">Aucun rappel actif pour ce lieu</string>
+    <string name="content_description_edit_reminder">Modifier le rappel</string>
+    <string name="content_description_delete_reminder">Supprimer le rappel</string>
+    <string name="label_sliding_window_center">Centre de la fenêtre glissante</string>
+    <string name="label_my_location">Ma position</string>
+    <string name="content_description_back">Retour</string>
+    <string name="content_description_center_on_gps">Centrer sur le GPS</string>
 </resources>

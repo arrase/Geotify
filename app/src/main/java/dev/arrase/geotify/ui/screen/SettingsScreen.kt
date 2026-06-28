@@ -437,7 +437,7 @@ private fun SettingsCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Info,
-                                    contentDescription = "Info",
+                                    contentDescription = stringResource(R.string.content_description_info),
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(16.dp)
                                 )

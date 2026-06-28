@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d mp</string>
     <string name="info_battery_tuning_desc">Ezen paraméterek beállításával egyensúlyba hozhatja az akkumulátor-fogyasztást és az értesítési késleltetést:\n\n• Helyszín gyorsítótár lejárata: Újrahasználja a legutóbbi GPS-szkenneléseket, elkerülve a nagy teljesítményű GPS-hardver ismételt bekapcsolását.\n• Újraszámítási késleltetés: Késleltetést állít be a gyors egymás utáni adatbázis-frissítések korlátozására, csökkentve a rendszerfeladatok futtatását.\n• Fő geofence válaszidő: Az az időintervallum, amelyet a GMS használ annak észlelésére, hogy elhagyta a fő területet. A nagyobb értékek jobb háttérben történő kötegelést tesznek lehetővé az operációs rendszer számára.\n• Alapértelmezett POI válaszidő: Az érdeklődési pontok alapértelmezett átmenet-észlelési késleltetése.</string>
 
+    <string name="content_description_info">Infó</string>
+    <string name="content_description_edit_location">Hely szerkesztése</string>
+    <string name="content_description_delete_location">Hely törlése</string>
+    <string name="content_description_dismiss">Bezárás</string>
+    <string name="no_active_reminders_for_location">Nincsenek aktív emlékeztetők ehhez a helyhez</string>
+    <string name="content_description_edit_reminder">Emlékeztető szerkesztése</string>
+    <string name="content_description_delete_reminder">Emlékeztető törlése</string>
+    <string name="label_sliding_window_center">Csúszóablak középpontja</string>
+    <string name="label_my_location">Saját helyzetem</string>
+    <string name="content_description_back">Vissza</string>
+    <string name="content_description_center_on_gps">Középpontba helyezés GPS alapján</string>
+
 </resources>

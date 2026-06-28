@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d sn</string>
     <string name="info_battery_tuning_desc">Bu parametreleri ayarlayarak pil tüketimi ile bildirim gecikmesini dengeleyebilirsiniz:\n\n• Konum Önbellek Zaman Aşımı: Yüksek güç tüketen GPS donanımını tekrar tekrar açmaktan kaçınmak için son GPS taramalarını yeniden kullanır.\n• Yeniden Hesaplama Debounce Gecikmesi: Hızlı ardışık veritabanı güncellemelerini azaltmak için gecikme süresi belirler ve sistem işlerinin yürütülmesini azaltır.\n• Ana Geofence Yanıt Süresi: GMS\'nin ana alandan ayrıldığınızı algılamak için kullandığı zaman aralığı. Daha yüksek değerler işletim sisteminin arka planda konum taramalarını daha iyi gruplandırmasını sağlar.\n• Varsayılan POI Yanıt Süresi: İlgi çekici noktalar (POI) için varsayılan geçiş algılama gecikmesi.</string>
 
+    <string name="content_description_info">Bilgi</string>
+    <string name="content_description_edit_location">Konumu düzenle</string>
+    <string name="content_description_delete_location">Konumu sil</string>
+    <string name="content_description_dismiss">Kapat</string>
+    <string name="no_active_reminders_for_location">Bu konum için aktif hatırlatıcı yok</string>
+    <string name="content_description_edit_reminder">Hatırlatıcıyı düzenle</string>
+    <string name="content_description_delete_reminder">Hatırlatıcıyı sil</string>
+    <string name="label_sliding_window_center">Kayan pencere merkezi</string>
+    <string name="label_my_location">Konumum</string>
+    <string name="content_description_back">Geri</string>
+    <string name="content_description_center_on_gps">GPS üzerinde merkezle</string>
+
 </resources>

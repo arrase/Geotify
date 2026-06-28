@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d sec</string>
     <string name="info_battery_tuning_desc">Door deze parameters aan te passen, kunt u het batterijverbruik en de meldingslatentie in balans brengen:\n\n• Locatiecache-timeout: Hergebruikt recente GPS-scans om te voorkomen dat de krachtige GPS-hardware herhaaldelijk wordt ingeschakeld.\n• Herberekeningsvertraging (Debounce): Stelt de vertraging in om snelle opeenvolgende database-updates te beperken, wat het aantal systeemtaken vermindert.\n• Master Geofence-responsiviteit: Het tijdsinterval dat GMS gebruikt om te detecteren dat u het mastergebied verlaat. Hogere waarden zorgen voor een betere OS-achtergrondbatching van locatiescans.\n• Standaard POI-responsiviteit: De standaardlatentie voor overgangsdetectie voor nuttige plaatsen (POI).</string>
 
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Locatie bewerken</string>
+    <string name="content_description_delete_location">Locatie verwijderen</string>
+    <string name="content_description_dismiss">Sluiten</string>
+    <string name="no_active_reminders_for_location">Geen actieve herinneringen voor deze locatie</string>
+    <string name="content_description_edit_reminder">Herinnering bewerken</string>
+    <string name="content_description_delete_reminder">Herinnering verwijderen</string>
+    <string name="label_sliding_window_center">Middelpunt schuifvenster</string>
+    <string name="label_my_location">Mijn locatie</string>
+    <string name="content_description_back">Terug</string>
+    <string name="content_description_center_on_gps">Centreren op GPS</string>
+
 </resources>

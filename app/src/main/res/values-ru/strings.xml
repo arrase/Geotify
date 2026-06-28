@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d сек.</string>
     <string name="info_battery_tuning_desc">Настраивая эти параметры, вы можете сбалансировать расход батареи и задержку уведомлений:\n\n• Таймаут кэша местоположения: Повторно использует недавние сканирования GPS, чтобы избежать частого включения энергоемкого GPS-модуля.\n• Задержка перерасчета (Debounce): Задает задержку для ограничения частых последовательных обновлений базы данных, сокращая запуск системных задач.\n• Отклик главного геозоны: Интервал времени, используемый GMS для обнаружения вашего выхода из главной зоны. Более высокие значения позволяют операционной системе лучше группировать фоновые запросы.\n• Отклик POI по умолчанию: Стандартная задержка обнаружения перехода для точек интереса.</string>
 
+    <string name="content_description_info">Информация</string>
+    <string name="content_description_edit_location">Изменить местоположение</string>
+    <string name="content_description_delete_location">Удалить местоположение</string>
+    <string name="content_description_dismiss">Закрыть</string>
+    <string name="no_active_reminders_for_location">Нет активных напоминаний для этого местоположения</string>
+    <string name="content_description_edit_reminder">Изменить напоминание</string>
+    <string name="content_description_delete_reminder">Удалить напоминание</string>
+    <string name="label_sliding_window_center">Центр скользящего окна</string>
+    <string name="label_my_location">Мое местоположение</string>
+    <string name="content_description_back">Назад</string>
+    <string name="content_description_center_on_gps">Центрировать по GPS</string>
+
 </resources>

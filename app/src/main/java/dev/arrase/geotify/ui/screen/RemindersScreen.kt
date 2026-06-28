@@ -721,7 +721,7 @@ private fun SelectedReminderLocationCard(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Dismiss",
+                        contentDescription = stringResource(R.string.content_description_dismiss),
                         tint = MaterialTheme.colorScheme.outline
                     )
                 }
@@ -731,7 +731,7 @@ private fun SelectedReminderLocationCard(
 
             if (reminders.isEmpty()) {
                 Text(
-                    text = "No active reminders for this location",
+                    text = stringResource(R.string.no_active_reminders_for_location),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -803,7 +803,7 @@ private fun SelectedReminderLocationCard(
                                 IconButton(onClick = { onEdit(reminder) }) {
                                     Icon(
                                         imageVector = Icons.Filled.Edit,
-                                        contentDescription = "Edit reminder",
+                                        contentDescription = stringResource(R.string.content_description_edit_reminder),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -811,7 +811,7 @@ private fun SelectedReminderLocationCard(
                                 IconButton(onClick = { onDelete(reminder) }) {
                                     Icon(
                                         imageVector = Icons.Filled.Delete,
-                                        contentDescription = "Delete reminder",
+                                        contentDescription = stringResource(R.string.content_description_delete_reminder),
                                         tint = MaterialTheme.colorScheme.error
                                     )
                                 }
