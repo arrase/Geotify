@@ -18,13 +18,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 import dev.arrase.geotify.data.SettingsManager
-import dev.arrase.geotify.location.LocationProvider
 import kotlinx.coroutines.flow.first
 
 @Singleton
 class AndroidGeofenceManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val locationProvider: LocationProvider,
     private val settingsManager: SettingsManager
 ) : GeofenceManager {
 
@@ -48,7 +46,11 @@ class AndroidGeofenceManager @Inject constructor(
 
     override suspend fun registerGeofenceForLocation(location: LocationEntity, transitionTypes: Int) {
         val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        val backgroundLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        val backgroundLocationPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            PackageManager.PERMISSION_GRANTED
+        }
         
         Log.i("GeofenceManager", "registerGeofenceForLocation: alias=${location.alias}, id=${location.id}, transitionTypes=$transitionTypes")
         Log.i("GeofenceManager", "Permissions check: FINE=$fineLocationPermission, BACKGROUND=$backgroundLocationPermission (GRANTED=${PackageManager.PERMISSION_GRANTED})")
@@ -107,7 +109,11 @@ class AndroidGeofenceManager @Inject constructor(
         innerRadiusMeters: Float
     ) {
         val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        val backgroundLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        val backgroundLocationPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            PackageManager.PERMISSION_GRANTED
+        }
         
         Log.i("GeofenceManager", "registerSlidingWindowGeofences: centerLat=$centerLat, centerLon=$centerLon, innerRadiusMeters=$innerRadiusMeters, locationsCount=${locations.size}")
         Log.i("GeofenceManager", "Permissions check: FINE=$fineLocationPermission, BACKGROUND=$backgroundLocationPermission")
@@ -164,7 +170,11 @@ class AndroidGeofenceManager @Inject constructor(
         innerRadiusMeters: Float
     ) {
         val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        val backgroundLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        val backgroundLocationPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            PackageManager.PERMISSION_GRANTED
+        }
 
         Log.i("GeofenceManager", "registerMasterGeofence: centerLat=$centerLat, centerLon=$centerLon, innerRadiusMeters=$innerRadiusMeters")
 

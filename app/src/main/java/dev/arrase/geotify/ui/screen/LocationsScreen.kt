@@ -759,7 +759,8 @@ private fun SelectedLocationCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = String.format(Locale.US, "Lat: %.5f, Lng: %.5f", location.latitude, location.longitude),
+                    text = stringResource(R.string.label_latitude) + String.format(Locale.US, ": %.5f, ", location.latitude) +
+                            stringResource(R.string.label_longitude) + String.format(Locale.US, ": %.5f", location.longitude),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

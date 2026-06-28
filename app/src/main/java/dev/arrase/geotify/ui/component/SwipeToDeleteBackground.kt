@@ -16,12 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.arrase.geotify.R
 
 @Composable
 fun SwipeToDeleteBackground(
     modifier: Modifier = Modifier,
-    contentDescription: String = "Delete"
+    contentDescription: String = stringResource(R.string.btn_delete)
 ) {
     Box(
         modifier = modifier
@@ -43,7 +45,7 @@ fun SwipeToDeleteBackground(
 fun SwipeToDeleteContainer(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
-    contentDescription: String = "Delete",
+    contentDescription: String = stringResource(R.string.btn_delete),
     content: @Composable () -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState()

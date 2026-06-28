@@ -1,8 +1,6 @@
 package dev.arrase.geotify
 
-import android.content.Context
 import dev.arrase.geotify.data.ReminderRepository
-import dev.arrase.geotify.data.dao.LocationDao
 import dev.arrase.geotify.data.dao.ReminderDao
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.LocationReminderCount

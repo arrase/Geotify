@@ -15,11 +15,8 @@ class GeofenceRegistrationTest {
     @Test
     fun testRegisterGeofence() = runBlocking {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val mockLocationProvider = object : dev.arrase.geotify.location.LocationProvider {
-            override suspend fun getCurrentLocation(priority: Int): android.location.Location? = null
-        }
         val settingsManager = dev.arrase.geotify.data.SettingsManager(appContext)
-        val manager = AndroidGeofenceManager(appContext, mockLocationProvider, settingsManager)
+        val manager = AndroidGeofenceManager(appContext, settingsManager)
         val location = LocationEntity(
             id = "test_location_id",
             alias = "TestLocation",
