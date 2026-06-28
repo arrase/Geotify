@@ -76,7 +76,7 @@ class RemindersViewModel @Inject constructor(
         }
     }
 
-    fun updateReminder(reminder: ReminderEntity, oldLocationId: String) {
+    fun updateReminder(reminder: ReminderEntity) {
         viewModelScope.launch {
             try {
                 reminderRepository.updateReminder(reminder)

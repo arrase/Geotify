@@ -48,7 +48,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_TAB = "tab"
-        const val TAB_REMINDERS = "reminders"
         const val TAB_LOCATIONS = "locations"
     }
 }

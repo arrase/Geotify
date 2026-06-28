@@ -29,7 +29,7 @@ class LocationsViewModel @Inject constructor(
     private val reminderRepository: ReminderRepository,
     private val geofenceOrchestrator: GeofenceOrchestrator,
     private val locationProvider: LocationProvider,
-    settingsManager: SettingsManager
+    private val settingsManager: SettingsManager
 ) : ViewModel() {
 
     private val _snackbarMessage = MutableSharedFlow<UiText>()

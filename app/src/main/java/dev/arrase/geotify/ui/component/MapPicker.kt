@@ -55,7 +55,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.drawable.toDrawable
 import dev.arrase.geotify.R
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
@@ -347,14 +349,14 @@ fun MapPicker(
 
 private fun getTintedMarkerIcon(context: Context, color: Int, sizeDp: Int = 38): Drawable {
     val drawable = ContextCompat.getDrawable(context, R.drawable.ic_location)
-        ?: return ColorDrawable(color)
+        ?: return color.toDrawable()
     val density = context.resources.displayMetrics.density
     val size = (sizeDp * density).toInt()
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, size, size)
     val mutated = drawable.mutate()
     DrawableCompat.setTint(mutated, color)
     mutated.draw(canvas)
-    return BitmapDrawable(context.resources, bitmap)
+    return bitmap.toDrawable(context.resources)
 }

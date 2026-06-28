@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
 
 interface LocationProvider {
     suspend fun getCurrentLocation(priority: Int = Priority.PRIORITY_HIGH_ACCURACY): Location?
@@ -57,7 +58,7 @@ class DefaultLocationProvider @Inject constructor(
         }
 
         try {
-            withTimeout(15_000L) {
+            withTimeout(15.seconds) {
                 val cancellationSource = CancellationTokenSource()
                 client.getCurrentLocation(
                     priority,

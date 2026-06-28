@@ -47,7 +47,6 @@ object NotificationHelper {
     fun showGeofenceNotification(
         context: Context,
         notificationId: Int,
-        reminderId: String,
         alias: String,
         message: String
     ) {

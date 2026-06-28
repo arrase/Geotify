@@ -145,8 +145,8 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
-    testImplementation("org.mockito:mockito-core:5.23.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

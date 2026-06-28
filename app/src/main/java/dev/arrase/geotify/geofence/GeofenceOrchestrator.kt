@@ -26,7 +26,7 @@ class GeofenceOrchestrator @Inject constructor(
      *
      * Note on FOREGROUND_SERVICE: Under Android 12+, expedited work can run immediately even
      * when the app is in the background. We use [OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST]
-     * to fallback to a regular work request if quota is exhausted. Since this work runs in
+     * to fall back to a regular work request if quota is exhausted. Since this work runs in
      * milliseconds (purely local DB query and geofence updates), we do not need to bind a
      * Foreground Service notification, avoiding a flashing notification to the user.
      */

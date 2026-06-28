@@ -23,8 +23,6 @@ class ReminderRepository @Inject constructor(
     fun observeActiveReminderCounts(): Flow<List<LocationReminderCount>> =
         reminderDao.observeActiveReminderCounts()
 
-    fun observeActiveReminderCount(locationId: String): Flow<Int> =
-        reminderDao.observeActiveCountForLocation(locationId)
 
     suspend fun createReminder(
         location: LocationEntity,
@@ -54,9 +52,6 @@ class ReminderRepository @Inject constructor(
         reminderDao.deleteById(reminderId)
     }
 
-    suspend fun findReminderById(id: String): ReminderEntity? = withContext(ioDispatcher) {
-        reminderDao.findById(id)
-    }
 
     suspend fun getActiveReminders(): List<ReminderEntity> = withContext(ioDispatcher) {
         reminderDao.getActiveReminders()

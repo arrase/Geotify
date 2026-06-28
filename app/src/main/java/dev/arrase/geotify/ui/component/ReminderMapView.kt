@@ -23,7 +23,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -58,7 +61,7 @@ fun ReminderMapView(
 ) {
     val context = LocalContext.current
 
-    // Configure osmdroid cache (side-effect, runs once)
+    // Configure osmdroid cache (side effect, runs once)
     LaunchedEffect(Unit) {
         Configuration.getInstance().apply {
             userAgentValue = context.packageName
@@ -140,8 +143,8 @@ fun ReminderMapView(
     }
 
     // Custom pins and geofence colors
-    val activeColor = android.graphics.Color.parseColor("#FF1744")
-    val inactiveColor = android.graphics.Color.parseColor("#3F51B5")
+    val activeColor = "#FF1744".toColorInt()
+    val inactiveColor = "#3F51B5".toColorInt()
 
     val activeMarkerIcon = remember(context) {
         getTintedMarkerIcon(context, activeColor, sizeDp = 38)
@@ -150,17 +153,15 @@ fun ReminderMapView(
         getTintedMarkerIcon(context, inactiveColor, sizeDp = 38)
     }
     val userMarkerIcon = remember(context) {
-        getTintedMarkerIcon(context, android.graphics.Color.parseColor("#2196F3"), sizeDp = 24)
+        getTintedMarkerIcon(context, "#2196F3".toColorInt(), sizeDp = 24)
     }
     val centerMarkerIcon = remember(context) {
         getTintedMarkerIcon(context, android.graphics.Color.BLACK, sizeDp = 20)
     }
 
     val activeFillColor = android.graphics.Color.argb(55, 255, 23, 68)
-    val activeStrokeColor = activeColor
 
     val inactiveFillColor = android.graphics.Color.argb(35, 63, 81, 181)
-    val inactiveStrokeColor = inactiveColor
 
     val labelSlidingWindowCenter = stringResource(R.string.label_sliding_window_center)
     val labelMyLocation = stringResource(R.string.label_my_location)
@@ -264,7 +265,7 @@ fun ReminderMapView(
                 val circle = Polygon().apply {
                     points = Polygon.pointsAsCircle(geoPoint, location.radiusMeters.toDouble())
                     fillPaint.color = if (hasActiveReminderInRange) activeFillColor else inactiveFillColor
-                    outlinePaint.color = if (hasActiveReminderInRange) activeStrokeColor else inactiveStrokeColor
+                    outlinePaint.color = if (hasActiveReminderInRange) activeColor else inactiveColor
                     outlinePaint.strokeWidth = if (isSelected) 8f else (if (hasActiveReminderInRange) 5f else 3f)
                 }
                 map.overlays.add(circle)
@@ -291,14 +292,14 @@ fun ReminderMapView(
 
 private fun getTintedMarkerIcon(context: Context, color: Int, sizeDp: Int = 38): Drawable {
     val drawable = ContextCompat.getDrawable(context, R.drawable.ic_location)
-        ?: return ColorDrawable(color)
+        ?: return color.toDrawable()
     val density = context.resources.displayMetrics.density
     val size = (sizeDp * density).toInt()
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, size, size)
     val mutated = drawable.mutate()
     DrawableCompat.setTint(mutated, color)
     mutated.draw(canvas)
-    return BitmapDrawable(context.resources, bitmap)
+    return bitmap.toDrawable(context.resources)
 }

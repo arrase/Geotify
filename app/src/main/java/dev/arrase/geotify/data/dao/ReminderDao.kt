@@ -33,14 +33,10 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE is_active = 1")
     suspend fun getActiveReminders(): List<ReminderEntity>
 
-    @Query("SELECT * FROM reminders WHERE id = :id")
-    suspend fun findById(id: String): ReminderEntity?
 
     @Query("SELECT * FROM reminders WHERE location_id = :locationId AND is_active = 1")
     suspend fun getActiveByLocationId(locationId: String): List<ReminderEntity>
 
-    @Query("SELECT COUNT(*) FROM reminders WHERE location_id = :locationId AND is_active = 1")
-    fun observeActiveCountForLocation(locationId: String): Flow<Int>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(reminder: ReminderEntity)
@@ -54,14 +50,6 @@ interface ReminderDao {
     @Query("DELETE FROM reminders WHERE id = :id")
     suspend fun deleteById(id: String): Int
 
-    @Query(
-        """
-        SELECT r.id FROM reminders r
-        INNER JOIN locations l ON r.location_id = l.id
-        WHERE l.alias = :alias COLLATE NOCASE AND r.is_active = 1
-        """
-    )
-    suspend fun getActiveReminderIdsByAlias(alias: String): List<String>
 
     @Query("UPDATE reminders SET is_in_range = 0")
     suspend fun clearAllInRange()

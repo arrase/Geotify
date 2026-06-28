@@ -66,6 +66,7 @@ data class SavedReminder(
     val triggerType: String
 )
 
+@Suppress("UNUSED_PARAMETER")
 class GeotifyAppFunctions @Inject constructor(
     private val locationRepository: LocationRepository,
     private val reminderRepository: ReminderRepository,

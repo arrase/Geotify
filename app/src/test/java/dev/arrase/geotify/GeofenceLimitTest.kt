@@ -21,11 +21,10 @@ class GeofenceLimitTest {
         override fun observeAll(): Flow<List<ReminderEntity>> = flowOf(remindersList)
         override suspend fun getActiveReminders(): List<ReminderEntity> =
             remindersList.filter { it.isActive }
-        override suspend fun findById(id: String): ReminderEntity? =
-            remindersList.find { it.id == id }
+
         override suspend fun getActiveByLocationId(locationId: String): List<ReminderEntity> =
             remindersList.filter { it.locationId == locationId && it.isActive }
-        override fun observeActiveCountForLocation(locationId: String): Flow<Int> = flowOf(0)
+
         override suspend fun insert(reminder: ReminderEntity) {
             remindersList.add(reminder)
         }
@@ -44,7 +43,7 @@ class GeofenceLimitTest {
             remindersList.removeAll { it.id == id }
             return count - remindersList.size
         }
-        override suspend fun getActiveReminderIdsByAlias(alias: String): List<String> = emptyList()
+
         override suspend fun getActiveGeofenceCount(): Int =
             remindersList.filter { it.isActive }.map { it.locationId }.distinct().size
         override suspend fun clearAllInRange() {}

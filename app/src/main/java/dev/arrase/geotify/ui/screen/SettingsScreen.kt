@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.ThemeSetting
+import kotlin.math.round
 
 @Composable
 fun SettingsScreen(
@@ -144,7 +145,7 @@ fun SettingsScreen(
                     androidx.compose.material3.Slider(
                         value = localOuterRadius,
                         onValueChange = { newVal ->
-                            val cleanVal = Math.round(newVal * 10f) / 10f
+                            val cleanVal = round(newVal * 10f) / 10f
                             localOuterRadius = cleanVal
                             if (localInnerRadius > cleanVal) {
                                 localInnerRadius = cleanVal
@@ -182,7 +183,7 @@ fun SettingsScreen(
                     androidx.compose.material3.Slider(
                         value = localInnerRadius,
                         onValueChange = { newVal ->
-                            val cleanVal = Math.round(newVal * 10f) / 10f
+                            val cleanVal = round(newVal * 10f) / 10f
                             localInnerRadius = cleanVal
                         },
                         onValueChangeFinished = {

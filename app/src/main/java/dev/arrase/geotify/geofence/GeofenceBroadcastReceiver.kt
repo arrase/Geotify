@@ -88,7 +88,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                         NotificationHelper.showGeofenceNotification(
                             context,
                             reminder.id.hashCode(),
-                            reminder.id,
                             location.alias,
                             reminder.message
                         )
@@ -105,6 +104,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        private const val TAG = "GeofenceBroadcastRcvr"
+        private const val TAG = "GeofenceBroadcastReceiver"
     }
 }

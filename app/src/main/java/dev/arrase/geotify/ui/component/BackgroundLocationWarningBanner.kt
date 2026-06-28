@@ -66,7 +66,9 @@ fun BackgroundLocationWarningBanner(
                 }
                 TextButton(
                     onClick = {
-                        launcher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                            launcher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        }
                     },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.error

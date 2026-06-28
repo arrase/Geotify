@@ -8,13 +8,6 @@ sealed interface UiText {
     data class DynamicString(val value: String) : UiText
     data class StringResource(val resId: Int) : UiText
 
-    fun asString(context: Context): String {
-        return when (this) {
-            is DynamicString -> value
-            is StringResource -> context.getString(resId)
-        }
-    }
-
     @Composable
     fun asString(): String {
         return when (this) {

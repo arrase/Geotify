@@ -71,6 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.R
+import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.data.entity.isArrival
@@ -93,7 +94,6 @@ fun RemindersScreen(
     val reminders by viewModel.reminders.collectAsStateWithLifecycle()
     val locations by viewModel.locations.collectAsStateWithLifecycle()
     val activeReminderCounts by viewModel.activeReminderCounts.collectAsStateWithLifecycle()
-    val activeGeofencesCount = remember(activeReminderCounts) { activeReminderCounts.size }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -104,9 +104,9 @@ fun RemindersScreen(
     val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
     val isMapDarkTheme = when (mapThemeSetting) {
-        dev.arrase.geotify.data.ThemeSetting.SYSTEM -> isSystemDark
-        dev.arrase.geotify.data.ThemeSetting.LIGHT -> false
-        dev.arrase.geotify.data.ThemeSetting.DARK -> true
+        ThemeSetting.SYSTEM -> isSystemDark
+        ThemeSetting.LIGHT -> false
+        ThemeSetting.DARK -> true
     }
 
     LaunchedEffect(viewModel) {
@@ -550,8 +550,7 @@ fun RemindersScreen(
                                                 locationId = selectedLocationId,
                                                 message = message,
                                                 transitionType = transitionType
-                                            ),
-                                            oldLocationId = currentEditing.locationId
+                                            )
                                         )
                                     }
                                     showDialog = false

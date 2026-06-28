@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Calls [goAsync] and launches a coroutine to perform background work within the
@@ -19,7 +20,7 @@ fun BroadcastReceiver.goAsyncCoroutine(block: suspend CoroutineScope.() -> Unit)
     val pendingResult = goAsync()
     CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
         try {
-            withTimeout(9_000L) {
+            withTimeout(9.seconds) {
                 block()
             }
         } catch (e: Exception) {
