@@ -94,7 +94,6 @@ android {
 }
 
 ksp {
-    arg("appfunctions:aggregateAppFunctions", "true")
     arg("room.schemaLocation", "${projectDir}/schemas")
 }
 
