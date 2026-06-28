@@ -48,20 +48,28 @@ fun rememberBackgroundLocationGranted(): Boolean {
     val context = LocalContext.current
     var isGranted by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
         )
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                isGranted = ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+                isGranted = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                } else {
+                    true
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -78,60 +86,63 @@ fun PermissionGate(content: @Composable () -> Unit) {
     var step by remember { mutableIntStateOf(STEP_LOCATION) }
     var showBackgroundDialog by remember { mutableStateOf(false) }
 
+    fun checkBgGranted(): Boolean {
+        return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q ||
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun checkNotificationGranted(): Boolean {
+        return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+    }
+
     // Check if location is already granted on first composition
     LaunchedEffect(Unit) {
         val fineGranted = ContextCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) == PackageManager.PERMISSION_GRANTED
 
         if (fineGranted) {
-            val bgGranted = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-
             step = when {
-                bgGranted -> STEP_DONE
-                else -> STEP_NOTIFICATION
+                !checkNotificationGranted() -> STEP_NOTIFICATION
+                !checkBgGranted() -> {
+                    showBackgroundDialog = true
+                    STEP_DONE
+                }
+                else -> STEP_DONE
             }
         }
-    }
-
-    // Re-check background location permission when returning from Settings
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME && step == STEP_DONE) {
-                val bgGranted = ContextCompat.checkSelfPermission(
-                    context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                // Background location is optional — no action needed if still not granted.
-                // This hook exists so future logic can react to the grant status change.
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     val locationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
-        step = if (fineGranted) STEP_NOTIFICATION else STEP_DONE
+        if (fineGranted) {
+            if (!checkNotificationGranted()) {
+                step = STEP_NOTIFICATION
+            } else if (!checkBgGranted()) {
+                showBackgroundDialog = true
+                step = STEP_DONE
+            } else {
+                step = STEP_DONE
+            }
+        } else {
+            step = STEP_DONE
+        }
     }
 
     val notificationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) {
-        // Whether granted or not, move to background step
-        val bgGranted = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-
-        if (bgGranted) {
-            step = STEP_DONE
-        } else {
+    ) { _ ->
+        if (!checkBgGranted()) {
             showBackgroundDialog = true
         }
+        step = STEP_DONE
     }
 
     val backgroundLocationLauncher = rememberLauncherForActivityResult(
@@ -156,14 +167,18 @@ fun PermissionGate(content: @Composable () -> Unit) {
         STEP_NOTIFICATION -> {
             PermissionRequestScreen(message = stringResource(R.string.perm_notification_message))
             LaunchedEffect(Unit) {
-                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    step = STEP_DONE
+                }
             }
         }
 
         STEP_DONE -> content()
     }
 
-    if (showBackgroundDialog) {
+    if (showBackgroundDialog && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
         AlertDialog(
             onDismissRequest = {
                 showBackgroundDialog = false

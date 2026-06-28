@@ -55,7 +55,7 @@ fun GeotifyNavHost(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text("Geotify") },
+                title = { Text(stringResource(R.string.app_name)) },
                 scrollBehavior = scrollBehavior
             )
         },
