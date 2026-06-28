@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d วินาที</string>
     <string name="info_battery_tuning_desc">ด้วยการปรับพารามิเตอร์เหล่านี้ คุณสามารถปรับสมดุลระหว่างการใช้แบตเตอรี่และความล่าช้าในการแจ้งเตือนได้:\n\n• หมดเวลาแคชตำแหน่ง: ใช้การสแกน GPS ล่าสุดซ้ำเพื่อหลีกเลี่ยงการเปิดฮาร์ดแวร์ GPS พลังงานสูงซ้ำๆ\n• ดีเลย์หน่วงเวลาการคำนวณใหม่: ตั้งค่าการหน่วงเวลาเพื่อจำกัดการอัปเดตฐานข้อมูลอย่างรวดเร็วติดต่อกัน ซึ่งช่วยลดการทำงานของระบบ\n• การตอบสนอง Geofence หลัก: ช่วงเวลาที่ GMS ใช้เพื่อตรวจจับว่าคุณออกจากพื้นที่หลัก ค่าที่สูงขึ้นช่วยให้ OS จัดกลุ่มการสแกนในเบื้องหลังได้ดีขึ้น\n• การตอบสนอง POI เริ่มต้น: ความล่าช้าในการตรวจจับการเปลี่ยนแปลงเริ่มต้นสำหรับจุดที่น่าสนใจ</string>
 
+    <string name="content_description_info">ข้อมูล</string>
+    <string name="content_description_edit_location">แก้ไขตำแหน่งที่ตั้ง</string>
+    <string name="content_description_delete_location">ลบตำแหน่งที่ตั้ง</string>
+    <string name="content_description_dismiss">ปิด</string>
+    <string name="no_active_reminders_for_location">ไม่มีการแจ้งเตือนที่เปิดใช้งานสำหรับตำแหน่งที่ตั้งนี้</string>
+    <string name="content_description_edit_reminder">แก้ไขการแจ้งเตือน</string>
+    <string name="content_description_delete_reminder">ลบการแจ้งเตือน</string>
+    <string name="label_sliding_window_center">ศูนย์กลางของหน้าต่างสไลด์</string>
+    <string name="label_my_location">ตำแหน่งที่ตั้งของฉัน</string>
+    <string name="content_description_back">ย้อนกลับ</string>
+    <string name="content_description_center_on_gps">จัดกึ่งกลางตาม GPS</string>
+
 </resources>

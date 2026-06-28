@@ -103,4 +103,15 @@
     <string name="label_poi_responsiveness">Default POI Responsiveness</string>
     <string name="label_seconds_value">%1$d sec</string>
     <string name="info_battery_tuning_desc">By adjusting these parameters, you can balance battery consumption and notification latency:\n\n• Location Cache Timeout: Reuses recent GPS scans to avoid turning on the high-power GPS hardware repeatedly.\n• Recalculation Debounce: Sets the delay to throttle rapid consecutive database updates, reducing system job executions.\n• Master Responsiveness: The time interval GMS uses to detect you leaving the master area. Higher values allow better OS background batching.\n• Default POI Responsiveness: The default transition detection latency for points of interest.</string>
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Edit location</string>
+    <string name="content_description_delete_location">Delete location</string>
+    <string name="content_description_dismiss">Dismiss</string>
+    <string name="no_active_reminders_for_location">No active reminders for this location</string>
+    <string name="content_description_edit_reminder">Edit reminder</string>
+    <string name="content_description_delete_reminder">Delete reminder</string>
+    <string name="label_sliding_window_center">Sliding Window Center</string>
+    <string name="label_my_location">My Location</string>
+    <string name="content_description_back">Back</string>
+    <string name="content_description_center_on_gps">Center on GPS</string>
 </resources>

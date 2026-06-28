@@ -676,7 +676,7 @@ private fun ResponsivenessSlider(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Info,
-                        contentDescription = "Info",
+                        contentDescription = stringResource(R.string.content_description_info),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
@@ -774,7 +774,7 @@ private fun SelectedLocationCard(
                 IconButton(onClick = onEdit) {
                     Icon(
                         imageVector = Icons.Filled.Edit,
-                        contentDescription = "Edit location",
+                        contentDescription = stringResource(R.string.content_description_edit_location),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -782,7 +782,7 @@ private fun SelectedLocationCard(
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Delete location",
+                        contentDescription = stringResource(R.string.content_description_delete_location),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }
@@ -790,7 +790,7 @@ private fun SelectedLocationCard(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Dismiss",
+                        contentDescription = stringResource(R.string.content_description_dismiss),
                         tint = MaterialTheme.colorScheme.outline
                     )
                 }

@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d s</string>
     <string name="info_battery_tuning_desc">Úpravou těchto parametrů můžete vyvážit spotřebu baterie a latenci oznámení:\n\n• Časový limit mezipaměti polohy: Znovu využívá nedávné skeny GPS, aby se zabránilo opakovanému zapínání energeticky náročného hardwaru GPS.\n• Prodleva pro přepočet: Nastavuje zpoždění pro omezení rychlých po sobě jdoucích aktualizací databáze, což snižuje spouštění systémových úloh.\n• Odezva hlavního geofence: Časový interval, který služby GMS používají k detekci opuštění hlavní oblasti. Vyšší hodnoty umožňují lepší dávkování skenování na pozadí operačním systémem.\n• Výchozí odezva POI: Výchozí latence detekce přechodu u bodů zájmu.</string>
 
+    <string name="content_description_info">Informace</string>
+    <string name="content_description_edit_location">Upravit polohu</string>
+    <string name="content_description_delete_location">Smazat polohu</string>
+    <string name="content_description_dismiss">Zavřít</string>
+    <string name="no_active_reminders_for_location">Pro toto místo nejsou žádná aktivní připomenutí</string>
+    <string name="content_description_edit_reminder">Upravit připomenutí</string>
+    <string name="content_description_delete_reminder">Smazat připomenutí</string>
+    <string name="label_sliding_window_center">Střed posuvného okna</string>
+    <string name="label_my_location">Moje poloha</string>
+    <string name="content_description_back">Zpět</string>
+    <string name="content_description_center_on_gps">Vycentrovat na GPS</string>
+
 </resources>

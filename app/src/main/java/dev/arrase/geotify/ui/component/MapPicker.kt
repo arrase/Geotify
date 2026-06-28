@@ -228,7 +228,7 @@ fun MapPicker(
                     title = { Text(stringResource(R.string.label_map_picker_title), style = MaterialTheme.typography.titleMedium) },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -259,7 +259,7 @@ fun MapPicker(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ) {
-                    Icon(Icons.Filled.MyLocation, contentDescription = "Center on GPS")
+                    Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.content_description_center_on_gps))
                 }
 
                 // Floating details card at the bottom

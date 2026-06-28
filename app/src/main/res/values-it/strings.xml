@@ -103,4 +103,15 @@
     <string name="label_poi_responsiveness">Reattività POI predefinita</string>
     <string name="label_seconds_value">%1$d sec</string>
     <string name="info_battery_tuning_desc">Regolando questi parametri, puoi bilanciare il consumo della batteria e la latenza delle notifiche:\n\n• Timeout cache di posizione: Riutilizza le scansioni GPS recenti per evitare di accendere ripetutamente il GPS ad alta potenza.\n• Ritardo di ricalcolo: Imposta il ritardo per limitare gli aggiornamenti consecutivi rapidi del database, riducendo le esecuzioni dei processi di sistema.\n• Reattività master: L\'intervallo di tempo che GMS utilizza per rilevare l\'uscita dall\'area master. Valori più alti consentono un migliore raggruppamento in background da parte del sistema operativo.\n• Reattività POI: La latenza predefinita per il rilevamento delle transizioni per i punti di interesse.</string>
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Modifica posizione</string>
+    <string name="content_description_delete_location">Elimina posizione</string>
+    <string name="content_description_dismiss">Chiudi</string>
+    <string name="no_active_reminders_for_location">Nessun promemoria attivo per questa posizione</string>
+    <string name="content_description_edit_reminder">Modifica promemoria</string>
+    <string name="content_description_delete_reminder">Elimina promemoria</string>
+    <string name="label_sliding_window_center">Centro della finestra scorrevole</string>
+    <string name="label_my_location">La mia posizione</string>
+    <string name="content_description_back">Indietro</string>
+    <string name="content_description_center_on_gps">Centra su GPS</string>
 </resources>

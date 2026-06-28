@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d dtk</string>
     <string name="info_battery_tuning_desc">Dengan menyesuaikan parameter ini, Anda dapat menyeimbangkan konsumsi baterai dan latensi notifikasi:\n\n• Batas Waktu Cache Lokasi: Menggunakan kembali pemindaian GPS baru-baru ini untuk menghindari menyalakan perangkat keras GPS berdaya tinggi secara berulang.\n• Penundaan Debounce Perhitungan Ulang: Mengatur penundaan untuk membatasi pembaruan database berturut-turut yang cepat, mengurangi eksekusi pekerjaan sistem.\n• Responsivitas Geofence Master: Interval waktu yang digunakan GMS untuk mendeteksi Anda meninggalkan area master. Nilai yang lebih tinggi memungkinkan pengelompokan pemindaian latar belakang OS yang lebih baik.\n• Responsivitas POI Default: Latensi deteksi transisi default untuk titik menarik (POI).</string>
 
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Edit lokasi</string>
+    <string name="content_description_delete_location">Hapus lokasi</string>
+    <string name="content_description_dismiss">Tutup</string>
+    <string name="no_active_reminders_for_location">Tidak ada pengingat aktif untuk lokasi ini</string>
+    <string name="content_description_edit_reminder">Edit pengingat</string>
+    <string name="content_description_delete_reminder">Hapus pengingat</string>
+    <string name="label_sliding_window_center">Pusat jendela geser</string>
+    <string name="label_my_location">Lokasi saya</string>
+    <string name="content_description_back">Kembali</string>
+    <string name="content_description_center_on_gps">Pusatkan pada GPS</string>
+
 </resources>

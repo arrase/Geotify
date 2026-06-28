@@ -103,4 +103,15 @@
     <string name="label_poi_responsiveness">Responsividad por Defecto de POI</string>
     <string name="label_seconds_value">%1$d seg</string>
     <string name="info_battery_tuning_desc">Al ajustar estos parámetros, puedes equilibrar el consumo de batería y la latencia de las notificaciones:\n\n• Caché de Ubicación: Reutiliza lecturas de GPS recientes para evitar activar el hardware de GPS repetidamente.\n• Retraso de Recálculo: Define la espera antes de re-evaluar la ventana deslizante tras cambios rápidos, evitando cancelaciones de trabajo.\n• Responsividad Maestra: El intervalo para detectar la salida de la zona de cobertura. Un valor más alto permite al sistema agrupar lecturas de red.\n• Responsividad de POI: El intervalo por defecto para detectar la entrada a tus puntos de interés.</string>
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Editar lugar</string>
+    <string name="content_description_delete_location">Eliminar lugar</string>
+    <string name="content_description_dismiss">Descartar</string>
+    <string name="no_active_reminders_for_location">No hay recordatorios activos para este lugar</string>
+    <string name="content_description_edit_reminder">Editar recordatorio</string>
+    <string name="content_description_delete_reminder">Eliminar recordatorio</string>
+    <string name="label_sliding_window_center">Centro de la ventana deslizante</string>
+    <string name="label_my_location">Mi ubicación</string>
+    <string name="content_description_back">Atrás</string>
+    <string name="content_description_center_on_gps">Centrar en GPS</string>
 </resources>

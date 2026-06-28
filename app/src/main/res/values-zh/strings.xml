@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d 秒</string>
     <string name="info_battery_tuning_desc">通过调整这些参数，您可以平衡电池消耗和通知延迟：\n\n• 位置缓存超时：重用最近的 GPS 扫描，以避免重复开启高功耗的 GPS 硬件。\n• 重新计算防抖延迟：设置延迟以限制快速连续的 database 更新，减少 system 作业的执行。\n• 主围栏响应度：GMS 用于检测您离开主区域的时间间隔。值越大，允许操作系统在后台进行更好的批量位置扫描。\n• 默认 POI 响应度：兴趣点 (POI) 的默认过渡检测延迟。</string>
 
+    <string name="content_description_info">信息</string>
+    <string name="content_description_edit_location">编辑位置</string>
+    <string name="content_description_delete_location">删除位置</string>
+    <string name="content_description_dismiss">关闭</string>
+    <string name="no_active_reminders_for_location">此位置没有活动提醒</string>
+    <string name="content_description_edit_reminder">编辑提醒</string>
+    <string name="content_description_delete_reminder">删除提醒</string>
+    <string name="label_sliding_window_center">滑动窗口中心</string>
+    <string name="label_my_location">我的位置</string>
+    <string name="content_description_back">返回</string>
+    <string name="content_description_center_on_gps">对齐到GPS</string>
+
 </resources>

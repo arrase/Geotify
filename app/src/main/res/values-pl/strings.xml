@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d s</string>
     <string name="info_battery_tuning_desc">Dostosowując te parametry, możesz zrównoważyć zużycie baterii i opóźnienie powiadomień:\n\n• Limit pamięci podręcznej lokalizacji: Ponownie wykorzystuje ostatnie skany GPS, aby uniknąć wielokrotnego włączania energochłonnego sprzętu GPS.\n• Opóźnienie przeliczania (debounce): Ustawia opóźnienie w celu ograniczenia szybkich, kolejnych aktualizacji bazy danych, zmniejszając liczbę uruchomień zadań systemowych.\n• Reaktywność głównego geofencingu: Interwał czasowy używany przez GMS do wykrywania opuszczenia obszaru głównego. Wyższe wartości pozwalają na lepsze grupowanie skanów w tle przez system operacyjny.\n• Domyślna reaktywność POI: Domyślne opóźnienie wykrywania przejścia dla punktów POI.</string>
 
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Edytuj lokalizację</string>
+    <string name="content_description_delete_location">Usuń lokalizację</string>
+    <string name="content_description_dismiss">Zamknij</string>
+    <string name="no_active_reminders_for_location">Brak aktywnych przypomnień dla tej lokalizacji</string>
+    <string name="content_description_edit_reminder">Edytuj przypomnienie</string>
+    <string name="content_description_delete_reminder">Usuń przypomnienie</string>
+    <string name="label_sliding_window_center">Środek okna przesuwnego</string>
+    <string name="label_my_location">Moja lokalizacja</string>
+    <string name="content_description_back">Wstecz</string>
+    <string name="content_description_center_on_gps">Wyśrodkuj na GPS</string>
+
 </resources>

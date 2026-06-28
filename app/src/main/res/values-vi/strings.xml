@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d giây</string>
     <string name="info_battery_tuning_desc">Bằng cách điều chỉnh các thông số này, bạn có thể cân bằng giữa mức tiêu thụ pin và độ trễ thông báo:\n\n• Thời gian chờ bộ nhớ cache vị trí: Tái sử dụng các lần quét GPS gần đây để tránh bật phần cứng GPS công suất cao liên tục.\n• Độ trễ tính toán lại: Đặt độ trễ để hạn chế các cập nhật cơ sở dữ liệu liên tục và nhanh chóng, giảm thiểu việc chạy các tác vụ hệ thống.\n• Độ nhạy Geofence chính: Khoảng thời gian GMS sử dụng để phát hiện bạn rời khỏi khu vực chính. Giá trị cao hơn cho phép HĐH gom nhóm các lần quét nền tốt hơn.\n• Độ nhạy POI mặc định: Độ trễ phát hiện chuyển cảnh mặc định cho các điểm quan tâm.</string>
 
+    <string name="content_description_info">Thông tin</string>
+    <string name="content_description_edit_location">Chỉnh sửa địa điểm</string>
+    <string name="content_description_delete_location">Xóa địa điểm</string>
+    <string name="content_description_dismiss">Đóng</string>
+    <string name="no_active_reminders_for_location">Không có nhắc nhở hoạt động nào cho địa điểm này</string>
+    <string name="content_description_edit_reminder">Chỉnh sửa nhắc nhở</string>
+    <string name="content_description_delete_reminder">Xóa nhắc nhở</string>
+    <string name="label_sliding_window_center">Tâm cửa sổ trượt</string>
+    <string name="label_my_location">Vị trí của tôi</string>
+    <string name="content_description_back">Quay lại</string>
+    <string name="content_description_center_on_gps">Căn giữa theo GPS</string>
+
 </resources>

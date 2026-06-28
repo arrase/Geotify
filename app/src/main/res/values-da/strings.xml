@@ -104,4 +104,16 @@
     <string name="label_seconds_value">%1$d sek</string>
     <string name="info_battery_tuning_desc">Ved at justere disse parametre kan du afbalancere batteriforbrug og notifikationsforsinkelse:\n\n• Timeout for lokationscache: Genbruger seneste GPS-skanninger for at undgå at tænde for den strømkrævende GPS-hardware gentagne gange.\n• Forsinkelse af genberegning: Indstiller forsinkelsen for at begrænse hurtige på hinanden følgende databaseopdateringer, hvilket reducerer udførelsen af systemjob.\n• Master Geofence-reaktivitet: Tidsintervallet, som GMS bruger til at registrere, at du forlader masterområdet. Højere værdier giver bedre OS-baggrundsbatching af lokationsskanninger.\n• Standard POI-reaktivitet: Den standardmæssige overgangsdetekteringsforsinkelse for interessepunkter.</string>
 
+    <string name="content_description_info">Info</string>
+    <string name="content_description_edit_location">Rediger placering</string>
+    <string name="content_description_delete_location">Slet placering</string>
+    <string name="content_description_dismiss">Afvis</string>
+    <string name="no_active_reminders_for_location">Ingen aktive påmindelser for denne placering</string>
+    <string name="content_description_edit_reminder">Rediger påmindelse</string>
+    <string name="content_description_delete_reminder">Slet påmindelse</string>
+    <string name="label_sliding_window_center">Centrum for glidende vindue</string>
+    <string name="label_my_location">Min placering</string>
+    <string name="content_description_back">Tilbage</string>
+    <string name="content_description_center_on_gps">Centrer på GPS</string>
+
 </resources>

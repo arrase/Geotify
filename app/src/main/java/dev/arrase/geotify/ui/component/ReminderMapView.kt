@@ -228,7 +228,7 @@ fun ReminderMapView(
                 // Master geofence center marker
                 val centerMarker = Marker(map).apply {
                     position = centerPoint
-                    title = "Sliding Window Center"
+                    title = context.getString(R.string.label_sliding_window_center)
                     icon = centerMarkerIcon
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                     setInfoWindow(null)
@@ -241,7 +241,7 @@ fun ReminderMapView(
                 val userPoint = GeoPoint(currentUserLocation.latitude, currentUserLocation.longitude)
                 val userMarker = Marker(map).apply {
                     position = userPoint
-                    title = "My Location"
+                    title = context.getString(R.string.label_my_location)
                     icon = userMarkerIcon
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                     setInfoWindow(null)
