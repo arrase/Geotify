@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geotify - Location-Aware Android Reminders</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="#" class="logo">Geotify</a>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#screenshots">Screenshots</a></li>
+                    <li><a href="#appfunctions">AppFunctions</a></li>
+                    <li><a href="#permissions">Permissions</a></li>
+                    <li><a href="#building">Building</a></li>
+                    <li><a href="https://github.com/arrase/Geotify" target="_blank">GitHub</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="hero">
+            <div class="container">
+                <h1>Geotify</h1>
+                <p>A modern, location-aware Android application that allows users to create and manage geofenced reminders, built with Jetpack Compose and system-level Jetpack AppFunctions.</p>
+                <a href="https://github.com/arrase/Geotify" class="btn" target="_blank"><i class="fab fa-github"></i> View on GitHub</a>
+            </div>
+        </div>
+
+        <section id="beta">
+            <div class="container">
+                <div class="alert-box alert-tip">
+                    <strong>🚀 Join the Google Play Internal Beta!</strong>
+                    <p>We are currently running internal tests to refine Geotify. To test the app:</p>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Join our <a href="https://groups.google.com/g/geotify-testers" target="_blank" style="color: var(--primary-color); font-weight: bold;">Google Group for Testers</a> (required to grant access).</li>
+                        <li>Opt-in to the testing program via the <a href="https://play.google.com/apps/testing/dev.arrase.geotify" target="_blank" style="color: var(--primary-color); font-weight: bold;">Google Play Testing Portal</a>.</li>
+                        <li>Download the app from the <a href="https://play.google.com/store/apps/details?id=dev.arrase.geotify" target="_blank" style="color: var(--primary-color); font-weight: bold;">Google Play Store</a>.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <section id="about">
+            <div class="container">
+                <h2>What is Geotify?</h2>
+                <p>
+                    <strong>Geotify</strong> is an Android utility application designed to help you organize your life around physical locations. By combining Google Play Services Geofencing APIs with a local Room Database, Geotify delivers notifications dynamically based on your physical location transitions (arrival and departure).
+                </p>
+                <p>
+                    Whether it's reminding you to buy groceries when entering a supermarket, picking up keys when leaving your office, or locking the front door when leaving home, Geotify manages all your geofenced triggers seamlessly in the background with minimal battery drain.
+                </p>
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="container">
+                <h2>Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">📍 Location Management</div>
+                        <p>Save coordinates or pick them interactively using the Map Picker. Customize geofence radius (minimum 50m) and notification responsiveness.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🔔 Geofenced Reminders</div>
+                        <p>Receive rich notifications instantly upon arriving at or departing from saved location aliases (e.g., 'home', 'office').</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🗺️ OpenStreetMap Integration</div>
+                        <p>Interactive maps powered by <code>osmdroid</code>. View all saved locations and active geofences dynamically with themed map tiles.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🔋 Smart Battery Optimizations</div>
+                        <p>Bypasses the system limit of 100 geofences by dynamically monitoring the 99 closest locations to the user and recalculating on transition events.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🤖 Jetpack AppFunctions</div>
+                        <p>Exposes system-discoverable APIs, making the app capable of being driven by local LLMs or voice assistants on Android 16+.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🌐 Localized & Responsive</div>
+                        <p>Beautiful Material 3 Jetpack Compose UI. Out-of-the-box localization for English, Spanish, German, French, Italian, and Portuguese.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="screenshots">
+            <div class="container">
+                <h2>Screenshots</h2>
+                <div class="screenshots-grid">
+                    <div class="screenshot-item">
+                        <img src="screenshots/reminders_en.png" alt="Reminders List View">
+                        <div class="screenshot-caption">Reminders List View</div>
+                    </div>
+                    <div class="screenshot-item">
+                        <img src="screenshots/reminders_map_en.png" alt="Reminders Map View">
+                        <div class="screenshot-caption">Reminders Map View</div>
+                    </div>
+                    <div class="screenshot-item">
+                        <img src="screenshots/locations_en.png" alt="Locations List View">
+                        <div class="screenshot-caption">Locations List View</div>
+                    </div>
+                    <div class="screenshot-item">
+                        <img src="screenshots/map_en.png" alt="Locations Map Picker">
+                        <div class="screenshot-caption">Map Picker</div>
+                    </div>
+                    <div class="screenshot-item">
+                        <img src="screenshots/settings_en.png" alt="Settings Screen">
+                        <div class="screenshot-caption">Settings Screen</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="appfunctions">
+            <div class="container">
+                <h2>Expose AppFunctions (AI / Agentic Integration)</h2>
+                <div class="alert-box alert-warning">
+                    <strong>⚠️ Experimental Feature</strong>
+                    <p>AppFunctions integration is enabled for devices running Android 16+, but will not fully function until Google officially releases the Jetpack AppFunctions library to General Availability.</p>
+                </div>
+                <p>
+                    Geotify implements the <code>androidx.appfunctions</code> APIs, establishing a bridge that allows system services, voice assistants, and local Large Language Models (LLMs) to discover and execute actions within the app context.
+                </p>
+
+                <h3>AppFunction APIs Available</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Function Schema</th>
+                            <th>Description</th>
+                            <th>Return Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>saveCurrentLocation(alias: String)</code></td>
+                            <td>Fetches high-accuracy GPS coordinates in the background and saves them.</td>
+                            <td><code>SaveLocationResult</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>createGeofenceReminder(targetAlias: String, payloadMessage: String, triggerOnArrival: Boolean)</code></td>
+                            <td>Creates a reminder linked to a saved location alias, triggering on entry or exit.</td>
+                            <td><code>CreateReminderResult</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>listLocations()</code></td>
+                            <td>Retrieves all saved locations.</td>
+                            <td><code>List&lt;SavedLocation&gt;</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>deleteLocation(alias: String)</code></td>
+                            <td>Deletes a saved location and all associated reminders.</td>
+                            <td><code>DeleteResult</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>deleteReminder(targetAlias: String, message: String?)</code></td>
+                            <td>Cancels and removes active geofence triggers matching the location.</td>
+                            <td><code>DeleteResult</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>listActiveReminders()</code></td>
+                            <td>Retrieves all currently active reminders.</td>
+                            <td><code>List&lt;SavedReminder&gt;</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="permissions">
+            <div class="container">
+                <h2>System Permissions Required</h2>
+                <p>To function correctly in the background, Geotify requests the following permissions:</p>
+                <ul>
+                    <li><strong>ACCESS_FINE_LOCATION & ACCESS_COARSE_LOCATION:</strong> To obtain the device's coordinates for saving and picking locations.</li>
+                    <li><strong>ACCESS_BACKGROUND_LOCATION:</strong> Required by the system to monitor geofences in the background when the app is closed.</li>
+                    <li><strong>POST_NOTIFICATIONS:</strong> To show notifications when geofence transitions occur.</li>
+                    <li><strong>ACTIVITY_RECOGNITION:</strong> To detect transition events (e.g., walking, driving) and trigger smart spatial recalculations.</li>
+                    <li><strong>RECEIVE_BOOT_COMPLETED:</strong> To restore geofences when the device restarts.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="building">
+            <div class="container">
+                <h2>Building the Project</h2>
+                <p>Ensure you have Android Studio and the Android SDK installed on your machine.</p>
+                
+                <h3>Clone and Navigate</h3>
+                <pre><code>git clone https://github.com/arrase/Geotify.git
+cd Geotify</code></pre>
+                
+                <h3>Build with Gradle</h3>
+                <pre><code>./gradlew assembleDebug</code></pre>
+                
+                <p>Run the application on an emulator or physical Android device with Google Play Services enabled.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Project Geotify. Built with ❤️ and AI.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
