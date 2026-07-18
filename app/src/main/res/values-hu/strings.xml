@@ -53,7 +53,7 @@
     <string name="perm_location_message">A Geotify-nek szükség van a helyszín megismerésére a geofence emlékeztetők létrehozásához.</string>
     <string name="perm_notification_message">A Geotify-nek szükség van az értesítési engedésre, hogy tájékoztassa Önt a helyszínek megérkezéseiről vagy eljárásairól.</string>
     <string name="perm_bg_location_title">Hinterground helyszín</string>
-    <string name="perm_bg_location_message">A geofence emlékeztetők megbízható működéséhez a Geotify-nek szükség van a \"Mindig\" helyszín hozzáférésre. Kérjük, válassa ki a következő képernyőn.</string>
+    <string name="perm_bg_location_message">A Geotify helyadatokat gyűjt a geokerítés emlékeztetők engedélyezéséhez még akkor is, ha az alkalmazás be van zárva, vagy nincs használatban.</string>
     <string name="notif_channel_name">Geofence emlékeztetők</string>
     <string name="notif_channel_desc">Értesítések, amelyek akkortriggereknek váltanak, amikor megérkezik vagy eljár egy mentett helyszínről</string>
     <string name="err_gps_failed">Nem sikerült megkapni a GPS koordinátákat. Kérjük, ellenőrizze, hogy aktívak azonosító szolgáltatások.</string>

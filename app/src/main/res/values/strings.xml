@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify needs location access to create geofence reminders.</string>
     <string name="perm_notification_message">Geotify needs notification permission to alert you when entering or leaving locations.</string>
     <string name="perm_bg_location_title">Background Location</string>
-    <string name="perm_bg_location_message">For geofence reminders to work reliably, Geotify needs \"Allow all the time\" location access. Please select it in the next screen.</string>
+    <string name="perm_bg_location_message">Geotify collects location data to enable geofence reminders even when the app is closed or not in use.</string>
     <string name="notif_channel_name">Geofence Reminders</string>
     <string name="notif_channel_desc">Notifications triggered when you enter or leave a saved location</string>
     <string name="err_gps_failed">Failed to obtain GPS coordinates. Please make sure location services are enabled.</string>

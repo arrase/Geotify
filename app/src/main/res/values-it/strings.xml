@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify richiede l\'accesso alla posizione per creare promemoria geofence.</string>
     <string name="perm_notification_message">Geotify richiede l\'autorizzazione per le notifiche per avvisarti quando entri o esci da un luogo.</string>
     <string name="perm_bg_location_title">Posizione in background</string>
-    <string name="perm_bg_location_message">Affinché i promemoria geofence funzionino correttamente, Geotify richiede l\'accesso alla posizione \"Consenti sempre\". Selezionalo nella schermata successiva.</string>
+    <string name="perm_bg_location_message">Geotify raccoglie i dati sulla posizione per abilitare i promemoria del geofence anche quando l\'app è chiusa o non è in uso.</string>
     <string name="notif_channel_name">Promemoria geofence</string>
     <string name="notif_channel_desc">Notifiche attivate quando entri o esci da un luogo salvato</string>
     <string name="err_gps_failed">Impossibile ottenere le coordinate GPS. Assicurati che i servizi di localizzazione siano attivi.</string>

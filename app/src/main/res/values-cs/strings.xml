@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify potřebuje přístup k lokalizaci pro vytváření upomínek geofencingu.</string>
     <string name="perm_notification_message">Geotify potřebuje oprávnění pro oznámení, aby vás upozornilo na vstup do lokalizací nebo odchod z nich.</string>
     <string name="perm_bg_location_title">Lokalizace v pozadí</string>
-    <string name="perm_bg_location_message">Pro spolehlivé fungování upomínek geofencingu potřebuje Geotify přístup k lokalizaci \"Vždy\". Vyberte jej na dalším obrazovci.</string>
+    <string name="perm_bg_location_message">Geotify shromažďuje údaje o poloze, aby umožnila připomenutí geofencingu i když je aplikace zavřená nebo se nepoužívá.</string>
     <string name="notif_channel_name">Upomínky geofencingu</string>
     <string name="notif_channel_desc">Oznámení spuštěná při vstupu do nebo odchodu z uložené lokalizace</string>
     <string name="err_gps_failed">Nepodařilo se získat souřadnice GPS. Ujistěte se, že jsou služby polohování zapnuté.</string>

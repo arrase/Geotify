@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify benötigt Standortzugriff, um Geofence-Erinnerungen zu erstellen.</string>
     <string name="perm_notification_message">Geotify benötigt die Benachrichtigungsberechtigung, um dich beim Betreten oder Verlassen von Orten zu benachrichtigen.</string>
     <string name="perm_bg_location_title">Hintergrundstandort</string>
-    <string name="perm_bg_location_message">Damit Geofence-Erinnerungen zuverlässig funktionieren, benötigt Geotify den Standortzugriff „Immer zulassen“. Bitte wähle diesen im nächsten Bildschirm aus.</string>
+    <string name="perm_bg_location_message">Geotify erfasst Standortdaten, um Geofence-Erinnerungen zu aktivieren, selbst wenn die App geschlossen ist oder nicht verwendet wird.</string>
     <string name="notif_channel_name">Geofence-Erinnerungen</string>
     <string name="notif_channel_desc">Benachrichtigungen, wenn du einen gespeicherten Ort betrittst oder verlässt</string>
     <string name="err_gps_failed">GPS-Koordinaten konnten nicht ermittelt werden. Bitte stelle sicher, dass die Standortdienste aktiviert sind.</string>

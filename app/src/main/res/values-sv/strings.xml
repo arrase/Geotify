@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify behöver åtkomst till plats för att skapa geofence-påminnelser.</string>
     <string name="perm_notification_message">Geotify behöver tillåtelse för aviseringar för att meddela dig när du anländer till eller lämnar platser.</string>
     <string name="perm_bg_location_title">Plats i bakgrunden</string>
-    <string name="perm_bg_location_message">För att geofence-påminnelser ska fungera pålitligt behöver Geotify åtkomst till plats \"Tillåt alltid\". Välj detta i nästa skärm.</string>
+    <string name="perm_bg_location_message">Geotify samlar in platsdata för att aktivera geofence-påminnelser även när appen är stängd eller inte används.</string>
     <string name="notif_channel_name">Geofence-påminnelser</string>
     <string name="notif_channel_desc">Aviseringar som triggas när du anländer till eller lämnar en sparad plats</string>
     <string name="err_gps_failed">Kunde inte få tag på GPS-koordinater. Se till att platstjänster är aktiverade.</string>

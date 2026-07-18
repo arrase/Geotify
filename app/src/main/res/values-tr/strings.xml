@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify, geofence hatırlatıcıları oluşturmak için konum erişimine ihtiyaç duyar.</string>
     <string name="perm_notification_message">Geotify, konumlara giriş veya çıkış yapıldığında sizi uyarmak için bildirim iznine ihtiyaç duyar.</string>
     <string name="perm_bg_location_title">Arka Plan Konumu</string>
-    <string name="perm_bg_location_message">Geofence hatırlatıcılarının güvenilir çalışması için Geotify \"Her zaman izin ver\" konum erişimine ihtiyaç duyar. Lütfen bir sonraki ekranda bunu seçin.</string>
+    <string name="perm_bg_location_message">Geotify, uygulama kapalıyken veya kullanılmıyorken bile coğrafi sınır hatırlatıcılarını etkinleştirmek için konum verilerini toplar.</string>
     <string name="notif_channel_name">Geofence Hatırlatıcıları</string>
     <string name="notif_channel_desc">Kaydedilen konumlara giriş veya çıkış yapıldığında tetiklenen bildirimler</string>
     <string name="err_gps_failed">GPS koordinatları alınamadı. Lütfen konum servislerinin açık olduğundan emin olun.</string>

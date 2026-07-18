@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify har brug for adgang til din placering for at oprette geofence-påmindelser.</string>
     <string name="perm_notification_message">Geotify har brug for tilladelse til notifikationer for at give dig besked, når du ankommer til eller forlader lokationer.</string>
     <string name="perm_bg_location_title">Lokation i baggrunden</string>
-    <string name="perm_bg_location_message">For at geofence-påmindelser skal fungere pålideligt, har Geotify brug for adgang til lokation \"Tillad altid\". Vælg venligst dette på den næste skærm.</string>
+    <string name="perm_bg_location_message">Geotify indsamler lokationsdata for at aktivere geofence-påmindelser, selv når appen er lukket eller ikke er i brug.</string>
     <string name="notif_channel_name">Geofence Påmindelser</string>
     <string name="notif_channel_desc">Notifikationer udløses, når du ankommer til eller forlader en gemt lokation</string>
     <string name="err_gps_failed">Kunne ikke få fat i GPS-koordinater. Sørg for, at placeringsydelser er slået til.</string>

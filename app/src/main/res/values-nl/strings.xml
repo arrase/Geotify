@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify heeft toegang tot locatie nodig om geofence-herinneringen te maken.</string>
     <string name="perm_notification_message">Geotify heeft toestemming voor meldingen nodig om je te waarschuwen bij het betreden of verlaten van locaties.</string>
     <string name="perm_bg_location_title">Locatie op de achtergrond</string>
-    <string name="perm_bg_location_message">Om geofence-herinneringen betrouwbaar te laten werken, heeft Geotify toegang tot locatie \"Altijd toestaan\" nodig. Selecteer dit in het volgende scherm.</string>
+    <string name="perm_bg_location_message">Geotify verzamelt locatiegegevens om geofence-herinneringen in te schakelen, zelfs wanneer de app is gesloten of niet in gebruik is.</string>
     <string name="notif_channel_name">Geofence Herinneringen</string>
     <string name="notif_channel_desc">Meldingen die worden getriggerd bij het betreden of verlaten van een opgeslagen locatie</string>
     <string name="err_gps_failed">Kon geen GPS-coördinaten verkrijgen. Zorg ervoor dat locatiediensten zijn ingeschakeld.</string>

@@ -53,7 +53,7 @@
     <string name="perm_location_message">O Geotify precisa de acesso à localização para criar lembretes de cerca virtual.</string>
     <string name="perm_notification_message">O Geotify precisa de permissão de notificação para alertar você ao entrar ou sair de locais.</string>
     <string name="perm_bg_location_title">Localização em segundo plano</string>
-    <string name="perm_bg_location_message">Para que os lembretes funcionem corretamente, o Geotify precisa de acesso à localização \"Permitir o tempo todo\". Selecione essa opção na próxima tela.</string>
+    <string name="perm_bg_location_message">O Geotify coleta dados de localização para ativar lembretes de geofence mesmo quando o aplicativo está fechado ou não está em uso.</string>
     <string name="notif_channel_name">Lembretes de cerca virtual</string>
     <string name="notif_channel_desc">Notificações ativadas quando você entra ou sai de um local salvo</string>
     <string name="err_gps_failed">Falha ao obter coordenadas GPS. Certifique-se de que os serviços de localização estão ativados.</string>

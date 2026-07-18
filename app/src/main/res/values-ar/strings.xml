@@ -53,7 +53,7 @@
     <string name="perm_location_message">يحتاج Geotify إلى الوصول إلى الموقع لإنشاء تذكيرات السياج الجغرافي.</string>
     <string name="perm_notification_message">يحتاج Geotify إلى إذن الإشعارات لتنبيهك عند دخول أو مغادرة المواقع.</string>
     <string name="perm_bg_location_title">الموقع في الخلفية</string>
-    <string name="perm_bg_location_message">لتعمل تذكيرات السياج الجغرافي بشكل موثوق، يحتاج Geotify إلى وصول الموقع \"السماح دائماً\". يرجى اختياره في الشاشة التالية.</string>
+    <string name="perm_bg_location_message">تجمع Geotify بيانات الموقع لتمكين تذكيرات السياج الجغرافي حتى عندما يكون التطبيق مغلقًا أو غير مستخدم.</string>
     <string name="notif_channel_name">تذكيرات السياج الجغرافي</string>
     <string name="notif_channel_desc">إشعارات يتم تشغيلها عند دخولك أو مغادرتك لموقع محفوظ</string>
     <string name="err_gps_failed">فشل الحصول على إحداثيات GPS. يرجى التأكد من تفعيل خدمات الموقع.</string>

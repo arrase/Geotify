@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify a besoin d\'accéder à la position pour créer des rappels de geofencing.</string>
     <string name="perm_notification_message">Geotify a besoin de l\'autorisation de notification pour vous alerter lorsque vous entrez ou sortez d\'un lieu.</string>
     <string name="perm_bg_location_title">Position en arrière-plan</string>
-    <string name="perm_bg_location_message">Pour que les rappels fonctionnent de manière fiable, Geotify a besoin de l\'accès à la position \"Toujours autoriser\". Veuillez le sélectionner sur l\'écran suivant.</string>
+    <string name="perm_bg_location_message">Geotify collecte des données de localisation pour activer les rappels de géorepérage même lorsque l\'application est fermée ou n\'est pas utilisée.</string>
     <string name="notif_channel_name">Rappels de geofencing</string>
     <string name="notif_channel_desc">Notifications déclenchées lorsque vous entrez ou sortez d\'un lieu enregistré</string>
     <string name="err_gps_failed">Impossible d\'obtenir les coordonnées GPS. Veuillez vous assurer que les services de localisation sont activés.</string>
