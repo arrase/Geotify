@@ -48,3 +48,4 @@ jobs:
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           tracks: ${{ env.TRACK }}
           status: completed
+          changesNotSentForReview: true
