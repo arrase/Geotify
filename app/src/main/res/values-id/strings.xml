@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify membutuhkan akses lokasi untuk membuat pengingat geofence.</string>
     <string name="perm_notification_message">Geotify membutuhkan izin notifikasi untuk memberi tahu Anda saat memasuki atau meninggalkan lokasi.</string>
     <string name="perm_bg_location_title">Lokasi Latar Belakang</string>
-    <string name="perm_bg_location_message">Agar pengingat geofence berfungsi dengan andal, Geotify membutuhkan akses lokasi \"Izinkan sepanjang waktu\". Harap pilih di layar berikutnya.</string>
+    <string name="perm_bg_location_message">Geotify mengumpulkan data lokasi untuk mengaktifkan pengingat geofence bahkan saat aplikasi ditutup atau tidak digunakan.</string>
     <string name="notif_channel_name">Pengingat Geofence</string>
     <string name="notif_channel_desc">Notifikasi yang dipicu saat Anda memasuki atau meninggalkan lokasi yang disimpan</string>
     <string name="err_gps_failed">Gagal mendapatkan koordinat GPS. Pastikan layanan lokasi diaktifkan.</string>

@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotifyはジオフェンスリマインダーを作成するために位置情報へのアクセスを必要とします。</string>
     <string name="perm_notification_message">Geotifyは場所の入退室時に通知するために通知権限を必要とします。</string>
     <string name="perm_bg_location_title">バックグラウンド位置情報</string>
-    <string name="perm_bg_location_message">ジオフェンスリマインダーを確実に動作させるために、Geotifyは「常に許可」する位置情報のアクセスを必要とします。次の画面で選択してください。</string>
+    <string name="perm_bg_location_message">Geotifyは、アプリが閉じられているか使用されていない場合でも、ジオフェンスリマインダーを有効にするために位置情報を収集します。</string>
     <string name="notif_channel_name">ジオフェンスリマインダー</string>
     <string name="notif_channel_desc">保存した場所の入退室時にトリガーされる通知</string>
     <string name="err_gps_failed">GPS座標を取得できませんでした。位置情報サービスが有効であることを確認してください。</string>

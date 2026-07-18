@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify necesita acceso a la ubicación para crear recordatorios geovallados.</string>
     <string name="perm_notification_message">Geotify necesita permiso de notificaciones para avisarte al entrar o salir de los lugares.</string>
     <string name="perm_bg_location_title">Ubicación en segundo plano</string>
-    <string name="perm_bg_location_message">Para que los recordatorios funcionen correctamente, Geotify necesita el permiso de ubicación \"Permitir todo el tiempo\". Por favor, selecciónalo en la siguiente pantalla.</string>
+    <string name="perm_bg_location_message">Geotify recopila datos de ubicación para habilitar recordatorios de geovallas incluso cuando la aplicación está cerrada o no está en uso.</string>
     <string name="notif_channel_name">Recordatorios de geovallas</string>
     <string name="notif_channel_desc">Notificaciones activadas al entrar o salir de un lugar guardado</string>
     <string name="err_gps_failed">No se pudieron obtener las coordenadas GPS. Por favor, asegúrate de que los servicios de ubicación están activados.</string>

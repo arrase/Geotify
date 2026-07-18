@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify 需要位置访问权限来创建地理围栏提醒。</string>
     <string name="perm_notification_message">Geotify 需要通知权限来在您进入或离开位置时提醒您。</string>
     <string name="perm_bg_location_title">后台位置</string>
-    <string name="perm_bg_location_message">为了可靠地运行地理围栏提醒，Geotify 需要“始终允许”的位置访问权限。请在下一个屏幕中选择它。</string>
+    <string name="perm_bg_location_message">Geotify 会收集位置数据，以便即使在应用关闭或未使用时也能启用地理围栏提醒。</string>
     <string name="notif_channel_name">地理围栏提醒</string>
     <string name="notif_channel_desc">当您进入或离开保存的位置时触发的通知</string>
     <string name="err_gps_failed">无法获取 GPS 坐标。请确保已启用位置服务。</string>

@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify potrzebuje dostępu do lokalizacji, aby tworzyć przypomnienia geofencingu.</string>
     <string name="perm_notification_message">Geotify potrzebuje uprawnień do powiadomień, aby informować Cię o wejściu lub wyjściu z lokalizacji.</string>
     <string name="perm_bg_location_title">Lokalizacja w tle</string>
-    <string name="perm_bg_location_message">Aby przypomnienia geofencingu działały niezawodnie, Geotify potrzebuje dostępu do lokalizacji \"Zawsze\". Wybierz go na następnym ekranie.</string>
+    <string name="perm_bg_location_message">Geotify zbiera dane o lokalizacji, aby włączyć przypomnienia geofencingowe nawet wtedy, gdy aplikacja jest zamknięta lub nie jest używana.</string>
     <string name="notif_channel_name">Przypomnienia geofencingu</string>
     <string name="notif_channel_desc">Powiadomienia wyzwalane podczas wejścia lub wyjścia z zapisanej lokalizacji</string>
     <string name="err_gps_failed">Nie udało się uzyskać współrzędnych GPS. Upewnij się, że usługi lokalizacji są włączone.</string>

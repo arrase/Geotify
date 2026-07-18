@@ -53,7 +53,7 @@
     <string name="perm_location_message">जियोफेंस रिमाइंडर बनाने के लिए Geotify को स्थान तक पहुंच की आवश्यकता है।</string>
     <string name="perm_notification_message">स्थानों में प्रवेश करने या छोड़ने पर आपको सचेत करने के लिए Geotify को अधिसूचना अनुमति की आवश्यकता है।</string>
     <string name="perm_bg_location_title">बैकग्राउंड स्थान</string>
-    <string name="perm_bg_location_message">जियोफेंस रिमाइंडर विश्वसनीय रूप से काम करने के लिए, Geotify को \"हमेशा अनुमति दें\" स्थान पहुंच की आवश्यकता है। कृपया अगली स्क्रीन में इसे चुनें।</string>
+    <string name="perm_bg_location_message">Geotify जियोफेंस रिमाइंडर सक्षम करने के लिए स्थान डेटा एकत्र करता है, भले ही ऐप बंद हो या उपयोग में न हो।</string>
     <string name="notif_channel_name">जियोफेंस रिमाइंडर</string>
     <string name="notif_channel_desc">सहेजे गए स्थानों में प्रवेश करने या छोड़ने पर ट्रिगर होने वाले नोटिफिकेशन</string>
     <string name="err_gps_failed">GPS निर्देशांक प्राप्त करने में विफल। कृपया सुनिश्चित करें कि स्थान सेवाएं सक्षम हैं।</string>

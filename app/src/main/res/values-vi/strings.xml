@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify cần quyền truy cập vị trí để tạo nhắc nhở hàng rào địa lý.</string>
     <string name="perm_notification_message">Geotify cần quyền thông báo để cảnh báo bạn khi vào hoặc rời khỏi các địa điểm.</string>
     <string name="perm_bg_location_title">Vị trí nền</string>
-    <string name="perm_bg_location_message">Để nhắc nhở hàng rào địa lý hoạt động đáng tin cậy, Geotify cần quyền truy cập vị trí \"Cho phép mọi lúc\". Vui lòng chọn nó ở màn hình tiếp theo.</string>
+    <string name="perm_bg_location_message">Geotify thu thập dữ liệu vị trí để bật lời nhắc hàng rào địa lý ngay cả khi ứng dụng đã đóng hoặc không được sử dụng.</string>
     <string name="notif_channel_name">Nhắc nhở hàng rào địa lý</string>
     <string name="notif_channel_desc">Thông báo được kích hoạt khi bạn vào hoặc rời khỏi một địa điểm đã lưu</string>
     <string name="err_gps_failed">Không thể lấy tọa độ GPS. Vui lòng đảm bảo dịch vụ vị trí đã được bật.</string>

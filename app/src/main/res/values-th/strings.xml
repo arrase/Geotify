@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify ต้องการการเข้าถึงตำแหน่งเพื่อสร้างการแจ้งเตือน Geofence</string>
     <string name="perm_notification_message">Geotify ต้องการสิทธิ์การแจ้งเตือนเพื่อแจ้งเตือนคุณเมื่อเข้าหรือออกจากสถานที่</string>
     <string name="perm_bg_location_title">ตำแหน่งพื้นหลัง</string>
-    <string name="perm_bg_location_message">เพื่อให้การแจ้งเตือน Geofence ทำงานได้อย่างแม่นยำ Geotify ต้องการการเข้าถึงตำแหน่ง \"อนุญาตตลอดเวลา\" โปรดเลือกในหน้าถัดไป</string>
+    <string name="perm_bg_location_message">Geotify รวบรวมข้อมูลตำแหน่งเพื่อเปิดใช้งานการแจ้งเตือน Geofence แม้ว่าแอปจะปิดอยู่หรือไม่ได้ใช้งานก็ตาม</string>
     <string name="notif_channel_name">การแจ้งเตือน Geofence</string>
     <string name="notif_channel_desc">การแจ้งเตือนเมื่อคุณเข้าหรือออกจากสถานที่ที่บันทึกไว้</string>
     <string name="err_gps_failed">ไม่สามารถรับพิกัด GPS ได้ โปรดตรวจสอบว่าเปิดบริการตำแหน่งแล้ว</string>

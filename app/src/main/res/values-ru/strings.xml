@@ -53,7 +53,7 @@
     <string name="perm_location_message">Geotify нужен доступ к местоположению для создания напоминаний по геозонам.</string>
     <string name="perm_notification_message">Geotify нужен доступ к уведомлениям, чтобы оповещать вас о входе или выходе из мест.</string>
     <string name="perm_bg_location_title">Местоположение в фоновом режиме</string>
-    <string name="perm_bg_location_message">Для надежной работы напоминаний по геозонам Geotify нужен доступ к местоположению \"Разрешить всегда\". Пожалуйста, выберите его на следующем экране.</string>
+    <string name="perm_bg_location_message">Geotify собирает данные о местоположении, чтобы включить напоминания геозон, даже когда приложение закрыто или не используется.</string>
     <string name="notif_channel_name">Напоминания по геозонам</string>
     <string name="notif_channel_desc">Уведомления при входе или выходе из сохраненных мест</string>
     <string name="err_gps_failed">Не удалось получить координаты GPS. Убедитесь, что службы геолокации включены.</string>
