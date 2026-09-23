@@ -43,3 +43,9 @@ captures/
 *.pk8
 *.pem
 site/
+
+# Coverage and SonarQube
+.scannerwork/
+.coverage
+coverage.xml
+htmlcov/
