@@ -65,34 +65,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             try {
                 val locationRepo = entryPoint.locationRepository()
                 val reminderRepo = entryPoint.reminderRepository()
-
-                for (geofence in poiGeofences) {
-                    val locationId = geofence.requestId
-                    val location = locationRepo.findLocationById(locationId)
-                    if (location == null) {
-                        Log.d(TAG, "Location not found in database for geofence ID: $locationId")
-                        continue
-                    }
-                    Log.d(TAG, "Processing geofence for location: ${location.alias} (ID: $locationId)")
-
-                    val activeReminders = reminderRepo.getActiveRemindersForLocation(locationId)
-                    Log.d(TAG, "Found ${activeReminders.size} active reminders for location ID: $locationId")
-                    
-                    val matchingReminders = activeReminders.filter { it.transitionType == transitionType }
-                    Log.d(TAG, "Found ${matchingReminders.size} matching reminders for transitionType: $transitionType")
-
-                    for (reminder in matchingReminders) {
-                        Log.d(TAG, "Deactivating and showing notification for reminder ID: ${reminder.id}")
-                        reminderRepo.deactivateReminder(reminder.id)
-
-                        NotificationHelper.showGeofenceNotification(
-                            context,
-                            reminder.id.hashCode(),
-                            location.alias,
-                            reminder.message
-                        )
-                    }
-                }
+                processPoiGeofences(context, locationRepo, reminderRepo, poiGeofences, transitionType)
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing geofence event", e)
             }
@@ -100,6 +73,42 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             // Re-evaluate geofences after deactivating triggered reminders.
             // If no active reminders remain, this will purge all geofences to save battery.
             entryPoint.geofenceOrchestrator().triggerExpeditedRecalculation()
+        }
+    }
+
+    private suspend fun processPoiGeofences(
+        context: Context,
+        locationRepo: LocationRepository,
+        reminderRepo: ReminderRepository,
+        poiGeofences: List<Geofence>,
+        transitionType: Int
+    ) {
+        for (geofence in poiGeofences) {
+            val locationId = geofence.requestId
+            val location = locationRepo.findLocationById(locationId)
+            if (location == null) {
+                Log.d(TAG, "Location not found in database for geofence ID: $locationId")
+                continue
+            }
+            Log.d(TAG, "Processing geofence for location: ${location.alias} (ID: $locationId)")
+
+            val activeReminders = reminderRepo.getActiveRemindersForLocation(locationId)
+            Log.d(TAG, "Found ${activeReminders.size} active reminders for location ID: $locationId")
+
+            val matchingReminders = activeReminders.filter { it.transitionType == transitionType }
+            Log.d(TAG, "Found ${matchingReminders.size} matching reminders for transitionType: $transitionType")
+
+            for (reminder in matchingReminders) {
+                Log.d(TAG, "Deactivating and showing notification for reminder ID: ${reminder.id}")
+                reminderRepo.deactivateReminder(reminder.id)
+
+                NotificationHelper.showGeofenceNotification(
+                    context,
+                    reminder.id.hashCode(),
+                    location.alias,
+                    reminder.message
+                )
+            }
         }
     }
 

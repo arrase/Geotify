@@ -37,6 +37,8 @@ data class ReminderEntity(
 val ReminderEntity.isArrival: Boolean
     get() = transitionType == com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_ENTER
 
+val ReminderEntity.isDeparture: Boolean
+    get() = transitionType == com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_EXIT
 
 val ReminderEntity.triggerTypeString: String
     get() = if (isArrival) "arrival" else "departure"

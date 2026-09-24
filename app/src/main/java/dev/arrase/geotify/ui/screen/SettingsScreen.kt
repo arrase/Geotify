@@ -28,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,7 +58,6 @@ fun SettingsScreen(
     val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
     val mapTheme by viewModel.mapTheme.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
-    var showRecalcInfo by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -94,279 +95,287 @@ fun SettingsScreen(
             )
         }
 
-        // Geofence Spatial Recalculation Card
-        val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
-        val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
+        SpatialRecalculationSection(viewModel = viewModel)
 
-        var localOuterRadius by remember(outerRadiusN) { mutableFloatStateOf(outerRadiusN) }
-        var localInnerRadius by remember(innerRadiusR) { mutableFloatStateOf(innerRadiusR) }
+        PerformanceTuningSection(viewModel = viewModel)
+    }
+}
 
-        // Battery & Performance Tuning Card
-        val cacheTimeout by viewModel.locationCacheTimeoutSecs.collectAsStateWithLifecycle()
-        val debounceDelay by viewModel.recalculationDebounceSecs.collectAsStateWithLifecycle()
-        val masterResponsiveness by viewModel.masterGeofenceResponsivenessSecs.collectAsStateWithLifecycle()
-        val poiResponsiveness by viewModel.poiGeofenceResponsivenessSecs.collectAsStateWithLifecycle()
+@Composable
+private fun SpatialRecalculationSection(viewModel: SettingsViewModel) {
+    val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
+    val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
 
-        var localCacheTimeout by remember(cacheTimeout) { mutableIntStateOf(cacheTimeout) }
-        var localDebounceDelay by remember(debounceDelay) { mutableIntStateOf(debounceDelay) }
-        var localMasterResponsiveness by remember(masterResponsiveness) { mutableIntStateOf(masterResponsiveness) }
-        var localPoiResponsiveness by remember(poiResponsiveness) { mutableIntStateOf(poiResponsiveness) }
-        var showBatteryTuningInfo by remember { mutableStateOf(false) }
+    var localOuterRadius by remember(outerRadiusN) { mutableFloatStateOf(outerRadiusN) }
+    var localInnerRadius by remember(innerRadiusR) { mutableFloatStateOf(innerRadiusR) }
+    var showRecalcInfo by remember { mutableStateOf(false) }
 
-        SettingsCard(
-            icon = Icons.Filled.LocationOn,
-            title = stringResource(R.string.settings_geofence_recalc_title),
-            description = stringResource(R.string.settings_geofence_recalc_desc),
-            onInfoClick = { showRecalcInfo = true }
+    SettingsCard(
+        icon = Icons.Filled.LocationOn,
+        title = stringResource(R.string.settings_geofence_recalc_title),
+        description = stringResource(R.string.settings_geofence_recalc_desc),
+        onInfoClick = { showRecalcInfo = true }
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Outer Radius N
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_outer_radius),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.label_km_value, localOuterRadius),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    androidx.compose.material3.Slider(
-                        value = localOuterRadius,
-                        onValueChange = { newVal ->
-                            val cleanVal = round(newVal * 10f) / 10f
-                            localOuterRadius = cleanVal
-                            if (localInnerRadius > cleanVal) {
-                                localInnerRadius = cleanVal
-                            }
-                        },
-                        onValueChangeFinished = {
-                            viewModel.setOuterRadiusN(localOuterRadius)
-                            if (innerRadiusR > localOuterRadius) {
-                                viewModel.setInnerRadiusR(localOuterRadius)
-                            }
-                        },
-                        valueRange = 1.0f..10.0f
+            // Outer Radius N
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_outer_radius),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.label_km_value, localOuterRadius),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-
-                // Inner Radius r
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_inner_radius),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.label_km_value, localInnerRadius),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    androidx.compose.material3.Slider(
-                        value = localInnerRadius,
-                        onValueChange = { newVal ->
-                            val cleanVal = round(newVal * 10f) / 10f
+                Slider(
+                    value = localOuterRadius,
+                    onValueChange = { newVal ->
+                        val cleanVal = round(newVal * 10f) / 10f
+                        localOuterRadius = cleanVal
+                        if (localInnerRadius > cleanVal) {
                             localInnerRadius = cleanVal
-                        },
-                        onValueChangeFinished = {
-                            viewModel.setInnerRadiusR(localInnerRadius)
-                        },
-                        valueRange = 0.5f..localOuterRadius
+                        }
+                    },
+                    onValueChangeFinished = {
+                        viewModel.setOuterRadiusN(localOuterRadius)
+                        if (innerRadiusR > localOuterRadius) {
+                            viewModel.setInnerRadiusR(localOuterRadius)
+                        }
+                    },
+                    valueRange = 1.0f..10.0f
+                )
+            }
+
+            // Inner Radius r
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_inner_radius),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.label_km_value, localInnerRadius),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
+                Slider(
+                    value = localInnerRadius,
+                    onValueChange = { newVal ->
+                        val cleanVal = round(newVal * 10f) / 10f
+                        localInnerRadius = cleanVal
+                    },
+                    onValueChangeFinished = {
+                        viewModel.setInnerRadiusR(localInnerRadius)
+                    },
+                    valueRange = 0.5f..localOuterRadius
+                )
             }
         }
+    }
 
-        // Battery & Performance Tuning Settings Card
-        SettingsCard(
-            icon = Icons.Filled.Tune,
-            title = stringResource(R.string.settings_battery_tuning_title),
-            description = stringResource(R.string.settings_battery_tuning_desc),
-            onInfoClick = { showBatteryTuningInfo = true }
+    if (showRecalcInfo) {
+        AlertDialog(
+            onDismissRequest = { showRecalcInfo = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.settings_geofence_recalc_title),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.info_geofence_recalc_desc)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showRecalcInfo = false }
+                ) {
+                    Text(stringResource(R.string.btn_ok))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun PerformanceTuningSection(viewModel: SettingsViewModel) {
+    val cacheTimeout by viewModel.locationCacheTimeoutSecs.collectAsStateWithLifecycle()
+    val debounceDelay by viewModel.recalculationDebounceSecs.collectAsStateWithLifecycle()
+    val masterResponsiveness by viewModel.masterGeofenceResponsivenessSecs.collectAsStateWithLifecycle()
+    val poiResponsiveness by viewModel.poiGeofenceResponsivenessSecs.collectAsStateWithLifecycle()
+
+    var localCacheTimeout by remember(cacheTimeout) { mutableIntStateOf(cacheTimeout) }
+    var localDebounceDelay by remember(debounceDelay) { mutableIntStateOf(debounceDelay) }
+    var localMasterResponsiveness by remember(masterResponsiveness) { mutableIntStateOf(masterResponsiveness) }
+    var localPoiResponsiveness by remember(poiResponsiveness) { mutableIntStateOf(poiResponsiveness) }
+    var showBatteryTuningInfo by remember { mutableStateOf(false) }
+
+    SettingsCard(
+        icon = Icons.Filled.Tune,
+        title = stringResource(R.string.settings_battery_tuning_title),
+        description = stringResource(R.string.settings_battery_tuning_desc),
+        onInfoClick = { showBatteryTuningInfo = true }
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Location Cache Timeout
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_location_cache_timeout),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.label_seconds_value, localCacheTimeout),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    androidx.compose.material3.Slider(
-                        value = localCacheTimeout.toFloat(),
-                        onValueChange = { localCacheTimeout = it.toInt() },
-                        onValueChangeFinished = { viewModel.setLocationCacheTimeoutSecs(localCacheTimeout) },
-                        valueRange = 10f..600f,
-                        steps = 58
+            // Location Cache Timeout
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_location_cache_timeout),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.label_seconds_value, localCacheTimeout),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
+                Slider(
+                    value = localCacheTimeout.toFloat(),
+                    onValueChange = { localCacheTimeout = it.toInt() },
+                    onValueChangeFinished = { viewModel.setLocationCacheTimeoutSecs(localCacheTimeout) },
+                    valueRange = 10f..600f,
+                    steps = 58
+                )
+            }
 
-                // Recalculation Debounce
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_recalc_debounce),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.label_seconds_value, localDebounceDelay),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    androidx.compose.material3.Slider(
-                        value = localDebounceDelay.toFloat(),
-                        onValueChange = { localDebounceDelay = it.toInt() },
-                        onValueChangeFinished = { viewModel.setRecalculationDebounceSecs(localDebounceDelay) },
-                        valueRange = 1f..30f,
-                        steps = 28
+            // Recalculation Debounce
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_recalc_debounce),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.label_seconds_value, localDebounceDelay),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
+                Slider(
+                    value = localDebounceDelay.toFloat(),
+                    onValueChange = { localDebounceDelay = it.toInt() },
+                    onValueChangeFinished = { viewModel.setRecalculationDebounceSecs(localDebounceDelay) },
+                    valueRange = 1f..30f,
+                    steps = 28
+                )
+            }
 
-                // Master Geofence Responsiveness
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_master_responsiveness),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.label_seconds_value, localMasterResponsiveness),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    androidx.compose.material3.Slider(
-                        value = localMasterResponsiveness.toFloat(),
-                        onValueChange = { localMasterResponsiveness = it.toInt() },
-                        onValueChangeFinished = { viewModel.setMasterGeofenceResponsivenessSecs(localMasterResponsiveness) },
-                        valueRange = 10f..600f,
-                        steps = 58
+            // Master Geofence Responsiveness
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_master_responsiveness),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.label_seconds_value, localMasterResponsiveness),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
+                Slider(
+                    value = localMasterResponsiveness.toFloat(),
+                    onValueChange = { localMasterResponsiveness = it.toInt() },
+                    onValueChangeFinished = { viewModel.setMasterGeofenceResponsivenessSecs(localMasterResponsiveness) },
+                    valueRange = 10f..600f,
+                    steps = 58
+                )
+            }
 
-                // POI Geofence Responsiveness
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_poi_responsiveness),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.label_seconds_value, localPoiResponsiveness),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    androidx.compose.material3.Slider(
-                        value = localPoiResponsiveness.toFloat(),
-                        onValueChange = { localPoiResponsiveness = it.toInt() },
-                        onValueChangeFinished = { viewModel.setPoiGeofenceResponsivenessSecs(localPoiResponsiveness) },
-                        valueRange = 5f..300f,
-                        steps = 58
+            // POI Geofence Responsiveness
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_poi_responsiveness),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.label_seconds_value, localPoiResponsiveness),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
+                Slider(
+                    value = localPoiResponsiveness.toFloat(),
+                    onValueChange = { localPoiResponsiveness = it.toInt() },
+                    onValueChangeFinished = { viewModel.setPoiGeofenceResponsivenessSecs(localPoiResponsiveness) },
+                    valueRange = 5f..300f,
+                    steps = 58
+                )
             }
         }
+    }
 
-        if (showRecalcInfo) {
-            AlertDialog(
-                onDismissRequest = { showRecalcInfo = false },
-                title = {
-                    Text(
-                        text = stringResource(R.string.settings_geofence_recalc_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(
-                        text = stringResource(R.string.info_geofence_recalc_desc)
-                    )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = { showRecalcInfo = false }
-                    ) {
-                        Text(stringResource(R.string.btn_ok))
-                    }
+    if (showBatteryTuningInfo) {
+        AlertDialog(
+            onDismissRequest = { showBatteryTuningInfo = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.settings_battery_tuning_title),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.info_battery_tuning_desc)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showBatteryTuningInfo = false }
+                ) {
+                    Text(stringResource(R.string.btn_ok))
                 }
-            )
-        }
-
-        if (showBatteryTuningInfo) {
-            AlertDialog(
-                onDismissRequest = { showBatteryTuningInfo = false },
-                title = {
-                    Text(
-                        text = stringResource(R.string.settings_battery_tuning_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(
-                        text = stringResource(R.string.info_battery_tuning_desc)
-                    )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = { showBatteryTuningInfo = false }
-                    ) {
-                        Text(stringResource(R.string.btn_ok))
-                    }
-                }
-            )
-        }
+            }
+        )
     }
 }
 
@@ -491,7 +500,7 @@ private fun ThemeSelector(
 
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = if (isSelected) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
+                    color = if (isSelected) selectedColor else Color.Transparent,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()

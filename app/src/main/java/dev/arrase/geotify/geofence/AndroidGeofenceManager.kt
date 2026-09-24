@@ -58,7 +58,7 @@ class AndroidGeofenceManager @Inject constructor(
         if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
             backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.w("GeofenceManager", "Aborting registration: Permissions not granted!")
+            Log.w("GeofenceManager", MSG_PERMISSIONS_NOT_GRANTED)
             return
         }
 
@@ -121,7 +121,7 @@ class AndroidGeofenceManager @Inject constructor(
         if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
             backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.w("GeofenceManager", "Aborting registration: Permissions not granted!")
+            Log.w("GeofenceManager", MSG_PERMISSIONS_NOT_GRANTED)
             return
         }
 
@@ -181,7 +181,7 @@ class AndroidGeofenceManager @Inject constructor(
         if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
             backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.w("GeofenceManager", "Aborting registration: Permissions not granted!")
+            Log.w("GeofenceManager", MSG_PERMISSIONS_NOT_GRANTED)
             return
         }
 
@@ -207,5 +207,9 @@ class AndroidGeofenceManager @Inject constructor(
             Log.e("GeofenceManager", "Failed to register master geofence in GMS", e)
             throw e
         }
+    }
+
+    companion object {
+        private const val MSG_PERMISSIONS_NOT_GRANTED = "Aborting registration: Permissions not granted!"
     }
 }

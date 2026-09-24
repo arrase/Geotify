@@ -43,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -80,6 +81,7 @@ import dev.arrase.geotify.ui.component.LocationMapView
 import dev.arrase.geotify.ui.component.LocationRow
 import dev.arrase.geotify.ui.component.MapPicker
 import dev.arrase.geotify.ui.component.SwipeToDeleteContainer
+import dev.arrase.geotify.ui.component.ViewModeSwitcher
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -187,42 +189,26 @@ fun LocationsScreen(
                 )
             }
 
+            // List View
             androidx.compose.animation.AnimatedVisibility(
                 visible = !isMapView && locations.isNotEmpty(),
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 64.dp, bottom = 16.dp)
-                ) {
-                    items(
-                        items = locations,
-                        key = { it.id }
-                    ) { location ->
-                        SwipeToDeleteContainer(
-                            onDelete = {
-                                viewModel.deleteLocation(location.alias)
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = context.applicationContext.getString(R.string.toast_location_deleted, location.alias),
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            },
-                            modifier = Modifier.animateItem()
-                        ) {
-                            Box(
-                                modifier = Modifier.clickable { openFormForEditing(location) }
-                            ) {
-                                LocationRow(
-                                    location = location,
-                                    activeReminderCount = activeReminderCounts[location.id] ?: 0
-                                )
-                            }
+                LocationsListContent(
+                    locations = locations,
+                    activeReminderCounts = activeReminderCounts,
+                    onDeleteLocation = { location ->
+                        viewModel.deleteLocation(location.alias)
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = context.applicationContext.getString(R.string.toast_location_deleted, location.alias),
+                                duration = SnackbarDuration.Short
+                            )
                         }
-                    }
-                }
+                    },
+                    onEditLocation = { location -> openFormForEditing(location) }
+                )
             }
 
             androidx.compose.animation.AnimatedVisibility(
@@ -281,174 +267,287 @@ fun LocationsScreen(
                     .padding(top = 12.dp)
             )
 
-        if (showDialog) {
-            ModalBottomSheet(
-                onDismissRequest = {
+            val formState = LocationFormState(
+                alias = alias,
+                aliasExists = aliasExists,
+                latitudeString = latitudeString,
+                isLatitudeValid = isLatitudeValid,
+                longitudeString = longitudeString,
+                isLongitudeValid = isLongitudeValid,
+                radiusMeters = radiusMeters,
+                responsivenessMinutes = responsivenessMinutes,
+                isEditing = editingLocation != null,
+                isGpsLoading = isGpsLoading,
+                isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists,
+                showResponsivenessInfo = showResponsivenessInfo
+            )
+
+            val formActions = LocationFormActions(
+                onAliasChange = { alias = it },
+                onLatitudeChange = { latitudeString = it },
+                onLongitudeChange = { longitudeString = it },
+                onRadiusChange = { radiusMeters = it },
+                onResponsivenessChange = { responsivenessMinutes = it },
+                onUseGps = {
+                    isGpsLoading = true
+                    scope.launch {
+                        val loc = viewModel.getCurrentLocation()
+                        if (loc != null) {
+                            latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
+                            longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
+                        } else {
+                            snackbarHostState.showSnackbar(
+                                message = context.applicationContext.getString(R.string.err_gps_failed),
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                        isGpsLoading = false
+                    }
+                },
+                onPickFromMap = {
+                    showMapPicker = true
+                    showDialog = false
+                },
+                onSave = {
+                    if (lat != null && lng != null) {
+                        val currentEditing = editingLocation
+                        val responsivenessMs = (responsivenessMinutes * 60000).toInt()
+                        if (currentEditing == null) {
+                            viewModel.saveLocation(alias, lat, lng, radiusMeters, responsivenessMs)
+                        } else {
+                            viewModel.updateLocation(
+                                currentEditing.copy(
+                                    alias = alias,
+                                    latitude = lat,
+                                    longitude = lng,
+                                    radiusMeters = radiusMeters,
+                                    notificationResponsivenessMs = responsivenessMs
+                                )
+                            )
+                        }
+                        showDialog = false
+                        editingLocation = null
+                    }
+                },
+                onDelete = if (editingLocation != null) {
+                    {
+                        viewModel.deleteLocation(editingLocation!!.alias)
+                        showDialog = false
+                        editingLocation = null
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = context.applicationContext.getString(R.string.toast_location_deleted, alias),
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
+                } else null,
+                onCancel = {
                     showDialog = false
                     editingLocation = null
                 },
-                sheetState = sheetState
-            ) {
-                LocationFormContent(
-                    alias = alias,
-                    onAliasChange = { alias = it },
-                    aliasExists = aliasExists,
-                    latitudeString = latitudeString,
-                    onLatitudeChange = { latitudeString = it },
-                    isLatitudeValid = isLatitudeValid,
-                    longitudeString = longitudeString,
-                    onLongitudeChange = { longitudeString = it },
-                    isLongitudeValid = isLongitudeValid,
+                onResponsivenessInfoChange = { showResponsivenessInfo = it }
+            )
+
+            LocationBottomSheet(
+                showDialog = showDialog,
+                sheetState = sheetState,
+                formState = formState,
+                formActions = formActions,
+                onDismissRequest = {
+                    showDialog = false
+                    editingLocation = null
+                }
+            )
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+
+            if (showMapPicker) {
+                val initialCoords = if (lat != null && lng != null) Pair(lat, lng) else null
+                MapPicker(
+                    initialCoordinates = initialCoords,
                     radiusMeters = radiusMeters,
-                    onRadiusChange = { radiusMeters = it },
-                    responsivenessMinutes = responsivenessMinutes,
-                    onResponsivenessChange = { responsivenessMinutes = it },
-                    isEditing = editingLocation != null,
-                    isGpsLoading = isGpsLoading,
-                    onUseGps = {
-                        isGpsLoading = true
-                        scope.launch {
-                            val loc = viewModel.getCurrentLocation()
-                            if (loc != null) {
-                                latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
-                                longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
-                            } else {
-                                snackbarHostState.showSnackbar(
-                                    message = context.applicationContext.getString(R.string.err_gps_failed),
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                            isGpsLoading = false
-                        }
+                    onGetCurrentLocation = { viewModel.getCurrentLocation() },
+                    onLocationSelected = { selectedLat, selectedLng ->
+                        latitudeString = String.format(Locale.US, "%.6f", selectedLat)
+                        longitudeString = String.format(Locale.US, "%.6f", selectedLng)
+                        showMapPicker = false
+                        showDialog = true
                     },
-                    onPickFromMap = {
-                        showMapPicker = true
-                        showDialog = false
+                    onDismiss = {
+                        showMapPicker = false
+                        showDialog = true
                     },
-                    onSave = {
-                        if (lat != null && lng != null) {
-                            val currentEditing = editingLocation
-                            val responsivenessMs = (responsivenessMinutes * 60000).toInt()
-                            if (currentEditing == null) {
-                                viewModel.saveLocation(alias, lat, lng, radiusMeters, responsivenessMs)
-                            } else {
-                                viewModel.updateLocation(
-                                    currentEditing.copy(
-                                        alias = alias,
-                                        latitude = lat,
-                                        longitude = lng,
-                                        radiusMeters = radiusMeters,
-                                        notificationResponsivenessMs = responsivenessMs
-                                    )
-                                )
-                            }
-                            showDialog = false
-                            editingLocation = null
-                        }
-                    },
-                    onDelete = if (editingLocation != null) {
-                        {
-                            viewModel.deleteLocation(editingLocation!!.alias)
-                            showDialog = false
-                            editingLocation = null
-                            scope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = context.applicationContext.getString(R.string.toast_location_deleted, alias),
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                        }
-                    } else null,
-                    onCancel = {
-                        showDialog = false
-                        editingLocation = null
-                    },
-                    isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists,
-                    showResponsivenessInfo = showResponsivenessInfo,
-                    onResponsivenessInfoChange = { showResponsivenessInfo = it }
+                    isDarkTheme = isMapDarkTheme
                 )
             }
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
-
-        if (showMapPicker) {
-            MapPicker(
-                initialLatitude = latitudeString.toDoubleOrNull(),
-                initialLongitude = longitudeString.toDoubleOrNull(),
-                radiusMeters = radiusMeters,
-                onGetCurrentLocation = { viewModel.getCurrentLocation() },
-                onLocationSelected = { lat, lng ->
-                    latitudeString = String.format(Locale.US, "%.6f", lat)
-                    longitudeString = String.format(Locale.US, "%.6f", lng)
-                    showMapPicker = false
-                    showDialog = true
-                },
-                onDismiss = {
-                    showMapPicker = false
-                    showDialog = true
-                },
-                isDarkTheme = isMapDarkTheme
-            )
-        }
     }
-}
 }
 
 // ── Extracted Composables ──
 
+data class LocationFormState(
+    val alias: String,
+    val aliasExists: Boolean,
+    val latitudeString: String,
+    val isLatitudeValid: Boolean,
+    val longitudeString: String,
+    val isLongitudeValid: Boolean,
+    val radiusMeters: Float,
+    val responsivenessMinutes: Float,
+    val isEditing: Boolean,
+    val isGpsLoading: Boolean,
+    val isValid: Boolean,
+    val showResponsivenessInfo: Boolean
+)
+
+data class LocationFormActions(
+    val onAliasChange: (String) -> Unit,
+    val onLatitudeChange: (String) -> Unit,
+    val onLongitudeChange: (String) -> Unit,
+    val onRadiusChange: (Float) -> Unit,
+    val onResponsivenessChange: (Float) -> Unit,
+    val onUseGps: () -> Unit,
+    val onPickFromMap: () -> Unit,
+    val onSave: () -> Unit,
+    val onDelete: (() -> Unit)?,
+    val onCancel: () -> Unit,
+    val onResponsivenessInfoChange: (Boolean) -> Unit
+)
+
+@Composable
+private fun LocationsListContent(
+    locations: List<LocationEntity>,
+    activeReminderCounts: Map<String, Int>,
+    onDeleteLocation: (LocationEntity) -> Unit,
+    onEditLocation: (LocationEntity) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = 64.dp, bottom = 16.dp)
+    ) {
+        items(
+            items = locations,
+            key = { it.id }
+        ) { location ->
+            SwipeToDeleteContainer(
+                onDelete = { onDeleteLocation(location) },
+                modifier = Modifier.animateItem()
+            ) {
+                Box(
+                    modifier = Modifier.clickable { onEditLocation(location) }
+                ) {
+                    LocationRow(
+                        location = location,
+                        activeReminderCount = activeReminderCounts[location.id] ?: 0
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LocationBottomSheet(
+    showDialog: Boolean,
+    sheetState: SheetState,
+    formState: LocationFormState,
+    formActions: LocationFormActions,
+    onDismissRequest: () -> Unit
+) {
+    if (showDialog) {
+        ModalBottomSheet(
+            onDismissRequest = onDismissRequest,
+            sheetState = sheetState
+        ) {
+            LocationFormContent(
+                state = formState,
+                actions = formActions
+            )
+        }
+    }
+}
+
 @Composable
 private fun LocationFormContent(
-    alias: String,
-    onAliasChange: (String) -> Unit,
-    aliasExists: Boolean,
-    latitudeString: String,
-    onLatitudeChange: (String) -> Unit,
-    isLatitudeValid: Boolean,
-    longitudeString: String,
-    onLongitudeChange: (String) -> Unit,
-    isLongitudeValid: Boolean,
-    radiusMeters: Float,
-    onRadiusChange: (Float) -> Unit,
-    responsivenessMinutes: Float,
-    onResponsivenessChange: (Float) -> Unit,
-    isEditing: Boolean,
-    isGpsLoading: Boolean,
-    onUseGps: () -> Unit,
-    onPickFromMap: () -> Unit,
-    onSave: () -> Unit,
-    onDelete: (() -> Unit)?,
-    onCancel: () -> Unit,
-    isValid: Boolean,
-    showResponsivenessInfo: Boolean,
-    onResponsivenessInfoChange: (Boolean) -> Unit
+    state: LocationFormState,
+    actions: LocationFormActions,
+    modifier: Modifier = Modifier
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
             .padding(bottom = 24.dp)
             .verticalScroll(rememberScrollState())
     ) {
         Text(
-            text = if (!isEditing) stringResource(R.string.dialog_new_location) else stringResource(R.string.dialog_edit_location),
+            text = if (!state.isEditing) stringResource(R.string.dialog_new_location) else stringResource(R.string.dialog_edit_location),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
+        LocationCoordinatesInputs(state = state, actions = actions)
+
+        LocationGpsButtons(
+            isGpsLoading = state.isGpsLoading,
+            onUseGps = actions.onUseGps,
+            onPickFromMap = actions.onPickFromMap
+        )
+
+        RadiusSlider(
+            value = state.radiusMeters,
+            onValueChange = actions.onRadiusChange
+        )
+
+        ResponsivenessSlider(
+            value = state.responsivenessMinutes,
+            onValueChange = actions.onResponsivenessChange,
+            onInfoClick = { actions.onResponsivenessInfoChange(true) }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LocationFormButtons(
+            isEditing = state.isEditing,
+            isValid = state.isValid,
+            onDelete = actions.onDelete,
+            onCancel = actions.onCancel,
+            onSave = actions.onSave
+        )
+    }
+
+    if (state.showResponsivenessInfo) {
+        ResponsivenessInfoDialog(onDismiss = { actions.onResponsivenessInfoChange(false) })
+    }
+}
+
+@Composable
+private fun LocationCoordinatesInputs(
+    state: LocationFormState,
+    actions: LocationFormActions,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         OutlinedTextField(
-            value = alias,
-            onValueChange = onAliasChange,
+            value = state.alias,
+            onValueChange = actions.onAliasChange,
             label = { Text(stringResource(R.string.alias_hint)) },
             singleLine = true,
-            isError = aliasExists,
+            isError = state.aliasExists,
             supportingText = {
-                if (aliasExists) {
+                if (state.aliasExists) {
                     Text(stringResource(R.string.err_alias_exists), color = MaterialTheme.colorScheme.error)
                 }
             },
@@ -457,14 +556,14 @@ private fun LocationFormContent(
         )
 
         OutlinedTextField(
-            value = latitudeString,
-            onValueChange = onLatitudeChange,
+            value = state.latitudeString,
+            onValueChange = actions.onLatitudeChange,
             label = { Text(stringResource(R.string.lat_hint)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            isError = latitudeString.isNotEmpty() && !isLatitudeValid,
+            isError = state.latitudeString.isNotEmpty() && !state.isLatitudeValid,
             supportingText = {
-                if (latitudeString.isNotEmpty() && !isLatitudeValid) {
+                if (state.latitudeString.isNotEmpty() && !state.isLatitudeValid) {
                     Text(stringResource(R.string.err_lat_invalid), color = MaterialTheme.colorScheme.error)
                 }
             },
@@ -473,131 +572,139 @@ private fun LocationFormContent(
         )
 
         OutlinedTextField(
-            value = longitudeString,
-            onValueChange = onLongitudeChange,
+            value = state.longitudeString,
+            onValueChange = actions.onLongitudeChange,
             label = { Text(stringResource(R.string.lng_hint)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            isError = longitudeString.isNotEmpty() && !isLongitudeValid,
+            isError = state.longitudeString.isNotEmpty() && !state.isLongitudeValid,
             supportingText = {
-                if (longitudeString.isNotEmpty() && !isLongitudeValid) {
+                if (state.longitudeString.isNotEmpty() && !state.isLongitudeValid) {
                     Text(stringResource(R.string.err_lng_invalid), color = MaterialTheme.colorScheme.error)
                 }
             },
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
         )
+    }
+}
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+@Composable
+private fun LocationGpsButtons(
+    isGpsLoading: Boolean,
+    onUseGps: () -> Unit,
+    onPickFromMap: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Button(
+            onClick = onUseGps,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            ),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.weight(1f),
+            enabled = !isGpsLoading
         ) {
-            Button(
-                onClick = onUseGps,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.weight(1f),
-                enabled = !isGpsLoading
-            ) {
-                if (isGpsLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.btn_querying_gps), maxLines = 1)
-                } else {
-                    Icon(
-                        imageVector = Icons.Filled.MyLocation,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.btn_use_gps), maxLines = 1)
-                }
-            }
-
-            Button(
-                onClick = onPickFromMap,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.weight(1f)
-            ) {
+            if (isGpsLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.btn_querying_gps), maxLines = 1)
+            } else {
                 Icon(
-                    imageVector = Icons.Filled.LocationOn,
+                    imageVector = Icons.Filled.MyLocation,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(Modifier.width(4.dp))
-                Text(stringResource(R.string.btn_select_on_map), maxLines = 1)
+                Text(stringResource(R.string.btn_use_gps), maxLines = 1)
             }
         }
 
-        RadiusSlider(
-            value = radiusMeters,
-            onValueChange = onRadiusChange
-        )
-
-        ResponsivenessSlider(
-            value = responsivenessMinutes,
-            onValueChange = onResponsivenessChange,
-            onInfoClick = { onResponsivenessInfoChange(true) }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
+        Button(
+            onClick = onPickFromMap,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            ),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.weight(1f)
         ) {
-            DialogDismissButtons(
-                isEditing = isEditing,
-                onDelete = { onDelete?.invoke() },
-                onCancel = onCancel
+            Icon(
+                imageVector = Icons.Filled.LocationOn,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
             )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Button(
-                onClick = onSave,
-                enabled = isValid,
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text(stringResource(R.string.btn_save))
-            }
+            Spacer(Modifier.width(4.dp))
+            Text(stringResource(R.string.btn_select_on_map), maxLines = 1)
         }
     }
+}
 
-    if (showResponsivenessInfo) {
-        AlertDialog(
-            onDismissRequest = { onResponsivenessInfoChange(false) },
-            title = {
-                Text(
-                    text = stringResource(R.string.label_notification_responsiveness),
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(R.string.info_notification_responsiveness_desc)
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = { onResponsivenessInfoChange(false) }
-                ) {
-                    Text(stringResource(R.string.btn_ok))
-                }
-            }
+@Composable
+private fun LocationFormButtons(
+    isEditing: Boolean,
+    isValid: Boolean,
+    onDelete: (() -> Unit)?,
+    onCancel: () -> Unit,
+    onSave: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        DialogDismissButtons(
+            isEditing = isEditing,
+            onDelete = { onDelete?.invoke() },
+            onCancel = onCancel
         )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Button(
+            onClick = onSave,
+            enabled = isValid,
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text(stringResource(R.string.btn_save))
+        }
     }
+}
+
+@Composable
+private fun ResponsivenessInfoDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.label_notification_responsiveness),
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.info_notification_responsiveness_desc)
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss
+            ) {
+                Text(stringResource(R.string.btn_ok))
+            }
+        }
+    )
 }
 
 @Composable
@@ -792,72 +899,6 @@ private fun SelectedLocationCard(
                         contentDescription = stringResource(R.string.content_description_dismiss),
                         tint = MaterialTheme.colorScheme.outline
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ViewModeSwitcher(
-    isMapView: Boolean,
-    onListSelected: () -> Unit,
-    onMapSelected: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        val containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
-        val selectedColor = MaterialTheme.colorScheme.primary
-        val contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        val onSelectedColor = MaterialTheme.colorScheme.onPrimary
-
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = containerColor,
-            shadowElevation = 6.dp,
-            modifier = Modifier.height(40.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(2.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (!isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
-                    modifier = Modifier
-                        .width(100.dp)
-                        .fillMaxHeight()
-                        .clickable(onClick = onListSelected)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = stringResource(R.string.tab_list),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = if (!isMapView) onSelectedColor else contentColor,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
-                    modifier = Modifier
-                        .width(100.dp)
-                        .fillMaxHeight()
-                        .clickable(onClick = onMapSelected)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = stringResource(R.string.tab_map),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = if (isMapView) onSelectedColor else contentColor,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
         }
