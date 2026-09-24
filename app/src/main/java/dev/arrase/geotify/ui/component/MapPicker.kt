@@ -74,8 +74,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapPicker(
-    initialLatitude: Double?,
-    initialLongitude: Double?,
+    initialCoordinates: Pair<Double, Double>? = null,
     radiusMeters: Float,
     onGetCurrentLocation: suspend () -> android.location.Location?,
     onLocationSelected: (Double, Double) -> Unit,
@@ -96,8 +95,8 @@ fun MapPicker(
 
     var selectedPoint by remember {
         mutableStateOf(
-            if (initialLatitude != null && initialLongitude != null) {
-                GeoPoint(initialLatitude, initialLongitude)
+            if (initialCoordinates != null) {
+                GeoPoint(initialCoordinates.first, initialCoordinates.second)
             } else {
                 // Default coordinates (e.g. Madrid center) if no location is available
                 GeoPoint(40.416775, -3.703790)
@@ -110,7 +109,7 @@ fun MapPicker(
     // Center on selectedPoint initially and query GPS if no initial location is provided
     LaunchedEffect(mapViewRef) {
         val map = mapViewRef ?: return@LaunchedEffect
-        if (initialLatitude != null && initialLongitude != null) {
+        if (initialCoordinates != null) {
             map.controller.setCenter(selectedPoint)
         } else {
             // Set initial center to Madrid while loading current GPS position
@@ -173,54 +172,16 @@ fun MapPicker(
                     },
                     modifier = Modifier.fillMaxSize(),
                     update = { map ->
-                        // Apply dark mode styling to map tiles
-                        if (isDarkTheme) {
-                            val filter = ColorMatrixColorFilter(ColorMatrix(floatArrayOf(
-                                -0.1491f, -0.5005f, -0.0504f, 0f, 215f,
-                                -0.1491f, -0.5005f, -0.0504f, 0f, 215f,
-                                -0.1491f, -0.5005f, -0.0504f, 0f, 230f,
-                                0f,        0f,        0f,        1f, 0f
-                            )))
-                            map.overlayManager.tilesOverlay.setColorFilter(filter)
-                        } else {
-                            map.overlayManager.tilesOverlay.setColorFilter(null)
-                        }
-
-                        map.overlays.clear()
-
-                        // Register MapEventsOverlay to handle taps on the map
-                        val mapEventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
-                            override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
-                                selectedPoint = p
-                                return true
-                            }
-
-                            override fun longPressHelper(p: GeoPoint): Boolean {
-                                selectedPoint = p
-                                return true
-                            }
-                        })
-                        map.overlays.add(mapEventsOverlay)
-
-                        // Circle overlay representing the geofence radius
-                        val circle = Polygon().apply {
-                            points = Polygon.pointsAsCircle(selectedPoint, radiusMeters.toDouble())
-                            fillPaint.color = circleFillColor
-                            outlinePaint.color = circleStrokeColor
-                            outlinePaint.strokeWidth = 3f
-                        }
-                        map.overlays.add(circle)
-
-                        // Marker representing the currently selected point
-                        val marker = Marker(map).apply {
-                            position = selectedPoint
-                            title = context.applicationContext.getString(R.string.label_selected_location)
-                            icon = markerIcon
-                            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                        }
-                        map.overlays.add(marker)
-
-                        map.invalidate()
+                        applyTileFilter(map, isDarkTheme)
+                        configureOverlays(
+                            map = map,
+                            selectedPoint = selectedPoint,
+                            radiusMeters = radiusMeters,
+                            markerIcon = markerIcon,
+                            markerTitle = context.applicationContext.getString(R.string.label_selected_location),
+                            circleColors = Pair(circleFillColor, circleStrokeColor),
+                            onPointSelected = { selectedPoint = it }
+                        )
                     }
                 )
 
@@ -360,3 +321,58 @@ private fun getTintedMarkerIcon(context: Context, color: Int, sizeDp: Int = 38):
     mutated.draw(canvas)
     return bitmap.toDrawable(context.resources)
 }
+
+private fun applyTileFilter(map: MapView, isDarkTheme: Boolean) {
+    if (isDarkTheme) {
+        val filter = ColorMatrixColorFilter(ColorMatrix(floatArrayOf(
+            -0.1491f, -0.5005f, -0.0504f, 0f, 215f,
+            -0.1491f, -0.5005f, -0.0504f, 0f, 215f,
+            -0.1491f, -0.5005f, -0.0504f, 0f, 230f,
+            0f,        0f,        0f,        1f, 0f
+        )))
+        map.overlayManager.tilesOverlay.setColorFilter(filter)
+    } else {
+        map.overlayManager.tilesOverlay.setColorFilter(null)
+    }
+}
+
+private fun configureOverlays(
+    map: MapView,
+    selectedPoint: GeoPoint,
+    radiusMeters: Float,
+    markerIcon: Drawable,
+    markerTitle: String,
+    circleColors: Pair<Int, Int>,
+    onPointSelected: (GeoPoint) -> Unit
+) {
+    map.overlays.clear()
+
+    val mapEventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
+        override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
+            onPointSelected(p)
+            return true
+        }
+
+        override fun longPressHelper(p: GeoPoint): Boolean = singleTapConfirmedHelper(p)
+    })
+    map.overlays.add(mapEventsOverlay)
+
+    val circle = Polygon().apply {
+        points = Polygon.pointsAsCircle(selectedPoint, radiusMeters.toDouble())
+        fillPaint.color = circleColors.first
+        outlinePaint.color = circleColors.second
+        outlinePaint.strokeWidth = 3f
+    }
+    map.overlays.add(circle)
+
+    val marker = Marker(map).apply {
+        position = selectedPoint
+        title = markerTitle
+        icon = markerIcon
+        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+    }
+    map.overlays.add(marker)
+
+    map.invalidate()
+}
+

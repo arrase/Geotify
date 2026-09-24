@@ -16,7 +16,7 @@ class BootCompletedReceiver : BroadcastReceiver() {
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
-    interface BootEntryPoint {
+    fun interface BootEntryPoint {
         fun geofenceOrchestrator(): GeofenceOrchestrator
     }
 

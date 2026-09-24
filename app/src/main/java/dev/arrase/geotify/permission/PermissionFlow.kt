@@ -1,6 +1,8 @@
 package dev.arrase.geotify.permission
 
 import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import android.content.pm.PackageManager
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -43,33 +44,31 @@ private const val STEP_LOCATION = 0
 private const val STEP_NOTIFICATION = 1
 private const val STEP_DONE = 2
 
+private fun isBackgroundLocationGranted(context: Context): Boolean {
+    return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q ||
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+}
+
+private fun isNotificationGranted(context: Context): Boolean {
+    return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+}
+
 @Composable
 fun rememberBackgroundLocationGranted(): Boolean {
     val context = LocalContext.current
     var isGranted by remember {
-        mutableStateOf(
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            } else {
-                true
-            }
-        )
+        mutableStateOf(isBackgroundLocationGranted(context))
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                isGranted = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                } else {
-                    true
-                }
+                isGranted = isBackgroundLocationGranted(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -86,20 +85,6 @@ fun PermissionGate(content: @Composable () -> Unit) {
     var step by remember { mutableIntStateOf(STEP_LOCATION) }
     var showBackgroundDialog by remember { mutableStateOf(false) }
 
-    fun checkBgGranted(): Boolean {
-        return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q ||
-                ContextCompat.checkSelfPermission(
-                    context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    fun checkNotificationGranted(): Boolean {
-        return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU ||
-                ContextCompat.checkSelfPermission(
-                    context, Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-    }
-
     // Check if location is already granted on first composition
     LaunchedEffect(Unit) {
         val fineGranted = ContextCompat.checkSelfPermission(
@@ -108,8 +93,8 @@ fun PermissionGate(content: @Composable () -> Unit) {
 
         if (fineGranted) {
             step = when {
-                !checkNotificationGranted() -> STEP_NOTIFICATION
-                !checkBgGranted() -> {
+                !isNotificationGranted(context) -> STEP_NOTIFICATION
+                !isBackgroundLocationGranted(context) -> {
                     showBackgroundDialog = true
                     STEP_DONE
                 }
@@ -123,9 +108,9 @@ fun PermissionGate(content: @Composable () -> Unit) {
     ) { permissions ->
         val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
         if (fineGranted) {
-            if (!checkNotificationGranted()) {
+            if (!isNotificationGranted(context)) {
                 step = STEP_NOTIFICATION
-            } else if (!checkBgGranted()) {
+            } else if (!isBackgroundLocationGranted(context)) {
                 showBackgroundDialog = true
                 step = STEP_DONE
             } else {
@@ -139,7 +124,7 @@ fun PermissionGate(content: @Composable () -> Unit) {
     val notificationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ ->
-        if (!checkBgGranted()) {
+        if (!isBackgroundLocationGranted(context)) {
             showBackgroundDialog = true
         }
         step = STEP_DONE

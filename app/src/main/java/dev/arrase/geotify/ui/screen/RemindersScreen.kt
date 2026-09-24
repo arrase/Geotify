@@ -80,8 +80,11 @@ import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
 import dev.arrase.geotify.ui.component.ReminderMapView
+import dev.arrase.geotify.ui.component.ReminderMapViewData
 import dev.arrase.geotify.ui.component.ReminderRow
+import dev.arrase.geotify.ui.component.SpatialRecalculationArea
 import dev.arrase.geotify.ui.component.SwipeToDeleteContainer
+import dev.arrase.geotify.ui.component.ViewModeSwitcher
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,7 +96,6 @@ fun RemindersScreen(
     val context = LocalContext.current
     val reminders by viewModel.reminders.collectAsStateWithLifecycle()
     val locations by viewModel.locations.collectAsStateWithLifecycle()
-    val activeReminderCounts by viewModel.activeReminderCounts.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -191,82 +193,36 @@ fun RemindersScreen(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 64.dp, bottom = 16.dp)
-                ) {
-                    if (activeReminders.isNotEmpty()) {
-                        stickyHeader(key = "header_active") {
-                            SectionHeader(stringResource(R.string.label_active))
-                        }
-                        items(
-                            items = activeReminders,
-                            key = { it.id }
-                        ) { reminder ->
-                            ActiveReminderItem(
-                                reminder = reminder,
-                                locationAliasMap = locationAliasMap,
-                                onCancel = {
-                                    viewModel.cancelReminder(reminder.id)
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = context.applicationContext.getString(R.string.toast_reminder_cancelled),
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    editingReminder = reminder
-                                    selectedLocationId = reminder.locationId
-                                    message = reminder.message
-                                    transitionType = reminder.transitionType
-                                    showDialog = true
-                                },
-                                modifier = Modifier.animateItem()
+                RemindersListContent(
+                    activeReminders = activeReminders,
+                    completedReminders = completedReminders,
+                    locationAliasMap = locationAliasMap,
+                    onCancelActive = { reminder ->
+                        viewModel.cancelReminder(reminder.id)
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = context.applicationContext.getString(R.string.toast_reminder_cancelled),
+                                duration = SnackbarDuration.Short
                             )
                         }
-                    }
-
-                    if (completedReminders.isNotEmpty()) {
-                        stickyHeader(key = "header_completed") {
-                            SectionHeader(stringResource(R.string.label_completed))
+                    },
+                    onDeleteCompleted = { reminder ->
+                        viewModel.cancelReminder(reminder.id)
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = context.applicationContext.getString(R.string.toast_reminder_deleted),
+                                duration = SnackbarDuration.Short
+                            )
                         }
-                        items(
-                            items = completedReminders,
-                            key = { it.id }
-                        ) { reminder ->
-                            SwipeToDeleteContainer(
-                                onDelete = {
-                                    viewModel.cancelReminder(reminder.id)
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = context.applicationContext.getString(R.string.toast_reminder_deleted),
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                },
-                                modifier = Modifier
-                                    .alpha(0.6f)
-                                    .animateItem()
-                            ) {
-                                Box(
-                                    modifier = Modifier.clickable {
-                                        editingReminder = reminder
-                                        selectedLocationId = reminder.locationId
-                                        message = reminder.message
-                                        transitionType = reminder.transitionType
-                                        showDialog = true
-                                    }
-                                ) {
-                                    ReminderRow(
-                                        reminder = reminder,
-                                        locationAliasMap = locationAliasMap
-                                    )
-                                }
-                            }
-                        }
+                    },
+                    onReminderClick = { reminder ->
+                        editingReminder = reminder
+                        selectedLocationId = reminder.locationId
+                        message = reminder.message
+                        transitionType = reminder.transitionType
+                        showDialog = true
                     }
-                }
+                )
             }
 
             // Map View
@@ -277,15 +233,19 @@ fun RemindersScreen(
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     ReminderMapView(
-                        reminders = activeReminders,
-                        locations = locations,
-                        selectedLocation = selectedLocationOnMap,
+                        data = ReminderMapViewData(
+                            reminders = activeReminders,
+                            locations = locations,
+                            selectedLocation = selectedLocationOnMap,
+                            spatialArea = SpatialRecalculationArea(
+                                latitude = lastRecalcLat,
+                                longitude = lastRecalcLng,
+                                innerRadiusMeters = innerRadiusR * 1000f,
+                                outerRadiusMeters = outerRadiusN * 1000f
+                            ),
+                            currentUserLocation = currentUserLocation
+                        ),
                         onLocationSelected = { selectedLocationOnMap = it },
-                        lastRecalcLat = lastRecalcLat,
-                        lastRecalcLng = lastRecalcLng,
-                        innerRadiusMeters = innerRadiusR * 1000f,
-                        outerRadiusMeters = outerRadiusN * 1000f,
-                        currentUserLocation = currentUserLocation,
                         isDarkTheme = isMapDarkTheme
                     )
 
@@ -362,207 +322,343 @@ fun RemindersScreen(
                 },
                 sheetState = sheetState
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 24.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        text = if (editingReminder == null) stringResource(R.string.dialog_new_reminder) else stringResource(R.string.dialog_edit_reminder),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    if (locations.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.reminder_no_locations),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    } else {
-                        val selectedLocation = locations.find { it.id == selectedLocationId }
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            OutlinedTextField(
-                                value = selectedLocation?.alias ?: stringResource(R.string.reminder_select_location),
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text(stringResource(R.string.reminder_target_location)) },
-                                trailingIcon = {
-                                    Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
-                                },
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .clickable { dropdownExpanded = true }
-                            )
-                            DropdownMenu(
-                                expanded = dropdownExpanded,
-                                onDismissRequest = { dropdownExpanded = false },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                locations.forEach { location ->
-                                    DropdownMenuItem(
-                                        text = { Text(location.alias) },
-                                        onClick = {
-                                            selectedLocationId = location.id
-                                            dropdownExpanded = false
-                                        }
+                ReminderBottomSheetContent(
+                    state = ReminderFormState(
+                        editingReminder = editingReminder,
+                        selectedLocationId = selectedLocationId,
+                        message = message,
+                        transitionType = transitionType,
+                        dropdownExpanded = dropdownExpanded
+                    ),
+                    actions = ReminderFormActions(
+                        onLocationSelected = {
+                            selectedLocationId = it
+                            dropdownExpanded = false
+                        },
+                        onMessageChange = { message = it },
+                        onTransitionTypeChange = { transitionType = it },
+                        onDropdownExpandedChange = { dropdownExpanded = it },
+                        onSave = {
+                            val currentEditing = editingReminder
+                            if (currentEditing == null) {
+                                viewModel.createReminder(selectedLocationId, message, transitionType)
+                            } else {
+                                viewModel.updateReminder(
+                                    currentEditing.copy(
+                                        locationId = selectedLocationId,
+                                        message = message,
+                                        transitionType = transitionType
+                                    )
+                                )
+                            }
+                            showDialog = false
+                            editingReminder = null
+                        },
+                        onDelete = {
+                            val editing = editingReminder
+                            if (editing != null) {
+                                viewModel.cancelReminder(editing.id)
+                                showDialog = false
+                                editingReminder = null
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = context.applicationContext.getString(R.string.toast_reminder_deleted),
+                                        duration = SnackbarDuration.Short
                                     )
                                 }
                             }
+                        },
+                        onCancel = {
+                            showDialog = false
+                            editingReminder = null
                         }
+                    ),
+                    locations = locations
+                )
+            }
+        }
+    }
+}
 
-                        OutlinedTextField(
-                            value = message,
-                            onValueChange = { message = it },
-                            label = { Text(stringResource(R.string.reminder_message)) },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
+private data class ReminderFormState(
+    val editingReminder: ReminderEntity?,
+    val selectedLocationId: String,
+    val message: String,
+    val transitionType: Int,
+    val dropdownExpanded: Boolean
+)
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = stringResource(R.string.reminder_trigger_condition),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                val isEnter = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
-                                val isExit = transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
+private data class ReminderFormActions(
+    val onLocationSelected: (String) -> Unit,
+    val onMessageChange: (String) -> Unit,
+    val onTransitionTypeChange: (Int) -> Unit,
+    val onDropdownExpandedChange: (Boolean) -> Unit,
+    val onSave: () -> Unit,
+    val onDelete: () -> Unit,
+    val onCancel: () -> Unit
+)
 
-                                // Arrival button
-                                Surface(
-                                    onClick = { transitionType = Geofence.GEOFENCE_TRANSITION_ENTER },
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = BorderStroke(
-                                        1.dp,
-                                        if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                                    ),
-                                    color = if (isEnter) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(vertical = 12.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.LocationOn,
-                                            contentDescription = null,
-                                            tint = if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            text = stringResource(R.string.label_arrival),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = if (isEnter) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
+@Composable
+private fun RemindersListContent(
+    activeReminders: List<ReminderEntity>,
+    completedReminders: List<ReminderEntity>,
+    locationAliasMap: Map<String, String>,
+    onCancelActive: (ReminderEntity) -> Unit,
+    onDeleteCompleted: (ReminderEntity) -> Unit,
+    onReminderClick: (ReminderEntity) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = 64.dp, bottom = 16.dp)
+    ) {
+        if (activeReminders.isNotEmpty()) {
+            stickyHeader(key = "header_active") {
+                SectionHeader(stringResource(R.string.label_active))
+            }
+            items(
+                items = activeReminders,
+                key = { it.id }
+            ) { reminder ->
+                ActiveReminderItem(
+                    reminder = reminder,
+                    locationAliasMap = locationAliasMap,
+                    onCancel = { onCancelActive(reminder) },
+                    onClick = { onReminderClick(reminder) },
+                    modifier = Modifier.animateItem()
+                )
+            }
+        }
 
-                                // Departure button
-                                Surface(
-                                    onClick = { transitionType = Geofence.GEOFENCE_TRANSITION_EXIT },
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = BorderStroke(
-                                        1.dp,
-                                        if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                                    ),
-                                    color = if (isExit) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(vertical = 12.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
-                                            contentDescription = null,
-                                            tint = if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            text = stringResource(R.string.label_departure),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = if (isExit) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    val isValid = locations.isNotEmpty() && message.isNotBlank() && selectedLocationId.isNotEmpty()
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
+        if (completedReminders.isNotEmpty()) {
+            stickyHeader(key = "header_completed") {
+                SectionHeader(stringResource(R.string.label_completed))
+            }
+            items(
+                items = completedReminders,
+                key = { it.id }
+            ) { reminder ->
+                SwipeToDeleteContainer(
+                    onDelete = { onDeleteCompleted(reminder) },
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .animateItem()
+                ) {
+                    Box(
+                        modifier = Modifier.clickable { onReminderClick(reminder) }
                     ) {
-                        val editing = editingReminder
-                        DialogDismissButtons(
-                            isEditing = editing != null,
-                            onDelete = {
-                                if (editing != null) {
-                                    viewModel.cancelReminder(editing.id)
-                                    showDialog = false
-                                    editingReminder = null
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = context.applicationContext.getString(R.string.toast_reminder_deleted),
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                }
-                            },
-                            onCancel = {
-                                showDialog = false
-                                editingReminder = null
-                            }
+                        ReminderRow(
+                            reminder = reminder,
+                            locationAliasMap = locationAliasMap
                         )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Button(
-                            onClick = {
-                                if (isValid) {
-                                    val currentEditing = editingReminder
-                                    if (currentEditing == null) {
-                                        viewModel.createReminder(selectedLocationId, message, transitionType)
-                                    } else {
-                                        viewModel.updateReminder(
-                                            currentEditing.copy(
-                                                locationId = selectedLocationId,
-                                                message = message,
-                                                transitionType = transitionType
-                                            )
-                                        )
-                                    }
-                                    showDialog = false
-                                    editingReminder = null
-                                }
-                            },
-                            enabled = isValid,
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text(stringResource(R.string.btn_save))
-                        }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReminderBottomSheetContent(
+    state: ReminderFormState,
+    actions: ReminderFormActions,
+    locations: List<LocationEntity>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 24.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = if (state.editingReminder == null) {
+                stringResource(R.string.dialog_new_reminder)
+            } else {
+                stringResource(R.string.dialog_edit_reminder)
+            },
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        if (locations.isEmpty()) {
+            Text(
+                text = stringResource(R.string.reminder_no_locations),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        } else {
+            ReminderLocationSelector(
+                locations = locations,
+                selectedLocationId = state.selectedLocationId,
+                dropdownExpanded = state.dropdownExpanded,
+                onDropdownExpandedChange = actions.onDropdownExpandedChange,
+                onLocationSelected = actions.onLocationSelected
+            )
+
+            OutlinedTextField(
+                value = state.message,
+                onValueChange = actions.onMessageChange,
+                label = { Text(stringResource(R.string.reminder_message)) },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            TransitionTypeSelector(
+                transitionType = state.transitionType,
+                onTransitionTypeChange = actions.onTransitionTypeChange
+            )
+        }
+
+        val isValid = locations.isNotEmpty() && state.message.isNotBlank() && state.selectedLocationId.isNotEmpty()
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            DialogDismissButtons(
+                isEditing = state.editingReminder != null,
+                onDelete = actions.onDelete,
+                onCancel = actions.onCancel
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = actions.onSave,
+                enabled = isValid,
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text(stringResource(R.string.btn_save))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReminderLocationSelector(
+    locations: List<LocationEntity>,
+    selectedLocationId: String,
+    dropdownExpanded: Boolean,
+    onDropdownExpandedChange: (Boolean) -> Unit,
+    onLocationSelected: (String) -> Unit
+) {
+    val selectedLocation = locations.find { it.id == selectedLocationId }
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = selectedLocation?.alias ?: stringResource(R.string.reminder_select_location),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.reminder_target_location)) },
+            trailingIcon = {
+                Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+            },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable { onDropdownExpandedChange(true) }
+        )
+        DropdownMenu(
+            expanded = dropdownExpanded,
+            onDismissRequest = { onDropdownExpandedChange(false) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            locations.forEach { location ->
+                DropdownMenuItem(
+                    text = { Text(location.alias) },
+                    onClick = {
+                        onLocationSelected(location.id)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransitionTypeSelector(
+    transitionType: Int,
+    onTransitionTypeChange: (Int) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.reminder_trigger_condition),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val isEnter = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
+            val isExit = transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
+
+            Surface(
+                onClick = { onTransitionTypeChange(Geofence.GEOFENCE_TRANSITION_ENTER) },
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(
+                    1.dp,
+                    if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                ),
+                color = if (isEnter) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.LocationOn,
+                        contentDescription = null,
+                        tint = if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.label_arrival),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (isEnter) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            Surface(
+                onClick = { onTransitionTypeChange(Geofence.GEOFENCE_TRANSITION_EXIT) },
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(
+                    1.dp,
+                    if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                ),
+                color = if (isExit) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
+                        contentDescription = null,
+                        tint = if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.label_departure),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (isExit) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }
@@ -604,72 +700,6 @@ private fun SectionHeader(title: String) {
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary
         )
-    }
-}
-
-@Composable
-private fun ViewModeSwitcher(
-    isMapView: Boolean,
-    onListSelected: () -> Unit,
-    onMapSelected: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        val containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
-        val selectedColor = MaterialTheme.colorScheme.primary
-        val contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        val onSelectedColor = MaterialTheme.colorScheme.onPrimary
-
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = containerColor,
-            shadowElevation = 6.dp,
-            modifier = Modifier.height(40.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(2.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (!isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
-                    modifier = Modifier
-                        .width(100.dp)
-                        .fillMaxHeight()
-                        .clickable(onClick = onListSelected)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = stringResource(R.string.tab_list),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = if (!isMapView) onSelectedColor else contentColor,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (isMapView) selectedColor else androidx.compose.ui.graphics.Color.Transparent,
-                    modifier = Modifier
-                        .width(100.dp)
-                        .fillMaxHeight()
-                        .clickable(onClick = onMapSelected)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = stringResource(R.string.tab_map),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = if (isMapView) onSelectedColor else contentColor,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -744,79 +774,93 @@ private fun SelectedReminderLocationCard(
                             )
                         }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = reminder.message,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Spacer(Modifier.height(4.dp))
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    androidx.compose.material3.SuggestionChip(
-                                        onClick = {},
-                                        label = {
-                                            Text(
-                                                text = if (reminder.isArrival) {
-                                                    stringResource(R.string.label_transition_arrival)
-                                                } else {
-                                                    stringResource(R.string.label_transition_departure)
-                                                },
-                                                style = MaterialTheme.typography.labelSmall
-                                            )
-                                        },
-                                        modifier = Modifier.height(24.dp)
-                                    )
-
-                                    if (reminder.isInRange) {
-                                        androidx.compose.material3.SuggestionChip(
-                                            onClick = {},
-                                            label = {
-                                                Text(
-                                                    text = stringResource(R.string.label_in_range),
-                                                    style = MaterialTheme.typography.labelSmall
-                                                )
-                                            },
-                                            colors = androidx.compose.material3.SuggestionChipDefaults.suggestionChipColors(
-                                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                                labelColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                            ),
-                                            modifier = Modifier.height(24.dp)
-                                        )
-                                    }
-                                }
-                            }
-
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(onClick = { onEdit(reminder) }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Edit,
-                                        contentDescription = stringResource(R.string.content_description_edit_reminder),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
-                                IconButton(onClick = { onDelete(reminder) }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Delete,
-                                        contentDescription = stringResource(R.string.content_description_delete_reminder),
-                                        tint = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                            }
-                        }
+                        SelectedReminderItemRow(
+                            reminder = reminder,
+                            onEdit = onEdit,
+                            onDelete = onDelete
+                        )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectedReminderItemRow(
+    reminder: ReminderEntity,
+    onEdit: (ReminderEntity) -> Unit,
+    onDelete: (ReminderEntity) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = reminder.message,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(Modifier.height(4.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                androidx.compose.material3.SuggestionChip(
+                    onClick = {},
+                    label = {
+                        Text(
+                            text = if (reminder.isArrival) {
+                                stringResource(R.string.label_transition_arrival)
+                            } else {
+                                stringResource(R.string.label_transition_departure)
+                            },
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    },
+                    modifier = Modifier.height(24.dp)
+                )
+
+                if (reminder.isInRange) {
+                    androidx.compose.material3.SuggestionChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                text = stringResource(R.string.label_in_range),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        },
+                        colors = androidx.compose.material3.SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        ),
+                        modifier = Modifier.height(24.dp)
+                    )
+                }
+            }
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { onEdit(reminder) }) {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = stringResource(R.string.content_description_edit_reminder),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            IconButton(onClick = { onDelete(reminder) }) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = stringResource(R.string.content_description_delete_reminder),
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }

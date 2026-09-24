@@ -49,8 +49,8 @@ android {
         applicationId = "dev.arrase.geotify"
         minSdk = 24
         targetSdk = 36
-        versionCode = 11
-        versionName = "1.0.0-beta.4"
+        versionCode = 12
+        versionName = "1.0.0-beta.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -151,6 +151,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

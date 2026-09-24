@@ -13,13 +13,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 @Suppress("unused")
-abstract class BindingsModule {
+interface BindingsModule {
 
     @Binds
     @Singleton
-    abstract fun bindGeofenceManager(impl: AndroidGeofenceManager): GeofenceManager
+    fun bindGeofenceManager(impl: AndroidGeofenceManager): GeofenceManager
 
     @Binds
     @Singleton
-    abstract fun bindLocationProvider(impl: DefaultLocationProvider): LocationProvider
+    fun bindLocationProvider(impl: DefaultLocationProvider): LocationProvider
 }
