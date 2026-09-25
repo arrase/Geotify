@@ -58,6 +58,19 @@ private fun isNotificationGranted(context: Context): Boolean {
             ) == PackageManager.PERMISSION_GRANTED
 }
 
+private fun resolveNextPermissionStep(
+    context: Context,
+    onShowBackgroundDialog: () -> Unit
+): Int {
+    if (!isNotificationGranted(context)) {
+        return STEP_NOTIFICATION
+    }
+    if (!isBackgroundLocationGranted(context)) {
+        onShowBackgroundDialog()
+    }
+    return STEP_DONE
+}
+
 @Composable
 fun rememberBackgroundLocationGranted(): Boolean {
     val context = LocalContext.current
@@ -92,14 +105,7 @@ fun PermissionGate(content: @Composable () -> Unit) {
         ) == PackageManager.PERMISSION_GRANTED
 
         if (fineGranted) {
-            step = when {
-                !isNotificationGranted(context) -> STEP_NOTIFICATION
-                !isBackgroundLocationGranted(context) -> {
-                    showBackgroundDialog = true
-                    STEP_DONE
-                }
-                else -> STEP_DONE
-            }
+            step = resolveNextPermissionStep(context) { showBackgroundDialog = true }
         }
     }
 
@@ -107,17 +113,10 @@ fun PermissionGate(content: @Composable () -> Unit) {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
-        if (fineGranted) {
-            if (!isNotificationGranted(context)) {
-                step = STEP_NOTIFICATION
-            } else if (!isBackgroundLocationGranted(context)) {
-                showBackgroundDialog = true
-                step = STEP_DONE
-            } else {
-                step = STEP_DONE
-            }
+        step = if (fineGranted) {
+            resolveNextPermissionStep(context) { showBackgroundDialog = true }
         } else {
-            step = STEP_DONE
+            STEP_DONE
         }
     }
 
@@ -164,41 +163,49 @@ fun PermissionGate(content: @Composable () -> Unit) {
     }
 
     if (showBackgroundDialog && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-        AlertDialog(
-            onDismissRequest = {
+        BackgroundLocationPermissionDialog(
+            onDismiss = {
                 showBackgroundDialog = false
                 step = STEP_DONE
             },
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.LocationOn,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            title = { Text(stringResource(R.string.perm_bg_location_title)) },
-            text = {
-                Text(stringResource(R.string.perm_bg_location_message))
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    showBackgroundDialog = false
-                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                }) {
-                    Text(stringResource(R.string.btn_open_settings))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showBackgroundDialog = false
-                    step = STEP_DONE
-                }) {
-                    Text(stringResource(R.string.btn_skip))
-                }
+            onConfirm = {
+                showBackgroundDialog = false
+                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             }
         )
     }
+}
+
+@Composable
+private fun BackgroundLocationPermissionDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Filled.LocationOn,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
+            )
+        },
+        title = { Text(stringResource(R.string.perm_bg_location_title)) },
+        text = {
+            Text(stringResource(R.string.perm_bg_location_message))
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.btn_open_settings))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.btn_skip))
+            }
+        }
+    )
 }
 
 @Composable

@@ -98,39 +98,8 @@ fun ReminderMapView(
     // Initial centering and zooming
     LaunchedEffect(activeLocations, data.spatialArea.latitude, data.spatialArea.longitude, mapViewRef) {
         val map = mapViewRef ?: return@LaunchedEffect
-        if (!hasCentered) {
-            val points = mutableListOf<GeoPoint>()
-            activeLocations.forEach {
-                points.add(GeoPoint(it.latitude, it.longitude))
-            }
-            val lat = data.spatialArea.latitude
-            val lng = data.spatialArea.longitude
-            if (lat != null && lng != null) {
-                points.add(GeoPoint(lat, lng))
-            }
-            if (data.currentUserLocation != null) {
-                points.add(GeoPoint(data.currentUserLocation.latitude, data.currentUserLocation.longitude))
-            }
-
-            if (points.isNotEmpty()) {
-                map.post {
-                    try {
-                        if (points.size == 1) {
-                            map.controller.setCenter(points.first())
-                            map.controller.setZoom(15.0)
-                        } else {
-                            val box = BoundingBox.fromGeoPoints(points)
-                            map.zoomToBoundingBox(box, true, 120)
-                        }
-                    } catch (e: Exception) {
-                        if (lat != null && lng != null) {
-                            map.controller.setCenter(GeoPoint(lat, lng))
-                            map.controller.setZoom(14.0)
-                        }
-                    }
-                }
-                hasCentered = true
-            }
+        if (!hasCentered && centerMapToBounds(map, activeLocations, data.spatialArea, data.currentUserLocation)) {
+            hasCentered = true
         }
     }
 
@@ -238,6 +207,48 @@ fun ReminderMapView(
     )
 }
 
+private fun centerMapToBounds(
+    map: MapView,
+    activeLocations: List<LocationEntity>,
+    spatialArea: SpatialRecalculationArea,
+    currentUserLocation: Location?
+): Boolean {
+    val points = mutableListOf<GeoPoint>()
+    for (location in activeLocations) {
+        points.add(GeoPoint(location.latitude, location.longitude))
+    }
+    val lat = spatialArea.latitude
+    val lng = spatialArea.longitude
+    if (lat != null && lng != null) {
+        points.add(GeoPoint(lat, lng))
+    }
+    if (currentUserLocation != null) {
+        points.add(GeoPoint(currentUserLocation.latitude, currentUserLocation.longitude))
+    }
+
+    if (points.isEmpty()) {
+        return false
+    }
+
+    map.post {
+        try {
+            if (points.size == 1) {
+                map.controller.setCenter(points.first())
+                map.controller.setZoom(15.0)
+            } else {
+                val box = BoundingBox.fromGeoPoints(points)
+                map.zoomToBoundingBox(box, true, 120)
+            }
+        } catch (e: Exception) {
+            if (lat != null && lng != null) {
+                map.controller.setCenter(GeoPoint(lat, lng))
+                map.controller.setZoom(14.0)
+            }
+        }
+    }
+    return true
+}
+
 private fun applyTileThemeFilter(map: MapView, isDarkTheme: Boolean) {
     if (isDarkTheme) {
         val filter = ColorMatrixColorFilter(ColorMatrix(floatArrayOf(
@@ -313,6 +324,46 @@ private fun drawUserLocationMarker(
     }
 }
 
+private fun drawLocationCircle(
+    map: MapView,
+    geoPoint: GeoPoint,
+    radiusMeters: Float,
+    isSelected: Boolean,
+    hasActiveReminderInRange: Boolean,
+    style: ReminderMarkerStyle
+) {
+    val circle = Polygon().apply {
+        points = Polygon.pointsAsCircle(geoPoint, radiusMeters.toDouble())
+        fillPaint.color = if (hasActiveReminderInRange) style.activeFillColor else style.inactiveFillColor
+        outlinePaint.color = if (hasActiveReminderInRange) style.activeColor else style.inactiveColor
+        outlinePaint.strokeWidth = if (isSelected) 8f else (if (hasActiveReminderInRange) 5f else 3f)
+    }
+    map.overlays.add(circle)
+}
+
+private fun drawLocationMarker(
+    map: MapView,
+    location: LocationEntity,
+    geoPoint: GeoPoint,
+    hasActiveReminderInRange: Boolean,
+    style: ReminderMarkerStyle,
+    onLocationSelected: (LocationEntity) -> Unit
+) {
+    val marker = Marker(map).apply {
+        position = geoPoint
+        title = location.alias
+        icon = if (hasActiveReminderInRange) style.activeIcon else style.inactiveIcon
+        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        setInfoWindow(null)
+
+        setOnMarkerClickListener { _, _ ->
+            onLocationSelected(location)
+            true
+        }
+    }
+    map.overlays.add(marker)
+}
+
 private fun drawReminderMarkers(
     map: MapView,
     activeLocations: List<LocationEntity>,
@@ -321,33 +372,27 @@ private fun drawReminderMarkers(
     style: ReminderMarkerStyle,
     onLocationSelected: (LocationEntity) -> Unit
 ) {
-    activeLocations.forEach { location ->
+    for (location in activeLocations) {
         val geoPoint = GeoPoint(location.latitude, location.longitude)
         val isSelected = selectedLocation?.id == location.id
-
         val hasActiveReminderInRange = reminders.any { it.locationId == location.id && it.isInRange }
 
-        val circle = Polygon().apply {
-            points = Polygon.pointsAsCircle(geoPoint, location.radiusMeters.toDouble())
-            fillPaint.color = if (hasActiveReminderInRange) style.activeFillColor else style.inactiveFillColor
-            outlinePaint.color = if (hasActiveReminderInRange) style.activeColor else style.inactiveColor
-            outlinePaint.strokeWidth = if (isSelected) 8f else (if (hasActiveReminderInRange) 5f else 3f)
-        }
-        map.overlays.add(circle)
-
-        val marker = Marker(map).apply {
-            position = geoPoint
-            title = location.alias
-            icon = if (hasActiveReminderInRange) style.activeIcon else style.inactiveIcon
-            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            setInfoWindow(null)
-
-            setOnMarkerClickListener { _, _ ->
-                onLocationSelected(location)
-                true
-            }
-        }
-        map.overlays.add(marker)
+        drawLocationCircle(
+            map = map,
+            geoPoint = geoPoint,
+            radiusMeters = location.radiusMeters,
+            isSelected = isSelected,
+            hasActiveReminderInRange = hasActiveReminderInRange,
+            style = style
+        )
+        drawLocationMarker(
+            map = map,
+            location = location,
+            geoPoint = geoPoint,
+            hasActiveReminderInRange = hasActiveReminderInRange,
+            style = style,
+            onLocationSelected = onLocationSelected
+        )
     }
 }
 

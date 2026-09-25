@@ -1,5 +1,6 @@
 package dev.arrase.geotify.ui.screen
 
+import android.location.Location
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,9 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -43,9 +43,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SnackbarDuration
@@ -53,11 +52,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
-import dev.arrase.geotify.ui.UiText
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,14 +64,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
+import dev.arrase.geotify.ui.UiText
 import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
@@ -85,6 +86,44 @@ import dev.arrase.geotify.ui.component.ViewModeSwitcher
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+private fun isMapDark(themeSetting: ThemeSetting, isSystemDark: Boolean): Boolean = when (themeSetting) {
+    ThemeSetting.SYSTEM -> isSystemDark
+    ThemeSetting.LIGHT -> false
+    ThemeSetting.DARK -> true
+}
+
+private fun isValidCoordinate(coord: Double?, min: Double, max: Double): Boolean =
+    coord != null && coord in min..max
+
+private fun toCoordinatesPair(lat: Double?, lng: Double?): Pair<Double, Double>? =
+    if (lat != null && lng != null) Pair(lat, lng) else null
+
+private fun saveLocation(
+    viewModel: LocationsViewModel,
+    editingLocation: LocationEntity?,
+    alias: String,
+    lat: Double?,
+    lng: Double?,
+    radiusMeters: Float,
+    responsivenessMinutes: Float
+) {
+    if (lat == null || lng == null) return
+    val responsivenessMs = (responsivenessMinutes * 60000).toInt()
+    if (editingLocation == null) {
+        viewModel.saveLocation(alias, lat, lng, radiusMeters, responsivenessMs)
+    } else {
+        viewModel.updateLocation(
+            editingLocation.copy(
+                alias = alias,
+                latitude = lat,
+                longitude = lng,
+                radiusMeters = radiusMeters,
+                notificationResponsivenessMs = responsivenessMs
+            )
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationsScreen(
@@ -94,11 +133,7 @@ fun LocationsScreen(
     val context = LocalContext.current
     val mapThemeSetting by viewModel.mapTheme.collectAsStateWithLifecycle()
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
-    val isMapDarkTheme = when (mapThemeSetting) {
-        ThemeSetting.SYSTEM -> isSystemDark
-        ThemeSetting.LIGHT -> false
-        ThemeSetting.DARK -> true
-    }
+    val isMapDarkTheme = isMapDark(mapThemeSetting, isSystemDark)
     val locations by viewModel.locations.collectAsStateWithLifecycle()
     val activeReminderCounts by viewModel.activeReminderCounts.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -117,7 +152,6 @@ fun LocationsScreen(
         }
     }
 
-    // Dialog state
     var showDialog by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var editingLocation by remember { mutableStateOf<LocationEntity?>(null) }
@@ -129,7 +163,6 @@ fun LocationsScreen(
     var showResponsivenessInfo by remember { mutableStateOf(false) }
     var isGpsLoading by remember { mutableStateOf(false) }
 
-    // Map view and Map picker states
     var isMapView by rememberSaveable { mutableStateOf(false) }
     var selectedLocationOnMap by remember { mutableStateOf<LocationEntity?>(null) }
     var showMapPicker by remember { mutableStateOf(false) }
@@ -140,8 +173,8 @@ fun LocationsScreen(
 
     val lat = latitudeString.toDoubleOrNull()
     val lng = longitudeString.toDoubleOrNull()
-    val isLatitudeValid = lat != null && lat in -90.0..90.0
-    val isLongitudeValid = lng != null && lng in -180.0..180.0
+    val isLatitudeValid = isValidCoordinate(lat, -90.0, 90.0)
+    val isLongitudeValid = isValidCoordinate(lng, -180.0, 180.0)
 
     fun openFormForNew() {
         editingLocation = null
@@ -163,7 +196,102 @@ fun LocationsScreen(
         showDialog = true
     }
 
-    Column(modifier.fillMaxSize()) {
+    val formState = LocationFormState(
+        alias = alias,
+        aliasExists = aliasExists,
+        latitudeString = latitudeString,
+        isLatitudeValid = isLatitudeValid,
+        longitudeString = longitudeString,
+        isLongitudeValid = isLongitudeValid,
+        radiusMeters = radiusMeters,
+        responsivenessMinutes = responsivenessMinutes,
+        isEditing = editingLocation != null,
+        isGpsLoading = isGpsLoading,
+        isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists,
+        showResponsivenessInfo = showResponsivenessInfo
+    )
+
+    val formActions = LocationFormActions(
+        onAliasChange = { alias = it },
+        onLatitudeChange = { latitudeString = it },
+        onLongitudeChange = { longitudeString = it },
+        onRadiusChange = { radiusMeters = it },
+        onResponsivenessChange = { responsivenessMinutes = it },
+        onUseGps = {
+            isGpsLoading = true
+            scope.launch {
+                val loc = viewModel.getCurrentLocation()
+                if (loc != null) {
+                    latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
+                    longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
+                } else {
+                    snackbarHostState.showSnackbar(
+                        message = context.applicationContext.getString(R.string.err_gps_failed),
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                isGpsLoading = false
+            }
+        },
+        onPickFromMap = {
+            showMapPicker = true
+            showDialog = false
+        },
+        onSave = {
+            saveLocation(viewModel, editingLocation, alias, lat, lng, radiusMeters, responsivenessMinutes)
+            showDialog = false
+            editingLocation = null
+        },
+        onDelete = if (editingLocation != null) {
+            {
+                viewModel.deleteLocation(editingLocation!!.alias)
+                showDialog = false
+                editingLocation = null
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = context.applicationContext.getString(R.string.toast_location_deleted, alias),
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        } else null,
+        onCancel = {
+            showDialog = false
+            editingLocation = null
+        },
+        onResponsivenessInfoChange = { showResponsivenessInfo = it }
+    )
+
+    val mainContentState = LocationsContentState(
+        isMapView = isMapView,
+        locations = locations,
+        activeReminderCounts = activeReminderCounts,
+        selectedLocationOnMap = selectedLocationOnMap,
+        isMapDarkTheme = isMapDarkTheme
+    )
+
+    val mainContentActions = LocationsContentActions(
+        onListSelected = { isMapView = false },
+        onMapSelected = { isMapView = true },
+        onLocationSelected = { selectedLocationOnMap = it },
+        onDeleteLocation = { location ->
+            viewModel.deleteLocation(location.alias)
+            if (selectedLocationOnMap?.id == location.id) {
+                selectedLocationOnMap = null
+            }
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = context.applicationContext.getString(R.string.toast_location_deleted, location.alias),
+                    duration = SnackbarDuration.Short
+                )
+            }
+        },
+        onEditLocation = { location -> openFormForEditing(location) },
+        onDismissSelectedLocation = { selectedLocationOnMap = null },
+        onAddLocation = { openFormForNew() }
+    )
+
+    Column(modifier = modifier.fillMaxSize()) {
         BackgroundLocationWarningBanner()
 
         Box(
@@ -172,192 +300,10 @@ fun LocationsScreen(
                 .weight(1f)
                 .clipToBounds()
         ) {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = !isMapView && locations.isEmpty(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                val suggestionRes = if (android.os.Build.VERSION.SDK_INT >= 36) {
-                    R.string.empty_locations_suggestion
-                } else {
-                    R.string.empty_locations_suggestion_no_gemini
-                }
-                EmptyState(
-                    icon = Icons.Filled.LocationOn,
-                    title = stringResource(R.string.empty_locations_title),
-                    suggestion = stringResource(suggestionRes)
-                )
-            }
-
-            // List View
-            androidx.compose.animation.AnimatedVisibility(
-                visible = !isMapView && locations.isNotEmpty(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                LocationsListContent(
-                    locations = locations,
-                    activeReminderCounts = activeReminderCounts,
-                    onDeleteLocation = { location ->
-                        viewModel.deleteLocation(location.alias)
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = context.applicationContext.getString(R.string.toast_location_deleted, location.alias),
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    },
-                    onEditLocation = { location -> openFormForEditing(location) }
-                )
-            }
-
-            androidx.compose.animation.AnimatedVisibility(
-                visible = isMapView,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LocationMapView(
-                        locations = locations,
-                        selectedLocation = selectedLocationOnMap,
-                        onLocationSelected = { selectedLocationOnMap = it },
-                        isDarkTheme = isMapDarkTheme
-                    )
-
-                    if (selectedLocationOnMap != null) {
-                        SelectedLocationCard(
-                            location = selectedLocationOnMap!!,
-                            onEdit = { openFormForEditing(selectedLocationOnMap!!) },
-                            onDelete = {
-                                viewModel.deleteLocation(selectedLocationOnMap!!.alias)
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = context.applicationContext.getString(R.string.toast_location_deleted, selectedLocationOnMap!!.alias),
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                                selectedLocationOnMap = null
-                            },
-                            onDismiss = { selectedLocationOnMap = null },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(16.dp)
-                        )
-                    }
-                }
-            }
-
-            if (selectedLocationOnMap == null) {
-                FloatingActionButton(
-                    onClick = { openFormForNew() },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp)
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_description_add_location))
-                }
-            }
-
-            ViewModeSwitcher(
-                isMapView = isMapView,
-                onListSelected = { isMapView = false },
-                onMapSelected = { isMapView = true },
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 12.dp)
-            )
-
-            val formState = LocationFormState(
-                alias = alias,
-                aliasExists = aliasExists,
-                latitudeString = latitudeString,
-                isLatitudeValid = isLatitudeValid,
-                longitudeString = longitudeString,
-                isLongitudeValid = isLongitudeValid,
-                radiusMeters = radiusMeters,
-                responsivenessMinutes = responsivenessMinutes,
-                isEditing = editingLocation != null,
-                isGpsLoading = isGpsLoading,
-                isValid = alias.isNotBlank() && isLatitudeValid && isLongitudeValid && !aliasExists,
-                showResponsivenessInfo = showResponsivenessInfo
-            )
-
-            val formActions = LocationFormActions(
-                onAliasChange = { alias = it },
-                onLatitudeChange = { latitudeString = it },
-                onLongitudeChange = { longitudeString = it },
-                onRadiusChange = { radiusMeters = it },
-                onResponsivenessChange = { responsivenessMinutes = it },
-                onUseGps = {
-                    isGpsLoading = true
-                    scope.launch {
-                        val loc = viewModel.getCurrentLocation()
-                        if (loc != null) {
-                            latitudeString = String.format(Locale.US, "%.6f", loc.latitude)
-                            longitudeString = String.format(Locale.US, "%.6f", loc.longitude)
-                        } else {
-                            snackbarHostState.showSnackbar(
-                                message = context.applicationContext.getString(R.string.err_gps_failed),
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                        isGpsLoading = false
-                    }
-                },
-                onPickFromMap = {
-                    showMapPicker = true
-                    showDialog = false
-                },
-                onSave = {
-                    if (lat != null && lng != null) {
-                        val currentEditing = editingLocation
-                        val responsivenessMs = (responsivenessMinutes * 60000).toInt()
-                        if (currentEditing == null) {
-                            viewModel.saveLocation(alias, lat, lng, radiusMeters, responsivenessMs)
-                        } else {
-                            viewModel.updateLocation(
-                                currentEditing.copy(
-                                    alias = alias,
-                                    latitude = lat,
-                                    longitude = lng,
-                                    radiusMeters = radiusMeters,
-                                    notificationResponsivenessMs = responsivenessMs
-                                )
-                            )
-                        }
-                        showDialog = false
-                        editingLocation = null
-                    }
-                },
-                onDelete = if (editingLocation != null) {
-                    {
-                        viewModel.deleteLocation(editingLocation!!.alias)
-                        showDialog = false
-                        editingLocation = null
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = context.applicationContext.getString(R.string.toast_location_deleted, alias),
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    }
-                } else null,
-                onCancel = {
-                    showDialog = false
-                    editingLocation = null
-                },
-                onResponsivenessInfoChange = { showResponsivenessInfo = it }
-            )
-
-            LocationBottomSheet(
-                showDialog = showDialog,
-                sheetState = sheetState,
-                formState = formState,
-                formActions = formActions,
-                onDismissRequest = {
-                    showDialog = false
-                    editingLocation = null
-                }
+            LocationsMainContent(
+                state = mainContentState,
+                actions = mainContentActions,
+                modifier = Modifier.fillMaxSize()
             )
 
             SnackbarHost(
@@ -365,26 +311,162 @@ fun LocationsScreen(
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
 
-            if (showMapPicker) {
-                val initialCoords = if (lat != null && lng != null) Pair(lat, lng) else null
-                MapPicker(
-                    initialCoordinates = initialCoords,
-                    radiusMeters = radiusMeters,
-                    onGetCurrentLocation = { viewModel.getCurrentLocation() },
-                    onLocationSelected = { selectedLat, selectedLng ->
-                        latitudeString = String.format(Locale.US, "%.6f", selectedLat)
-                        longitudeString = String.format(Locale.US, "%.6f", selectedLng)
-                        showMapPicker = false
-                        showDialog = true
-                    },
-                    onDismiss = {
-                        showMapPicker = false
-                        showDialog = true
-                    },
-                    isDarkTheme = isMapDarkTheme
+            LocationMapPickerModal(
+                show = showMapPicker,
+                initialCoordinates = toCoordinatesPair(lat, lng),
+                radiusMeters = radiusMeters,
+                isDarkTheme = isMapDarkTheme,
+                onGetCurrentLocation = { viewModel.getCurrentLocation() },
+                onLocationSelected = { selectedLat, selectedLng ->
+                    latitudeString = String.format(Locale.US, "%.6f", selectedLat)
+                    longitudeString = String.format(Locale.US, "%.6f", selectedLng)
+                    showMapPicker = false
+                    showDialog = true
+                },
+                onDismiss = {
+                    showMapPicker = false
+                    showDialog = true
+                }
+            )
+        }
+
+        LocationBottomSheet(
+            showDialog = showDialog,
+            sheetState = sheetState,
+            formState = formState,
+            formActions = formActions,
+            onDismissRequest = {
+                showDialog = false
+                editingLocation = null
+            }
+        )
+    }
+}
+
+@Composable
+private fun LocationMapPickerModal(
+    show: Boolean,
+    initialCoordinates: Pair<Double, Double>?,
+    radiusMeters: Float,
+    isDarkTheme: Boolean,
+    onGetCurrentLocation: suspend () -> Location?,
+    onLocationSelected: (Double, Double) -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (show) {
+        MapPicker(
+            initialCoordinates = initialCoordinates,
+            radiusMeters = radiusMeters,
+            onGetCurrentLocation = onGetCurrentLocation,
+            onLocationSelected = onLocationSelected,
+            onDismiss = onDismiss,
+            isDarkTheme = isDarkTheme
+        )
+    }
+}
+
+private data class LocationsContentState(
+    val isMapView: Boolean,
+    val locations: List<LocationEntity>,
+    val activeReminderCounts: Map<String, Int>,
+    val selectedLocationOnMap: LocationEntity?,
+    val isMapDarkTheme: Boolean
+)
+
+private data class LocationsContentActions(
+    val onListSelected: () -> Unit,
+    val onMapSelected: () -> Unit,
+    val onLocationSelected: (LocationEntity?) -> Unit,
+    val onDeleteLocation: (LocationEntity) -> Unit,
+    val onEditLocation: (LocationEntity) -> Unit,
+    val onDismissSelectedLocation: () -> Unit,
+    val onAddLocation: () -> Unit
+)
+
+@Composable
+private fun LocationsMainContent(
+    state: LocationsContentState,
+    actions: LocationsContentActions,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        androidx.compose.animation.AnimatedVisibility(
+            visible = !state.isMapView && state.locations.isEmpty(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            val suggestionRes = if (android.os.Build.VERSION.SDK_INT >= 36) {
+                R.string.empty_locations_suggestion
+            } else {
+                R.string.empty_locations_suggestion_no_gemini
+            }
+            EmptyState(
+                icon = Icons.Filled.LocationOn,
+                title = stringResource(R.string.empty_locations_title),
+                suggestion = stringResource(suggestionRes)
+            )
+        }
+
+        // List View
+        androidx.compose.animation.AnimatedVisibility(
+            visible = !state.isMapView && state.locations.isNotEmpty(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            LocationsListContent(
+                locations = state.locations,
+                activeReminderCounts = state.activeReminderCounts,
+                onDeleteLocation = actions.onDeleteLocation,
+                onEditLocation = actions.onEditLocation
+            )
+        }
+
+        androidx.compose.animation.AnimatedVisibility(
+            visible = state.isMapView,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                LocationMapView(
+                    locations = state.locations,
+                    selectedLocation = state.selectedLocationOnMap,
+                    onLocationSelected = actions.onLocationSelected,
+                    isDarkTheme = state.isMapDarkTheme
                 )
+
+                if (state.selectedLocationOnMap != null) {
+                    SelectedLocationCard(
+                        location = state.selectedLocationOnMap,
+                        onEdit = { actions.onEditLocation(state.selectedLocationOnMap) },
+                        onDelete = { actions.onDeleteLocation(state.selectedLocationOnMap) },
+                        onDismiss = actions.onDismissSelectedLocation,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                    )
+                }
             }
         }
+
+        if (state.selectedLocationOnMap == null) {
+            FloatingActionButton(
+                onClick = actions.onAddLocation,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_description_add_location))
+            }
+        }
+
+        ViewModeSwitcher(
+            isMapView = state.isMapView,
+            onListSelected = actions.onListSelected,
+            onMapSelected = actions.onMapSelected,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 12.dp)
+        )
     }
 }
 
