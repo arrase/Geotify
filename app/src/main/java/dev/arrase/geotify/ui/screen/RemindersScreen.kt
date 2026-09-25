@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.draw.clipToBounds
@@ -38,6 +39,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -63,6 +65,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
@@ -87,6 +90,32 @@ import dev.arrase.geotify.ui.component.SwipeToDeleteContainer
 import dev.arrase.geotify.ui.component.ViewModeSwitcher
 import kotlinx.coroutines.launch
 
+private fun isMapDark(themeSetting: ThemeSetting, isSystemDark: Boolean): Boolean = when (themeSetting) {
+    ThemeSetting.SYSTEM -> isSystemDark
+    ThemeSetting.LIGHT -> false
+    ThemeSetting.DARK -> true
+}
+
+private fun saveReminder(
+    viewModel: RemindersViewModel,
+    editingReminder: ReminderEntity?,
+    locationId: String,
+    message: String,
+    transitionType: Int
+) {
+    if (editingReminder == null) {
+        viewModel.createReminder(locationId, message, transitionType)
+    } else {
+        viewModel.updateReminder(
+            editingReminder.copy(
+                locationId = locationId,
+                message = message,
+                transitionType = transitionType
+            )
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RemindersScreen(
@@ -105,11 +134,7 @@ fun RemindersScreen(
     val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
     val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
-    val isMapDarkTheme = when (mapThemeSetting) {
-        ThemeSetting.SYSTEM -> isSystemDark
-        ThemeSetting.LIGHT -> false
-        ThemeSetting.DARK -> true
-    }
+    val isMapDarkTheme = isMapDark(mapThemeSetting, isSystemDark)
 
     LaunchedEffect(viewModel) {
         viewModel.snackbarMessage.collect { uiText ->
@@ -161,7 +186,123 @@ fun RemindersScreen(
     var transitionType by remember { mutableIntStateOf(Geofence.GEOFENCE_TRANSITION_ENTER) }
     var dropdownExpanded by remember { mutableStateOf(false) }
 
-    Column(modifier.fillMaxSize()) {
+    val formState = ReminderFormState(
+        editingReminder = editingReminder,
+        selectedLocationId = selectedLocationId,
+        message = message,
+        transitionType = transitionType,
+        dropdownExpanded = dropdownExpanded
+    )
+
+    val formActions = ReminderFormActions(
+        onLocationSelected = {
+            selectedLocationId = it
+            dropdownExpanded = false
+        },
+        onMessageChange = { message = it },
+        onTransitionTypeChange = { transitionType = it },
+        onDropdownExpandedChange = { dropdownExpanded = it },
+        onSave = {
+            saveReminder(viewModel, editingReminder, selectedLocationId, message, transitionType)
+            showDialog = false
+            editingReminder = null
+        },
+        onDelete = {
+            val editing = editingReminder
+            if (editing != null) {
+                viewModel.cancelReminder(editing.id)
+                showDialog = false
+                editingReminder = null
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = context.applicationContext.getString(R.string.toast_reminder_deleted),
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        },
+        onCancel = {
+            showDialog = false
+            editingReminder = null
+        }
+    )
+
+    val contentState = RemindersContentState(
+        isMapView = isMapView,
+        showEmptyState = showEmptyState,
+        reminders = reminders,
+        activeReminders = activeReminders,
+        completedReminders = completedReminders,
+        locationAliasMap = locationAliasMap,
+        selectedLocationOnMap = selectedLocationOnMap,
+        mapViewData = ReminderMapViewData(
+            reminders = activeReminders,
+            locations = locations,
+            selectedLocation = selectedLocationOnMap,
+            spatialArea = SpatialRecalculationArea(
+                latitude = lastRecalcLat,
+                longitude = lastRecalcLng,
+                innerRadiusMeters = innerRadiusR * 1000f,
+                outerRadiusMeters = outerRadiusN * 1000f
+            ),
+            currentUserLocation = currentUserLocation
+        ),
+        isMapDarkTheme = isMapDarkTheme
+    )
+
+    val contentActions = RemindersContentActions(
+        onListSelected = { isMapView = false },
+        onMapSelected = { isMapView = true },
+        onCancelActive = { reminder ->
+            viewModel.cancelReminder(reminder.id)
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = context.applicationContext.getString(R.string.toast_reminder_cancelled),
+                    duration = SnackbarDuration.Short
+                )
+            }
+        },
+        onDeleteCompleted = { reminder ->
+            viewModel.cancelReminder(reminder.id)
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = context.applicationContext.getString(R.string.toast_reminder_deleted),
+                    duration = SnackbarDuration.Short
+                )
+            }
+        },
+        onEditReminder = { reminder ->
+            editingReminder = reminder
+            selectedLocationId = reminder.locationId
+            message = reminder.message
+            transitionType = reminder.transitionType
+            showDialog = true
+        },
+        onDeleteReminderOnMap = { reminder ->
+            viewModel.cancelReminder(reminder.id)
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = context.applicationContext.getString(R.string.toast_reminder_deleted),
+                    duration = SnackbarDuration.Short
+                )
+            }
+            val remaining = activeReminders.filter { it.locationId == selectedLocationOnMap?.id && it.id != reminder.id }
+            if (remaining.isEmpty()) {
+                selectedLocationOnMap = null
+            }
+        },
+        onLocationSelected = { selectedLocationOnMap = it },
+        onDismissSelectedLocation = { selectedLocationOnMap = null },
+        onAddReminder = {
+            editingReminder = null
+            selectedLocationId = locations.firstOrNull()?.id ?: ""
+            message = ""
+            transitionType = Geofence.GEOFENCE_TRANSITION_ENTER
+            showDialog = true
+        }
+    )
+
+    Column(modifier = modifier.fillMaxSize()) {
         BackgroundLocationWarningBanner()
 
         Box(
@@ -170,142 +311,10 @@ fun RemindersScreen(
                 .weight(1f)
                 .clipToBounds()
         ) {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = showEmptyState,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                val suggestionRes = if (android.os.Build.VERSION.SDK_INT >= 36) {
-                    R.string.empty_reminders_suggestion
-                } else {
-                    R.string.empty_reminders_suggestion_no_gemini
-                }
-                EmptyState(
-                    icon = Icons.Filled.Notifications,
-                    title = stringResource(R.string.empty_reminders_title),
-                    suggestion = stringResource(suggestionRes)
-                )
-            }
-
-            // List View
-            androidx.compose.animation.AnimatedVisibility(
-                visible = !isMapView && reminders.isNotEmpty(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                RemindersListContent(
-                    activeReminders = activeReminders,
-                    completedReminders = completedReminders,
-                    locationAliasMap = locationAliasMap,
-                    onCancelActive = { reminder ->
-                        viewModel.cancelReminder(reminder.id)
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = context.applicationContext.getString(R.string.toast_reminder_cancelled),
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    },
-                    onDeleteCompleted = { reminder ->
-                        viewModel.cancelReminder(reminder.id)
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = context.applicationContext.getString(R.string.toast_reminder_deleted),
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    },
-                    onReminderClick = { reminder ->
-                        editingReminder = reminder
-                        selectedLocationId = reminder.locationId
-                        message = reminder.message
-                        transitionType = reminder.transitionType
-                        showDialog = true
-                    }
-                )
-            }
-
-            // Map View
-            androidx.compose.animation.AnimatedVisibility(
-                visible = isMapView && activeReminders.isNotEmpty(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    ReminderMapView(
-                        data = ReminderMapViewData(
-                            reminders = activeReminders,
-                            locations = locations,
-                            selectedLocation = selectedLocationOnMap,
-                            spatialArea = SpatialRecalculationArea(
-                                latitude = lastRecalcLat,
-                                longitude = lastRecalcLng,
-                                innerRadiusMeters = innerRadiusR * 1000f,
-                                outerRadiusMeters = outerRadiusN * 1000f
-                            ),
-                            currentUserLocation = currentUserLocation
-                        ),
-                        onLocationSelected = { selectedLocationOnMap = it },
-                        isDarkTheme = isMapDarkTheme
-                    )
-
-                    if (selectedLocationOnMap != null) {
-                        SelectedReminderLocationCard(
-                            location = selectedLocationOnMap!!,
-                            reminders = activeReminders.filter { it.locationId == selectedLocationOnMap!!.id },
-                            onEdit = { reminder ->
-                                editingReminder = reminder
-                                selectedLocationId = reminder.locationId
-                                message = reminder.message
-                                transitionType = reminder.transitionType
-                                showDialog = true
-                            },
-                            onDelete = { reminder ->
-                                viewModel.cancelReminder(reminder.id)
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = context.applicationContext.getString(R.string.toast_reminder_deleted),
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                                val remaining = activeReminders.filter { it.locationId == selectedLocationOnMap!!.id && it.id != reminder.id }
-                                if (remaining.isEmpty()) {
-                                    selectedLocationOnMap = null
-                                }
-                            },
-                            onDismiss = { selectedLocationOnMap = null },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(16.dp)
-                        )
-                    }
-                }
-            }
-
-            if (selectedLocationOnMap == null) {
-                FloatingActionButton(
-                    onClick = {
-                        editingReminder = null
-                        selectedLocationId = locations.firstOrNull()?.id ?: ""
-                        message = ""
-                        transitionType = Geofence.GEOFENCE_TRANSITION_ENTER
-                        showDialog = true
-                    },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp)
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_description_add_reminder))
-                }
-            }
-
-            ViewModeSwitcher(
-                isMapView = isMapView,
-                onListSelected = { isMapView = false },
-                onMapSelected = { isMapView = true },
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 12.dp)
+            RemindersMainContent(
+                state = contentState,
+                actions = contentActions,
+                modifier = Modifier.fillMaxSize()
             )
 
             SnackbarHost(
@@ -314,68 +323,154 @@ fun RemindersScreen(
             )
         }
 
-        if (showDialog) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showDialog = false
-                    editingReminder = null
-                },
-                sheetState = sheetState
-            ) {
-                ReminderBottomSheetContent(
-                    state = ReminderFormState(
-                        editingReminder = editingReminder,
-                        selectedLocationId = selectedLocationId,
-                        message = message,
-                        transitionType = transitionType,
-                        dropdownExpanded = dropdownExpanded
-                    ),
-                    actions = ReminderFormActions(
-                        onLocationSelected = {
-                            selectedLocationId = it
-                            dropdownExpanded = false
-                        },
-                        onMessageChange = { message = it },
-                        onTransitionTypeChange = { transitionType = it },
-                        onDropdownExpandedChange = { dropdownExpanded = it },
-                        onSave = {
-                            val currentEditing = editingReminder
-                            if (currentEditing == null) {
-                                viewModel.createReminder(selectedLocationId, message, transitionType)
-                            } else {
-                                viewModel.updateReminder(
-                                    currentEditing.copy(
-                                        locationId = selectedLocationId,
-                                        message = message,
-                                        transitionType = transitionType
-                                    )
-                                )
-                            }
-                            showDialog = false
-                            editingReminder = null
-                        },
-                        onDelete = {
-                            val editing = editingReminder
-                            if (editing != null) {
-                                viewModel.cancelReminder(editing.id)
-                                showDialog = false
-                                editingReminder = null
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = context.applicationContext.getString(R.string.toast_reminder_deleted),
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            }
-                        },
-                        onCancel = {
-                            showDialog = false
-                            editingReminder = null
-                        }
-                    ),
-                    locations = locations
-                )
+        ReminderBottomSheet(
+            showDialog = showDialog,
+            sheetState = sheetState,
+            formState = formState,
+            formActions = formActions,
+            locations = locations,
+            onDismissRequest = {
+                showDialog = false
+                editingReminder = null
             }
+        )
+    }
+}
+
+private data class RemindersContentState(
+    val isMapView: Boolean,
+    val showEmptyState: Boolean,
+    val reminders: List<ReminderEntity>,
+    val activeReminders: List<ReminderEntity>,
+    val completedReminders: List<ReminderEntity>,
+    val locationAliasMap: Map<String, String>,
+    val selectedLocationOnMap: LocationEntity?,
+    val mapViewData: ReminderMapViewData,
+    val isMapDarkTheme: Boolean
+)
+
+private data class RemindersContentActions(
+    val onListSelected: () -> Unit,
+    val onMapSelected: () -> Unit,
+    val onCancelActive: (ReminderEntity) -> Unit,
+    val onDeleteCompleted: (ReminderEntity) -> Unit,
+    val onEditReminder: (ReminderEntity) -> Unit,
+    val onDeleteReminderOnMap: (ReminderEntity) -> Unit,
+    val onLocationSelected: (LocationEntity?) -> Unit,
+    val onDismissSelectedLocation: () -> Unit,
+    val onAddReminder: () -> Unit
+)
+
+@Composable
+private fun RemindersMainContent(
+    state: RemindersContentState,
+    actions: RemindersContentActions,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        androidx.compose.animation.AnimatedVisibility(
+            visible = state.showEmptyState,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            val suggestionRes = if (android.os.Build.VERSION.SDK_INT >= 36) {
+                R.string.empty_reminders_suggestion
+            } else {
+                R.string.empty_reminders_suggestion_no_gemini
+            }
+            EmptyState(
+                icon = Icons.Filled.Notifications,
+                title = stringResource(R.string.empty_reminders_title),
+                suggestion = stringResource(suggestionRes)
+            )
+        }
+
+        // List View
+        androidx.compose.animation.AnimatedVisibility(
+            visible = !state.isMapView && state.reminders.isNotEmpty(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            RemindersListContent(
+                activeReminders = state.activeReminders,
+                completedReminders = state.completedReminders,
+                locationAliasMap = state.locationAliasMap,
+                onCancelActive = actions.onCancelActive,
+                onDeleteCompleted = actions.onDeleteCompleted,
+                onReminderClick = actions.onEditReminder
+            )
+        }
+
+        // Map View
+        androidx.compose.animation.AnimatedVisibility(
+            visible = state.isMapView && state.activeReminders.isNotEmpty(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                ReminderMapView(
+                    data = state.mapViewData,
+                    onLocationSelected = actions.onLocationSelected,
+                    isDarkTheme = state.isMapDarkTheme
+                )
+
+                if (state.selectedLocationOnMap != null) {
+                    SelectedReminderLocationCard(
+                        location = state.selectedLocationOnMap,
+                        reminders = state.activeReminders.filter { it.locationId == state.selectedLocationOnMap.id },
+                        onEdit = actions.onEditReminder,
+                        onDelete = actions.onDeleteReminderOnMap,
+                        onDismiss = actions.onDismissSelectedLocation,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                    )
+                }
+            }
+        }
+
+        if (state.selectedLocationOnMap == null) {
+            FloatingActionButton(
+                onClick = actions.onAddReminder,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_description_add_reminder))
+            }
+        }
+
+        ViewModeSwitcher(
+            isMapView = state.isMapView,
+            onListSelected = actions.onListSelected,
+            onMapSelected = actions.onMapSelected,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 12.dp)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReminderBottomSheet(
+    showDialog: Boolean,
+    sheetState: SheetState,
+    formState: ReminderFormState,
+    formActions: ReminderFormActions,
+    locations: List<LocationEntity>,
+    onDismissRequest: () -> Unit
+) {
+    if (showDialog) {
+        ModalBottomSheet(
+            onDismissRequest = onDismissRequest,
+            sheetState = sheetState
+        ) {
+            ReminderBottomSheetContent(
+                state = formState,
+                actions = formActions,
+                locations = locations
+            )
         }
     }
 }
@@ -586,6 +681,45 @@ private fun ReminderLocationSelector(
 }
 
 @Composable
+private fun RowScope.TransitionOptionButton(
+    selected: Boolean,
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+    val containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+    val contentColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val textColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, borderColor),
+        color = containerColor,
+        modifier = Modifier.weight(1f)
+    ) {
+        Row(
+            modifier = Modifier.padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = contentColor
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = textColor
+            )
+        }
+    }
+}
+
+@Composable
 private fun TransitionTypeSelector(
     transitionType: Int,
     onTransitionTypeChange: (Int) -> Unit
@@ -601,66 +735,18 @@ private fun TransitionTypeSelector(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val isEnter = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
-            val isExit = transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
-
-            Surface(
-                onClick = { onTransitionTypeChange(Geofence.GEOFENCE_TRANSITION_ENTER) },
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(
-                    1.dp,
-                    if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                ),
-                color = if (isEnter) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                modifier = Modifier.weight(1f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.LocationOn,
-                        contentDescription = null,
-                        tint = if (isEnter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.label_arrival),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isEnter) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-
-            Surface(
-                onClick = { onTransitionTypeChange(Geofence.GEOFENCE_TRANSITION_EXIT) },
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(
-                    1.dp,
-                    if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                ),
-                color = if (isExit) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                modifier = Modifier.weight(1f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
-                        contentDescription = null,
-                        tint = if (isExit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.label_departure),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isExit) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
+            TransitionOptionButton(
+                selected = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER,
+                icon = Icons.Filled.LocationOn,
+                label = stringResource(R.string.label_arrival),
+                onClick = { onTransitionTypeChange(Geofence.GEOFENCE_TRANSITION_ENTER) }
+            )
+            TransitionOptionButton(
+                selected = transitionType == Geofence.GEOFENCE_TRANSITION_EXIT,
+                icon = Icons.AutoMirrored.Filled.DirectionsWalk,
+                label = stringResource(R.string.label_departure),
+                onClick = { onTransitionTypeChange(Geofence.GEOFENCE_TRANSITION_EXIT) }
+            )
         }
     }
 }

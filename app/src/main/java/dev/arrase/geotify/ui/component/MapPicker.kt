@@ -94,14 +94,7 @@ fun MapPicker(
     }
 
     var selectedPoint by remember {
-        mutableStateOf(
-            if (initialCoordinates != null) {
-                GeoPoint(initialCoordinates.first, initialCoordinates.second)
-            } else {
-                // Default coordinates (e.g. Madrid center) if no location is available
-                GeoPoint(40.416775, -3.703790)
-            }
-        )
+        mutableStateOf(getInitialPoint(initialCoordinates))
     }
 
     var mapViewRef by remember { mutableStateOf<MapView?>(null) }
@@ -109,11 +102,8 @@ fun MapPicker(
     // Center on selectedPoint initially and query GPS if no initial location is provided
     LaunchedEffect(mapViewRef) {
         val map = mapViewRef ?: return@LaunchedEffect
-        if (initialCoordinates != null) {
-            map.controller.setCenter(selectedPoint)
-        } else {
-            // Set initial center to Madrid while loading current GPS position
-            map.controller.setCenter(selectedPoint)
+        map.controller.setCenter(selectedPoint)
+        if (initialCoordinates == null) {
             val loc = onGetCurrentLocation()
             if (loc != null) {
                 val point = GeoPoint(loc.latitude, loc.longitude)
@@ -185,21 +175,9 @@ fun MapPicker(
                     }
                 )
 
-                // Floating Top App Bar for Map Picker
-                TopAppBar(
-                    title = { Text(stringResource(R.string.label_map_picker_title), style = MaterialTheme.typography.titleMedium) },
-                    navigationIcon = {
-                        IconButton(onClick = onDismiss) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
-                    ),
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .fillMaxWidth()
-                        .statusBarsPadding()
+                MapPickerTopBar(
+                    onDismiss = onDismiss,
+                    modifier = Modifier.align(Alignment.TopCenter)
                 )
 
                 // Floating My Location Button
@@ -224,85 +202,128 @@ fun MapPicker(
                     Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.content_description_center_on_gps))
                 }
 
-                // Floating details card at the bottom
-                Card(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                        .navigationBarsPadding(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_selected_location),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                MapPickerDetailsCard(
+                    selectedPoint = selectedPoint,
+                    radiusMeters = radiusMeters,
+                    onConfirm = {
+                        onLocationSelected(selectedPoint.latitude, selectedPoint.longitude)
+                    },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
+        }
+    }
+}
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(
-                                    text = stringResource(R.string.label_latitude),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = String.format(Locale.US, "%.6f", selectedPoint.latitude),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = stringResource(R.string.label_longitude),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = String.format(Locale.US, "%.6f", selectedPoint.longitude),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = stringResource(R.string.label_geofence_radius),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = stringResource(R.string.label_meters, radiusMeters.toInt()),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
+private fun getInitialPoint(initialCoordinates: Pair<Double, Double>?): GeoPoint {
+    return if (initialCoordinates != null) {
+        GeoPoint(initialCoordinates.first, initialCoordinates.second)
+    } else {
+        GeoPoint(40.416775, -3.703790)
+    }
+}
 
-                        Button(
-                            onClick = {
-                                onLocationSelected(selectedPoint.latitude, selectedPoint.longitude)
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(Icons.Filled.Check, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text(stringResource(R.string.btn_confirm_selection))
-                        }
-                    }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MapPickerTopBar(
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TopAppBar(
+        title = { Text(stringResource(R.string.label_map_picker_title), style = MaterialTheme.typography.titleMedium) },
+        navigationIcon = {
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+    )
+}
+
+@Composable
+private fun MapPickerDetailsCard(
+    selectedPoint: GeoPoint,
+    radiusMeters: Float,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+            .navigationBarsPadding(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.label_selected_location),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.label_latitude),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = String.format(Locale.US, "%.6f", selectedPoint.latitude),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+                Column {
+                    Text(
+                        text = stringResource(R.string.label_longitude),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = String.format(Locale.US, "%.6f", selectedPoint.longitude),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Column {
+                    Text(
+                        text = stringResource(R.string.label_geofence_radius),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.label_meters, radiusMeters.toInt()),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Button(
+                onClick = onConfirm,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Filled.Check, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.btn_confirm_selection))
             }
         }
     }

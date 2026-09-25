@@ -49,8 +49,8 @@ android {
         applicationId = "dev.arrase.geotify"
         minSdk = 24
         targetSdk = 36
-        versionCode = 12
-        versionName = "1.0.0-beta.5"
+        versionCode = 13
+        versionName = "1.0.0-beta.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -174,7 +174,36 @@ tasks.register<JacocoReport>("jacocoTestReport") {
             "**/BuildConfig.*",
             "**/Manifest*.*",
             "**/*Test*.*",
-            "android/**/*.*"
+            "android/**/*.*",
+            "appfunctions_aggregated_deps/**",
+            "hilt_aggregated_deps/**",
+            "**/ui/component/**",
+            "**/ui/screen/*Screen*.*",
+            "**/ui/screen/*Content*.*",
+            "**/ui/screen/*Form*.*",
+            "**/ui/screen/*Modal*.*",
+            "**/ui/screen/*Dialog*.*",
+            "**/ui/screen/*Slider*.*",
+            "**/ui/screen/*Card*.*",
+            "**/ui/screen/*Inputs*.*",
+            "**/ui/screen/*Buttons*.*",
+            "**/ui/screen/*Selector*.*",
+            "**/ui/screen/*Header*.*",
+            "**/ui/screen/*Item*.*",
+            "**/ui/theme/**",
+            "**/ui/navigation/**",
+            "**/*Activity*.*",
+            "**/*Application*.*",
+            "**/di/**",
+            "**/permission/**",
+            "**/geofence/AndroidGeofenceManager*.*",
+            "**/geofence/BootCompletedReceiver*.*",
+            "**/geofence/GeofenceBroadcastReceiver*.*",
+            "**/geofence/GeofenceRecalculationWorker*.*",
+            "**/notification/**",
+            "**/location/**",
+            "**/util/**",
+            "**/data/*Database*.*"
         )
     }
     val mainSrc = "${project.projectDir}/src/main/java"
