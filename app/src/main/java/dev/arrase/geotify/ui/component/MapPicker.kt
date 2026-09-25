@@ -1,12 +1,5 @@
 package dev.arrase.geotify.ui.component
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.ColorMatrix
-import android.graphics.ColorMatrixColorFilter
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,10 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.graphics.drawable.toDrawable
 import dev.arrase.geotify.R
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
@@ -162,7 +151,7 @@ fun MapPicker(
                     },
                     modifier = Modifier.fillMaxSize(),
                     update = { map ->
-                        applyTileFilter(map, isDarkTheme)
+                        applyTileThemeFilter(map, isDarkTheme)
                         configureOverlays(
                             map = map,
                             selectedPoint = selectedPoint,
@@ -326,34 +315,6 @@ private fun MapPickerDetailsCard(
                 Text(stringResource(R.string.btn_confirm_selection))
             }
         }
-    }
-}
-
-private fun getTintedMarkerIcon(context: Context, color: Int, sizeDp: Int = 38): Drawable {
-    val drawable = ContextCompat.getDrawable(context, R.drawable.ic_location)
-        ?: return color.toDrawable()
-    val density = context.resources.displayMetrics.density
-    val size = (sizeDp * density).toInt()
-    val bitmap = createBitmap(size, size, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    drawable.setBounds(0, 0, size, size)
-    val mutated = drawable.mutate()
-    DrawableCompat.setTint(mutated, color)
-    mutated.draw(canvas)
-    return bitmap.toDrawable(context.resources)
-}
-
-private fun applyTileFilter(map: MapView, isDarkTheme: Boolean) {
-    if (isDarkTheme) {
-        val filter = ColorMatrixColorFilter(ColorMatrix(floatArrayOf(
-            -0.1491f, -0.5005f, -0.0504f, 0f, 215f,
-            -0.1491f, -0.5005f, -0.0504f, 0f, 215f,
-            -0.1491f, -0.5005f, -0.0504f, 0f, 230f,
-            0f,        0f,        0f,        1f, 0f
-        )))
-        map.overlayManager.tilesOverlay.setColorFilter(filter)
-    } else {
-        map.overlayManager.tilesOverlay.setColorFilter(null)
     }
 }
 

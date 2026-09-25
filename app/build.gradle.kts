@@ -49,8 +49,8 @@ android {
         applicationId = "dev.arrase.geotify"
         minSdk = 24
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.0.0-beta.6"
+        versionCode = 14
+        versionName = "1.0.0-beta.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

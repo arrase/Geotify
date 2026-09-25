@@ -1,10 +1,12 @@
 package dev.arrase.geotify.geofence
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.Geofence
@@ -44,23 +46,10 @@ class AndroidGeofenceManager @Inject constructor(
         )
     }
 
+    @SuppressLint("MissingPermission")
     override suspend fun registerGeofenceForLocation(location: LocationEntity, transitionTypes: Int) {
-        val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        val backgroundLocationPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        } else {
-            PackageManager.PERMISSION_GRANTED
-        }
-        
         Log.i("GeofenceManager", "registerGeofenceForLocation: alias=${location.alias}, id=${location.id}, transitionTypes=$transitionTypes")
-        Log.i("GeofenceManager", "Permissions check: FINE=$fineLocationPermission, BACKGROUND=$backgroundLocationPermission (GRANTED=${PackageManager.PERMISSION_GRANTED})")
-
-        if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
-            backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.w("GeofenceManager", MSG_PERMISSIONS_NOT_GRANTED)
-            return
-        }
+        if (!hasRequiredLocationPermissions()) return
 
         val defaultPoiResponsivenessMs = settingsManager.poiGeofenceResponsivenessSecs.first() * 1000
         val geofence = Geofence.Builder()
@@ -102,28 +91,15 @@ class AndroidGeofenceManager @Inject constructor(
         }
     }
 
+    @SuppressLint("MissingPermission")
     override suspend fun registerSlidingWindowGeofences(
         locations: Map<LocationEntity, Int>,
         centerLat: Double,
         centerLon: Double,
         innerRadiusMeters: Float
     ) {
-        val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        val backgroundLocationPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        } else {
-            PackageManager.PERMISSION_GRANTED
-        }
-        
         Log.i("GeofenceManager", "registerSlidingWindowGeofences: centerLat=$centerLat, centerLon=$centerLon, innerRadiusMeters=$innerRadiusMeters, locationsCount=${locations.size}")
-        Log.i("GeofenceManager", "Permissions check: FINE=$fineLocationPermission, BACKGROUND=$backgroundLocationPermission")
-
-        if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
-            backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.w("GeofenceManager", MSG_PERMISSIONS_NOT_GRANTED)
-            return
-        }
+        if (!hasRequiredLocationPermissions()) return
 
         val requestBuilder = GeofencingRequest.Builder()
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
@@ -164,26 +140,14 @@ class AndroidGeofenceManager @Inject constructor(
         }
     }
 
+    @SuppressLint("MissingPermission")
     override suspend fun registerMasterGeofence(
         centerLat: Double,
         centerLon: Double,
         innerRadiusMeters: Float
     ) {
-        val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        val backgroundLocationPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        } else {
-            PackageManager.PERMISSION_GRANTED
-        }
-
         Log.i("GeofenceManager", "registerMasterGeofence: centerLat=$centerLat, centerLon=$centerLon, innerRadiusMeters=$innerRadiusMeters")
-
-        if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
-            backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.w("GeofenceManager", MSG_PERMISSIONS_NOT_GRANTED)
-            return
-        }
+        if (!hasRequiredLocationPermissions()) return
 
         val masterResponsivenessMs = settingsManager.masterGeofenceResponsivenessSecs.first() * 1000
         val masterGeofence = Geofence.Builder()
@@ -207,6 +171,23 @@ class AndroidGeofenceManager @Inject constructor(
             Log.e("GeofenceManager", "Failed to register master geofence in GMS", e)
             throw e
         }
+    }
+
+    private fun hasRequiredLocationPermissions(): Boolean {
+        val fineLocationPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        val backgroundLocationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            PackageManager.PERMISSION_GRANTED
+        }
+
+        if (fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
+            backgroundLocationPermission != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.w("GeofenceManager", MSG_PERMISSIONS_NOT_GRANTED)
+            return false
+        }
+        return true
     }
 
     companion object {
