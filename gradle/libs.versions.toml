@@ -19,7 +19,7 @@ hilt = "2.60.1"
 datastore = "1.2.1"
 work = "2.11.2"
 mockito = "5.23.0"
-mockitoKotlin = "6.3.0"
+mockitoKotlin = "6.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
