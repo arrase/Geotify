@@ -49,21 +49,20 @@
 
 
 
-        <!-- Geofence transition receiver -->
+        <!-- Geofence transition receiver. GMS delivers to this component explicitly, so no
+             intent-filter is needed and the receiver stays unexported. -->
         <receiver
             android:name=".geofence.GeofenceBroadcastReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="dev.arrase.geotify.ACTION_RECEIVE_GEOFENCE" />
-            </intent-filter>
-        </receiver>
+            android:exported="false" />
 
-        <!-- Boot completed receiver for geofence re-registration -->
+        <!-- Re-register geofences after reboot and after the app is updated, since Play services
+             drops all geofences in both cases. -->
         <receiver
             android:name=".geofence.BootCompletedReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 

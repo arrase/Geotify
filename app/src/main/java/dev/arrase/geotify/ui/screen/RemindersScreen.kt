@@ -61,7 +61,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -74,27 +73,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.R
-import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.data.entity.isArrival
-import dev.arrase.geotify.ui.UiText
+import dev.arrase.geotify.ui.theme.resolve
 import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
 import dev.arrase.geotify.ui.component.ReminderMapView
 import dev.arrase.geotify.ui.component.ReminderMapViewData
 import dev.arrase.geotify.ui.component.ReminderRow
+import dev.arrase.geotify.ui.component.ReminderStatusChips
 import dev.arrase.geotify.ui.component.SpatialRecalculationArea
 import dev.arrase.geotify.ui.component.SwipeToDeleteContainer
 import dev.arrase.geotify.ui.component.ViewModeSwitcher
-import kotlinx.coroutines.launch
-
-private fun isMapDark(themeSetting: ThemeSetting, isSystemDark: Boolean): Boolean = when (themeSetting) {
-    ThemeSetting.SYSTEM -> isSystemDark
-    ThemeSetting.LIGHT -> false
-    ThemeSetting.DARK -> true
-}
 
 private fun saveReminder(
     viewModel: RemindersViewModel,
@@ -126,24 +118,18 @@ fun RemindersScreen(
     val reminders by viewModel.reminders.collectAsStateWithLifecycle()
     val locations by viewModel.locations.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     val mapThemeSetting by viewModel.mapTheme.collectAsStateWithLifecycle()
-    val lastRecalcLat by viewModel.lastRecalcLat.collectAsStateWithLifecycle()
-    val lastRecalcLng by viewModel.lastRecalcLng.collectAsStateWithLifecycle()
+    val lastRecalcLocation by viewModel.lastRecalcLocation.collectAsStateWithLifecycle()
     val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
     val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
-    val isMapDarkTheme = isMapDark(mapThemeSetting, isSystemDark)
+    val isMapDarkTheme = mapThemeSetting.resolve(isSystemDark)
 
     LaunchedEffect(viewModel) {
-        viewModel.snackbarMessage.collect { uiText ->
-            val msg = when (uiText) {
-                is UiText.DynamicString -> uiText.value
-                is UiText.StringResource -> context.applicationContext.getString(uiText.resId)
-            }
+        viewModel.messagesFlow.collect { message ->
             snackbarHostState.showSnackbar(
-                message = msg,
+                message = message.resolve(context),
                 duration = SnackbarDuration.Short
             )
         }
@@ -178,13 +164,17 @@ fun RemindersScreen(
     }
 
     // Dialog State
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var editingReminder by remember { mutableStateOf<ReminderEntity?>(null) }
-    var selectedLocationId by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
-    var transitionType by remember { mutableIntStateOf(Geofence.GEOFENCE_TRANSITION_ENTER) }
+    var editingReminderId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedLocationId by rememberSaveable { mutableStateOf("") }
+    var message by rememberSaveable { mutableStateOf("") }
+    var transitionType by rememberSaveable { mutableIntStateOf(Geofence.GEOFENCE_TRANSITION_ENTER) }
     var dropdownExpanded by remember { mutableStateOf(false) }
+
+    val editingReminder = remember(editingReminderId, reminders) {
+        reminders.firstOrNull { it.id == editingReminderId }
+    }
 
     val formState = ReminderFormState(
         editingReminder = editingReminder,
@@ -205,25 +195,19 @@ fun RemindersScreen(
         onSave = {
             saveReminder(viewModel, editingReminder, selectedLocationId, message, transitionType)
             showDialog = false
-            editingReminder = null
+            editingReminderId = null
         },
         onDelete = {
             val editing = editingReminder
             if (editing != null) {
                 viewModel.cancelReminder(editing.id)
                 showDialog = false
-                editingReminder = null
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = context.applicationContext.getString(R.string.toast_reminder_deleted),
-                        duration = SnackbarDuration.Short
-                    )
-                }
+                editingReminderId = null
             }
         },
         onCancel = {
             showDialog = false
-            editingReminder = null
+            editingReminderId = null
         }
     )
 
@@ -240,52 +224,30 @@ fun RemindersScreen(
             locations = locations,
             selectedLocation = selectedLocationOnMap,
             spatialArea = SpatialRecalculationArea(
-                latitude = lastRecalcLat,
-                longitude = lastRecalcLng,
-                innerRadiusMeters = innerRadiusR * 1000f,
-                outerRadiusMeters = outerRadiusN * 1000f
-            ),
-            currentUserLocation = currentUserLocation
+            latitude = lastRecalcLocation?.latitude,
+            longitude = lastRecalcLocation?.longitude,
+            innerRadiusMeters = innerRadiusR * 1000f,
+            outerRadiusMeters = outerRadiusN * 1000f
         ),
-        isMapDarkTheme = isMapDarkTheme
-    )
+        currentUserLocation = currentUserLocation
+    ),
+    isMapDarkTheme = isMapDarkTheme
+)
 
     val contentActions = RemindersContentActions(
         onListSelected = { isMapView = false },
         onMapSelected = { isMapView = true },
-        onCancelActive = { reminder ->
-            viewModel.cancelReminder(reminder.id)
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = context.applicationContext.getString(R.string.toast_reminder_cancelled),
-                    duration = SnackbarDuration.Short
-                )
-            }
-        },
-        onDeleteCompleted = { reminder ->
-            viewModel.cancelReminder(reminder.id)
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = context.applicationContext.getString(R.string.toast_reminder_deleted),
-                    duration = SnackbarDuration.Short
-                )
-            }
-        },
+        onCancelActive = { reminder -> viewModel.cancelReminder(reminder.id) },
+        onDeleteCompleted = { reminder -> viewModel.cancelReminder(reminder.id, cancelled = false) },
         onEditReminder = { reminder ->
-            editingReminder = reminder
+            editingReminderId = reminder.id
             selectedLocationId = reminder.locationId
             message = reminder.message
             transitionType = reminder.transitionType
             showDialog = true
         },
         onDeleteReminderOnMap = { reminder ->
-            viewModel.cancelReminder(reminder.id)
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = context.applicationContext.getString(R.string.toast_reminder_deleted),
-                    duration = SnackbarDuration.Short
-                )
-            }
+            viewModel.cancelReminder(reminder.id, cancelled = false)
             val remaining = activeReminders.filter { it.locationId == selectedLocationOnMap?.id && it.id != reminder.id }
             if (remaining.isEmpty()) {
                 selectedLocationOnMap = null
@@ -294,7 +256,7 @@ fun RemindersScreen(
         onLocationSelected = { selectedLocationOnMap = it },
         onDismissSelectedLocation = { selectedLocationOnMap = null },
         onAddReminder = {
-            editingReminder = null
+            editingReminderId = null
             selectedLocationId = locations.firstOrNull()?.id ?: ""
             message = ""
             transitionType = Geofence.GEOFENCE_TRANSITION_ENTER
@@ -331,7 +293,7 @@ fun RemindersScreen(
             locations = locations,
             onDismissRequest = {
                 showDialog = false
-                editingReminder = null
+                editingReminderId = null
             }
         )
     }
@@ -891,42 +853,7 @@ private fun SelectedReminderItemRow(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(Modifier.height(4.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                androidx.compose.material3.SuggestionChip(
-                    onClick = {},
-                    label = {
-                        Text(
-                            text = if (reminder.isArrival) {
-                                stringResource(R.string.label_transition_arrival)
-                            } else {
-                                stringResource(R.string.label_transition_departure)
-                            },
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    },
-                    modifier = Modifier.height(24.dp)
-                )
-
-                if (reminder.isInRange) {
-                    androidx.compose.material3.SuggestionChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                text = stringResource(R.string.label_in_range),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        },
-                        colors = androidx.compose.material3.SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            labelColor = MaterialTheme.colorScheme.onTertiaryContainer
-                        ),
-                        modifier = Modifier.height(24.dp)
-                    )
-                }
-            }
+            ReminderStatusChips(reminder)
         }
 
         Row(

@@ -6,7 +6,6 @@
     <string name="btn_save">حفظ</string>
     <string name="btn_skip">تخطي</string>
     <string name="btn_open_settings">فتح الإعدادات</string>
-    <string name="btn_use_current_gps">استخدام إحداثيات GPS الحالية</string>
     <string name="btn_querying_gps">جاري استعلام GPS…</string>
     <string name="label_locations">المواقع</string>
     <string name="label_reminders">التذكيرات</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">تعديل الموقع</string>
     <string name="dialog_new_reminder">تذكير جديد</string>
     <string name="dialog_edit_reminder">تعديل التذكير</string>
-    <string name="toast_location_deleted">تم حذف \"%1$s\"</string>
-    <string name="toast_reminder_cancelled">تم إلغاء التذكير</string>
-    <string name="toast_reminder_deleted">تم حذف التذكير</string>
     <string name="content_description_add_location">إضافة موقع</string>
     <string name="content_description_add_reminder">إضافة تذكير</string>
-    <string name="content_description_location">موقع</string>
     <string name="content_description_reminder">تذكير</string>
     <string name="content_description_cancel">إلغاء</string>
     <string name="reminder_select_location">اختر الموقع</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">الخريطة</string>
     <string name="btn_select_on_map">اختر على الخريطة</string>
     <string name="btn_use_gps">استخدم GPS</string>
-    <string name="btn_map_picker">محدد الخريطة</string>
     <string name="label_map_picker_title">اختر الموقع على الخريطة</string>
     <string name="label_selected_location">الموقع المحدد</string>
     <string name="btn_confirm_selection">تأكيد الاختيار</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">النظام</string>
     <string name="settings_theme_light">فاتح</string>
     <string name="settings_theme_dark">داكن</string>
-    <string name="geofence_limit_error">تم الوصول إلى حد السياج الجغرافي (الحد الأقصى 100). لا يمكنك تفعيل المزيد.</string>
-    <string name="geofence_limit_warning">لقد وصلت إلى الحد الأقصى وهو 100 سياج جغرافي نشط.</string>
-    <string name="geofence_limit_fab_warning">تم الوصول إلى حد السياج الجغرافي البالغ 100. يمكنك فقط إضافة تذكيرات للمواقع ذات السياجات النشطة.</string>
-    <string name="geofence_limit_dialog_error">تم الوصول إلى حد السياج الجغرافي البالغ 100. يرجى اختيار موقع به تذكيرات نشطة.</string>
     <string name="label_notification_responsiveness">استجابة الإشعارات</string>
     <string name="label_minutes_value">%1$d دقيقة</string>
     <string name="label_0min">0 دقيقة (فوري)</string>
@@ -116,4 +106,19 @@
     <string name="content_description_back">رجوع</string>
     <string name="content_description_center_on_gps">التركيز على نظام تحديد المواقع</string>
 
+    <string name="err_location_missing">لم يعد هذا الموقع موجودًا</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f، %3$s: %4$.5f</string>
+    <string name="coordinates_format">‎%1$.5f، %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="zero">%d تذكير نشط</item>
+        <item quantity="one">%d تذكير نشط</item>
+        <item quantity="two">%d تذكيران نشطان</item>
+        <item quantity="few">%d تذكيرات نشطة</item>
+        <item quantity="many">%d تذكيرًا نشطًا</item>
+        <item quantity="other">%d تذكير نشط</item>
+    </plurals>
+    <string name="location_deleted">تم حذف "%1$s"</string>
+    <string name="reminder_cancelled">تم إلغاء التذكير</string>
+    <string name="reminder_deleted">تم حذف التذكير</string>
+    <string name="label_transition_unknown">غير محدد</string>
 </resources>

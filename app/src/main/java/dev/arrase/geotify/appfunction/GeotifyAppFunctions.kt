@@ -5,9 +5,11 @@ import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionSerializable
 import androidx.appfunctions.service.AppFunction
 import com.google.android.gms.location.Geofence
+import dev.arrase.geotify.data.DuplicateAliasException
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.entity.triggerTypeString
+import dev.arrase.geotify.geofence.GeofenceOrchestrator
 import dev.arrase.geotify.location.LocationProvider
 import javax.inject.Inject
 
@@ -70,6 +72,7 @@ data class SavedReminder(
 class GeotifyAppFunctions @Inject constructor(
     private val locationRepository: LocationRepository,
     private val reminderRepository: ReminderRepository,
+    private val geofenceOrchestrator: GeofenceOrchestrator,
     private val locationProvider: LocationProvider
 ) {
 
@@ -97,10 +100,16 @@ class GeotifyAppFunctions @Inject constructor(
 
             if (location != null) {
                 locationRepository.saveLocation(alias, location.latitude, location.longitude)
+                geofenceOrchestrator.triggerRecalculation()
                 SaveLocationResult(alias, "Location successfully saved.")
             } else {
                 SaveLocationResult(alias, "Failed to obtain GPS fix.")
             }
+        } catch (e: DuplicateAliasException) {
+            SaveLocationResult(
+                alias,
+                "Alias already in use. Choose a unique name or delete the existing one first."
+            )
         } catch (e: Exception) {
             SaveLocationResult(alias, "Error: ${e.message}")
         }
@@ -132,11 +141,12 @@ class GeotifyAppFunctions @Inject constructor(
         }
 
         val reminder = reminderRepository.createReminder(location, payloadMessage, transitionType)
+        geofenceOrchestrator.triggerRecalculation()
         return CreateReminderResult(
             reminderId = reminder.id,
             targetAlias = targetAlias,
             payloadMessage = payloadMessage,
-            triggerType = if (triggerOnArrival) "arrival" else "departure"
+            triggerType = reminder.triggerTypeString
         )
     }
 
@@ -165,8 +175,9 @@ class GeotifyAppFunctions @Inject constructor(
         alias: String
     ): DeleteResult {
         locationRepository.findLocationByAlias(alias) ?: throwAliasNotFound(alias)
-        locationRepository.deleteLocation(alias)
-        return DeleteResult(alias, deleted = true)
+        val deleted = locationRepository.deleteLocation(alias)
+        geofenceOrchestrator.triggerRecalculation()
+        return DeleteResult(alias, deleted = deleted)
     }
 
     /**
@@ -211,8 +222,9 @@ class GeotifyAppFunctions @Inject constructor(
             )
         }
 
-        reminderRepository.cancelReminder(matched.id)
-        return DeleteResult(targetAlias, deleted = true)
+        val deleted = reminderRepository.cancelReminder(matched.id)
+        geofenceOrchestrator.triggerRecalculation()
+        return DeleteResult(targetAlias, deleted = deleted)
     }
 
     /**

@@ -6,7 +6,6 @@
     <string name="btn_save">सहेजें</string>
     <string name="btn_skip">छोड़ें</string>
     <string name="btn_open_settings">सेटिंग्स खोलें</string>
-    <string name="btn_use_current_gps">वर्तमान GPS निर्देशांक का उपयोग करें</string>
     <string name="btn_querying_gps">GPS क्वेरी कर रहा है…</string>
     <string name="label_locations">स्थान</string>
     <string name="label_reminders">रिमाइंडर</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">स्थान संपादित करें</string>
     <string name="dialog_new_reminder">नया रिमाइंडर</string>
     <string name="dialog_edit_reminder">रिमाइंडर संपादित करें</string>
-    <string name="toast_location_deleted">\"%1$s\" हटा दिया गया</string>
-    <string name="toast_reminder_cancelled">रिमाइंडर रद्द कर दिया गया</string>
-    <string name="toast_reminder_deleted">रिमाइंडर हटा दिया गया</string>
     <string name="content_description_add_location">स्थान जोड़ें</string>
     <string name="content_description_add_reminder">रिमाइंडर जोड़ें</string>
-    <string name="content_description_location">स्थान</string>
     <string name="content_description_reminder">रिमाइंडर</string>
     <string name="content_description_cancel">रद्द करें</string>
     <string name="reminder_select_location">स्थान चुनें</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">मानचित्र</string>
     <string name="btn_select_on_map">मानचित्र पर चुनें</string>
     <string name="btn_use_gps">GPS का उपयोग करें</string>
-    <string name="btn_map_picker">मैप पिकर</string>
     <string name="label_map_picker_title">मानचित्र पर स्थान चुनें</string>
     <string name="label_selected_location">चयनित स्थान</string>
     <string name="btn_confirm_selection">चयन की पुष्टि करें</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">सिस्टम</string>
     <string name="settings_theme_light">लाइट</string>
     <string name="settings_theme_dark">डार्क</string>
-    <string name="geofence_limit_error">जियोफेंस सीमा तक पहुंच गई है (अधिकतम 100)। आप और सक्रिय नहीं कर सकते।</string>
-    <string name="geofence_limit_warning">आप सक्रिय जियोफेंस की अधिकतम सीमा 100 तक पहुंच गए हैं।</string>
-    <string name="geofence_limit_fab_warning">जियोफेंस की सीमा 100 तक पहुंच गई है। आप केवल सक्रिय जियोफेंस वाले स्थानों पर रिमाइंडर जोड़ सकते हैं।</string>
-    <string name="geofence_limit_dialog_error">जियोफेंस की सीमा 100 तक पहुंच गई है। कृपया सक्रिय रिमाइंडर वाला स्थान चुनें।</string>
     <string name="label_notification_responsiveness">नोटिफिकेशन प्रतिक्रियाशीलता</string>
     <string name="label_minutes_value">%1$d मिनट</string>
     <string name="label_0min">0 मिनट (तत्काल)</string>
@@ -116,4 +106,15 @@
     <string name="content_description_back">पीछे</string>
     <string name="content_description_center_on_gps">जीपीएस पर केंद्रित करें</string>
 
+    <string name="err_location_missing">वह स्थान अब मौजूद नहीं है</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d सक्रिय अनुस्मारक</item>
+        <item quantity="other">%d सक्रिय अनुस्मारक</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" हटाया गया</string>
+    <string name="reminder_cancelled">अनुस्मारक रद्द किया गया</string>
+    <string name="reminder_deleted">अनुस्मारक हटाया गया</string>
+    <string name="label_transition_unknown">अज्ञात</string>
 </resources>

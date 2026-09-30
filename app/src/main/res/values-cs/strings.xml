@@ -6,7 +6,6 @@
     <string name="btn_save">Uložit</string>
     <string name="btn_skip">Přeskočit</string>
     <string name="btn_open_settings">Otevřít nastavení</string>
-    <string name="btn_use_current_gps">Použít aktuální GPS souřadnice</string>
     <string name="btn_querying_gps">Dotazování GPS…</string>
     <string name="label_locations">Lokalizace</string>
     <string name="label_reminders">Upomínky</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Upravit lokalizaci</string>
     <string name="dialog_new_reminder">Nová upomínka</string>
     <string name="dialog_edit_reminder">Upravit upomínku</string>
-    <string name="toast_location_deleted">\"%1$s\" smazáno</string>
-    <string name="toast_reminder_cancelled">Upomínka zrušena</string>
-    <string name="toast_reminder_deleted">Upomínka smazána</string>
     <string name="content_description_add_location">Přidat lokalizaci</string>
     <string name="content_description_add_reminder">Přidat upomínku</string>
-    <string name="content_description_location">Lokalizace</string>
     <string name="content_description_reminder">Upomínka</string>
     <string name="content_description_cancel">Zrušit</string>
     <string name="reminder_select_location">Vybrat lokalizaci</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Mapa</string>
     <string name="btn_select_on_map">Vybrat na mapě</string>
     <string name="btn_use_gps">Použít GPS</string>
-    <string name="btn_map_picker">Výběr mapy</string>
     <string name="label_map_picker_title">Vybrat lokalizaci na mapě</string>
     <string name="label_selected_location">Vybraná lokalizace</string>
     <string name="btn_confirm_selection">Potvrdit výběr</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">Systémové</string>
     <string name="settings_theme_light">Světlé</string>
     <string name="settings_theme_dark">Tmavé</string>
-    <string name="geofence_limit_error">Dosáhnuto omezení geofencingu (maximálně 100). Nemůžete jej aktivovat více.</string>
-    <string name="geofence_limit_warning">Dosáhli jste maximálního limitu 100 aktivních geofencingů.</string>
-    <string name="geofence_limit_fab_warning">Dosáhnuto omezení geofencingu 100. Můžete přidávat upomínky pouze k lokalizacím s aktivními geofencingy.</string>
-    <string name="geofence_limit_dialog_error">Dosáhnuto omezení geofencingu 100. Vyberte lokalizaci s aktivní upomínkou.</string>
     <string name="label_notification_responsiveness">Reaktivnost oznámení</string>
     <string name="label_minutes_value">%1$d min</string>
     <string name="label_0min">0 min (okamžitě)</string>
@@ -116,4 +106,17 @@
     <string name="content_description_back">Zpět</string>
     <string name="content_description_center_on_gps">Vycentrovat na GPS</string>
 
+    <string name="err_location_missing">Tato lokalizace již neexistuje</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d aktivní připomínka</item>
+        <item quantity="few">%d aktivní připomínky</item>
+        <item quantity="many">%d aktivních připomínek</item>
+        <item quantity="other">%d aktivní připomínky</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" smazáno</string>
+    <string name="reminder_cancelled">Připomínka zrušena</string>
+    <string name="reminder_deleted">Připomínka smazána</string>
+    <string name="label_transition_unknown">Neznámé</string>
 </resources>

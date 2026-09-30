@@ -6,7 +6,6 @@
     <string name="btn_save">저장</string>
     <string name="btn_skip">건너뛰기</string>
     <string name="btn_open_settings">설정 열기</string>
-    <string name="btn_use_current_gps">현재 GPS 좌표 사용</string>
     <string name="btn_querying_gps">GPS 조회 중…</string>
     <string name="label_locations">장소</string>
     <string name="label_reminders">리마인더</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">장소 편집</string>
     <string name="dialog_new_reminder">새 리마인더</string>
     <string name="dialog_edit_reminder">리마인더 편집</string>
-    <string name="toast_location_deleted">\"%1$s\" 삭제됨</string>
-    <string name="toast_reminder_cancelled">리마인더 취소됨</string>
-    <string name="toast_reminder_deleted">리마인더 삭제됨</string>
     <string name="content_description_add_location">장소 추가</string>
     <string name="content_description_add_reminder">리마인더 추가</string>
-    <string name="content_description_location">장소</string>
     <string name="content_description_reminder">리마인더</string>
     <string name="content_description_cancel">취소</string>
     <string name="reminder_select_location">장소 선택</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">지도</string>
     <string name="btn_select_on_map">지도에서 선택</string>
     <string name="btn_use_gps">GPS 사용</string>
-    <string name="btn_map_picker">지도 피커</string>
     <string name="label_map_picker_title">지도에서 장소 선택</string>
     <string name="label_selected_location">선택된 장소</string>
     <string name="btn_confirm_selection">선택 확인</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">시스템</string>
     <string name="settings_theme_light">라이트</string>
     <string name="settings_theme_dark">다크</string>
-    <string name="geofence_limit_error">지오펜스 제한에 도달했습니다 (최대 100개). 더 이상 활성화할 수 없습니다.</string>
-    <string name="geofence_limit_warning">활성 지오펜스 최대 제한인 100개에 도달했습니다.</string>
-    <string name="geofence_limit_fab_warning">지오펜스 제한 100개에 도달했습니다. 활성 지오펜스가 있는 장소에만 리마인더를 추가할 수 있습니다.</string>
-    <string name="geofence_limit_dialog_error">지오펜스 제한 100개에 도달했습니다. 활성 리마인더가 있는 장소를 선택해 주세요.</string>
     <string name="label_notification_responsiveness">알림 응답성</string>
     <string name="label_minutes_value">%1$d 분</string>
     <string name="label_0min">0 분 (즉시)</string>
@@ -116,4 +106,14 @@
     <string name="content_description_back">뒤로</string>
     <string name="content_description_center_on_gps">GPS 기준으로 정렬</string>
 
+    <string name="err_location_missing">해당 위치가 더 이상 존재하지 않습니다</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="other">활성 알림 %d개</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" 삭제됨</string>
+    <string name="reminder_cancelled">알림 취소됨</string>
+    <string name="reminder_deleted">알림이 삭제되었습니다</string>
+    <string name="label_transition_unknown">알 수 없음</string>
 </resources>

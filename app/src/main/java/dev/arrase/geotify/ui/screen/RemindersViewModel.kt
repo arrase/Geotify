@@ -1,25 +1,21 @@
 package dev.arrase.geotify.ui.screen
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.arrase.geotify.R
+import dev.arrase.geotify.data.LatLng
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
-import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.SettingsDefaults
 import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.data.ThemeSetting
+import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.geofence.GeofenceOrchestrator
 import dev.arrase.geotify.location.LocationProvider
+import dev.arrase.geotify.ui.BaseViewModel
 import dev.arrase.geotify.ui.UiText
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,72 +25,76 @@ class RemindersViewModel @Inject constructor(
     private val reminderRepository: ReminderRepository,
     private val geofenceOrchestrator: GeofenceOrchestrator,
     private val locationProvider: LocationProvider,
-    private val settingsManager: SettingsManager
-) : ViewModel() {
-
-    private val _snackbarMessage = MutableSharedFlow<UiText>()
-    val snackbarMessage: SharedFlow<UiText> = _snackbarMessage.asSharedFlow()
+    settingsManager: SettingsManager
+) : BaseViewModel() {
 
     val locations: StateFlow<List<LocationEntity>> = locationRepository.observeLocations()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .settingFlow(emptyList())
 
     val reminders: StateFlow<List<ReminderEntity>> = reminderRepository.observeReminders()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .settingFlow(emptyList())
 
-    val activeReminderCounts: StateFlow<Map<String, Int>> = reminderRepository.observeActiveReminderCounts()
-        .map { list -> list.associate { it.locationId to it.count } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+    val mapTheme: StateFlow<ThemeSetting> =
+        settingsManager.mapTheme.settingFlow(SettingsDefaults.MAP_THEME)
 
-    val mapTheme: StateFlow<ThemeSetting> = settingsManager.mapTheme
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.MAP_THEME)
+    val lastRecalcLocation: StateFlow<LatLng?> = settingsManager.lastRecalcLocation
+        .settingFlow(null)
 
-    val lastRecalcLat: StateFlow<Double?> = settingsManager.lastRecalcLat
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val innerRadiusR: StateFlow<Float> =
+        settingsManager.innerRadiusR.settingFlow(SettingsDefaults.INNER_RADIUS_R)
 
-    val lastRecalcLng: StateFlow<Double?> = settingsManager.lastRecalcLng
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val outerRadiusN: StateFlow<Float> =
+        settingsManager.outerRadiusN.settingFlow(SettingsDefaults.OUTER_RADIUS_N)
 
-    val innerRadiusR: StateFlow<Float> = settingsManager.innerRadiusR
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.INNER_RADIUS_R)
-
-    val outerRadiusN: StateFlow<Float> = settingsManager.outerRadiusN
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.OUTER_RADIUS_N)
-
-    suspend fun getCurrentLocation(): android.location.Location? {
-        return locationProvider.getCurrentLocation()
-    }
-
-    fun createReminder(locationId: String, message: String, transitionType: Int) {
+    fun createReminder(locationId: String, message: String, transitionType: Int) =
         viewModelScope.launch {
-            try {
-                val location = locationRepository.findLocationById(locationId) ?: return@launch
+            val location = locationRepository.findLocationById(locationId)
+            if (location == null) {
+                messages.send(UiText.StringResource(R.string.err_location_missing))
+                return@launch
+            }
+            mutate(ERROR_CREATE, onSuccess = geofenceOrchestrator::triggerRecalculation) {
                 reminderRepository.createReminder(location, message, transitionType)
+            }
+        }
+
+    fun updateReminder(reminder: ReminderEntity) = viewModelScope.launch {
+        mutate(ERROR_UPDATE, onSuccess = geofenceOrchestrator::triggerRecalculation) {
+            reminderRepository.updateReminder(reminder)
+        }
+    }
+
+    /**
+     * Removes a reminder. [cancelled] distinguishes stopping an active reminder (it stays in the
+     * completed list) from deleting a completed one, so the confirmation matches the action.
+     */
+    fun cancelReminder(reminderId: String, cancelled: Boolean = true) = viewModelScope.launch {
+        mutate(
+            errorFallback = ERROR_CANCEL,
+            onSuccess = {
                 geofenceOrchestrator.triggerRecalculation()
-            } catch (e: Exception) {
-                _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
+                messages.send(
+                    UiText.StringResource(
+                        if (cancelled) R.string.reminder_cancelled else R.string.reminder_deleted
+                    )
+                )
+            }
+        ) {
+            if (!reminderRepository.cancelReminder(reminderId)) {
+                throw StaleReminderException(reminderId)
             }
         }
     }
 
-    fun updateReminder(reminder: ReminderEntity) {
-        viewModelScope.launch {
-            try {
-                reminderRepository.updateReminder(reminder)
-                geofenceOrchestrator.triggerRecalculation()
-            } catch (e: Exception) {
-                _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
-            }
-        }
-    }
+    suspend fun getCurrentLocation() = locationProvider.getCurrentLocation()
 
-    fun cancelReminder(reminderId: String) {
-        viewModelScope.launch {
-            try {
-                reminderRepository.cancelReminder(reminderId)
-                geofenceOrchestrator.triggerRecalculation()
-            } catch (e: Exception) {
-                _snackbarMessage.emit(UiText.DynamicString("Error: ${e.message}"))
-            }
-        }
+    private companion object {
+        const val ERROR_CREATE = "Could not create the reminder"
+        const val ERROR_UPDATE = "Could not update the reminder"
+        const val ERROR_CANCEL = "Could not cancel the reminder"
     }
 }
+
+/** Raised when a delete affected no rows, i.e. the reminder was already gone. */
+private class StaleReminderException(id: String) :
+    IllegalStateException("Reminder $id no longer exists")

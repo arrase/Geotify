@@ -6,7 +6,6 @@
     <string name="btn_save">保存</string>
     <string name="btn_skip">跳过</string>
     <string name="btn_open_settings">打开设置</string>
-    <string name="btn_use_current_gps">使用当前 GPS 坐标</string>
     <string name="btn_querying_gps">正在查询 GPS…</string>
     <string name="label_locations">位置</string>
     <string name="label_reminders">提醒</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">编辑位置</string>
     <string name="dialog_new_reminder">新提醒</string>
     <string name="dialog_edit_reminder">编辑提醒</string>
-    <string name="toast_location_deleted">\"%1$s\" 已删除</string>
-    <string name="toast_reminder_cancelled">提醒已取消</string>
-    <string name="toast_reminder_deleted">提醒已删除</string>
     <string name="content_description_add_location">添加位置</string>
     <string name="content_description_add_reminder">添加提醒</string>
-    <string name="content_description_location">位置</string>
     <string name="content_description_reminder">提醒</string>
     <string name="content_description_cancel">取消</string>
     <string name="reminder_select_location">选择位置</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">地图</string>
     <string name="btn_select_on_map">在地图上选择</string>
     <string name="btn_use_gps">使用 GPS</string>
-    <string name="btn_map_picker">地图选择器</string>
     <string name="label_map_picker_title">在地图上选择位置</string>
     <string name="label_selected_location">已选位置</string>
     <string name="btn_confirm_selection">确认选择</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">系统</string>
     <string name="settings_theme_light">浅色</string>
     <string name="settings_theme_dark">深色</string>
-    <string name="geofence_limit_error">达到地理围栏限制（最大 100 个）。无法激活更多。</string>
-    <string name="geofence_limit_warning">您已达到 100 个活动地理围栏的最大限制。</string>
-    <string name="geofence_limit_fab_warning">达到 100 个地理围栏限制。您只能向具有活动地理围栏的位置添加提醒。</string>
-    <string name="geofence_limit_dialog_error">达到 100 个地理围栏限制。请选择具有活动提醒的位置。</string>
     <string name="label_notification_responsiveness">通知响应速度</string>
     <string name="label_minutes_value">%1$d 分钟</string>
     <string name="label_0min">0 分钟（即时）</string>
@@ -116,4 +106,14 @@
     <string name="content_description_back">返回</string>
     <string name="content_description_center_on_gps">对齐到GPS</string>
 
+    <string name="err_location_missing">该位置已不存在</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="other">%d 个活动提醒</item>
+    </plurals>
+    <string name="location_deleted">已删除“%1$s”</string>
+    <string name="reminder_cancelled">已取消提醒</string>
+    <string name="reminder_deleted">已删除提醒</string>
+    <string name="label_transition_unknown">未知</string>
 </resources>

@@ -26,8 +26,9 @@ interface LocationDao {
     @Query("SELECT alias FROM locations ORDER BY alias ASC")
     suspend fun getAllAliases(): List<String>
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(location: LocationEntity)
+    /** @return the new row id, or `-1` if the alias already exists. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(location: LocationEntity): Long
 
     @Update
     suspend fun update(location: LocationEntity)
@@ -35,13 +36,21 @@ interface LocationDao {
     @Query("DELETE FROM locations WHERE alias = :alias COLLATE NOCASE")
     suspend fun deleteByAlias(alias: String): Int
 
+    /**
+     * Bounding-box prefilter for [dev.arrase.geotify.domain.SpatialSearchUseCase].
+     *
+     * The longitude window is tested three times — as given, shifted by -360 and by +360 — so that a
+     * window straddling the antimeridian (e.g. 174..184) still matches points stored on the western
+     * side (e.g. -179). Results may be a superset of the true radius; callers must still apply an exact
+     * distance check.
+     */
     @Query("""
-        SELECT * FROM locations 
-        WHERE latitude BETWEEN :minLat AND :maxLat 
+        SELECT * FROM locations
+        WHERE latitude BETWEEN :minLat AND :maxLat
           AND (
-            (:minLon <= :maxLon AND longitude BETWEEN :minLon AND :maxLon)
-            OR 
-            (:minLon > :maxLon AND (longitude >= :minLon OR longitude <= :maxLon))
+                (longitude BETWEEN :minLon AND :maxLon)
+             OR (longitude BETWEEN :minLon - 360.0 AND :maxLon - 360.0)
+             OR (longitude BETWEEN :minLon + 360.0 AND :maxLon + 360.0)
           )
     """)
     suspend fun getLocationsInBoundingBox(minLat: Double, maxLat: Double, minLon: Double, maxLon: Double): List<LocationEntity>

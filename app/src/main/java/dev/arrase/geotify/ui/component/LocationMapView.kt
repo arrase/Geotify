@@ -14,11 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.arrase.geotify.data.entity.LocationEntity
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
@@ -55,17 +60,16 @@ fun LocationMapView(
             if (locations.size == 1) {
                 val loc = locations.first()
                 map.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
-                map.controller.setZoom(15.0)
+                map.controller.setZoom(DEFAULT_ZOOM)
             } else {
                 val points = locations.map { GeoPoint(it.latitude, it.longitude) }
                 map.post {
                     try {
-                        val box = org.osmdroid.util.BoundingBox.fromGeoPoints(points)
-                        map.zoomToBoundingBox(box, true, 120)
+                        map.zoomToBoundingBox(BoundingBox.fromGeoPoints(points), true, 120)
                     } catch (e: Exception) {
                         val loc = locations.first()
                         map.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
-                        map.controller.setZoom(15.0)
+                        map.controller.setZoom(DEFAULT_ZOOM)
                     }
                 }
             }
@@ -81,26 +85,24 @@ fun LocationMapView(
         }
     }
 
-    // Lifecycle management: onDetach() must only be called on real Activity destruction,
-    // NOT when AnimatedVisibility hides this composable, because onDetach() permanently
-    // destroys the osmdroid tile cache writer making future MapView instances unable to load tiles.
-    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    // Lifecycle management. `onDetach()` shuts down this MapView's own tile-download executor, so it
+    // must be called whenever the view leaves composition (e.g. the user toggles back to the list) —
+    // otherwise each toggle leaks a thread pool. It is safe to call repeatedly: osmdroid's tile
+    // writer shares a static database, so detaching does not break later MapView instances.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(mapViewRef, lifecycle) {
         val map = mapViewRef ?: return@DisposableEffect onDispose {}
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+        val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> map.onResume()
-                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> map.onPause()
-                androidx.lifecycle.Lifecycle.Event.ON_DESTROY -> map.onDetach()
-                else -> {}
+                Lifecycle.Event.ON_RESUME -> map.onResume()
+                Lifecycle.Event.ON_PAUSE -> map.onPause()
+                else -> Unit
             }
         }
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
-            // Only pause when leaving composition (e.g. AnimatedVisibility toggling).
-            // Do NOT call onDetach() here — it destroys the shared tile cache writer.
-            map.onPause()
+            map.onDetach()
         }
     }
 
@@ -133,20 +135,22 @@ fun LocationMapView(
         )
     }
 
+    val tileFilter = remember { darkTileFilter() }
+
     AndroidView(
         factory = { ctx ->
             MapView(ctx).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
-                zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
-                controller.setZoom(15.0)
+                zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
+                controller.setZoom(DEFAULT_ZOOM)
                 onResume()
                 mapViewRef = this
             }
         },
         modifier = modifier.fillMaxSize(),
         update = { map ->
-            applyTileThemeFilter(map, isDarkTheme)
+            map.applyTileThemeFilter(isDarkTheme, tileFilter)
             updateLocationOverlays(
                 map = map,
                 locations = locations,
@@ -166,6 +170,9 @@ private data class LocationOverlayStyle(
     val defaultFillColor: Int,
     val defaultStrokeColor: Int
 )
+
+/** Zoom level used when the map cannot fit all points and falls back to a single location. */
+private const val DEFAULT_ZOOM = 15.0
 
 
 private fun updateLocationOverlays(

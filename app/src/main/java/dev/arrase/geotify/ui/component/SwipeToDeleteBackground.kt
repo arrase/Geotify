@@ -13,7 +13,6 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,6 +39,7 @@ fun SwipeToDeleteBackground(
     }
 }
 
+/** Swipe-to-delete wrapper that only allows deleting by swiping from the trailing edge. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeToDeleteContainer(
@@ -50,16 +50,14 @@ fun SwipeToDeleteContainer(
 ) {
     val dismissState = rememberSwipeToDismissBoxState()
 
-    LaunchedEffect(dismissState.currentValue) {
-        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-            onDelete()
-        }
-    }
-
     SwipeToDismissBox(
         state = dismissState,
         backgroundContent = {
             SwipeToDeleteBackground(contentDescription = contentDescription)
+        },
+        // Fires once when the row settles past the threshold, and only for a real dismissal.
+        onDismiss = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) onDelete()
         },
         enableDismissFromStartToEnd = false,
         modifier = modifier,

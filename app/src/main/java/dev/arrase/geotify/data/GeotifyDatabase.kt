@@ -9,11 +9,16 @@ import dev.arrase.geotify.data.entity.ReminderEntity
 
 @Database(
     entities = [LocationEntity::class, ReminderEntity::class],
-    version = 3,
+    version = 5,
     exportSchema = true
 )
 abstract class GeotifyDatabase : RoomDatabase() {
 
     abstract fun locationDao(): LocationDao
+
     abstract fun reminderDao(): ReminderDao
+
+    companion object {
+        const val NAME = "geotify.db"
+    }
 }

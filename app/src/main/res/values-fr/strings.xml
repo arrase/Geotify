@@ -6,7 +6,6 @@
     <string name="btn_save">Enregistrer</string>
     <string name="btn_skip">Ignorer</string>
     <string name="btn_open_settings">Ouvrir les paramètres</string>
-    <string name="btn_use_current_gps">Utiliser les coordonnées GPS actuelles</string>
     <string name="btn_querying_gps">Recherche GPS…</string>
     <string name="label_locations">Lieux</string>
     <string name="label_reminders">Rappels</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Modifier le lieu</string>
     <string name="dialog_new_reminder">Nouveau rappel</string>
     <string name="dialog_edit_reminder">Modifier le rappel</string>
-    <string name="toast_location_deleted">\"%1$s\" supprimé</string>
-    <string name="toast_reminder_cancelled">Rappel annulé</string>
-    <string name="toast_reminder_deleted">Rappel supprimé</string>
     <string name="content_description_add_location">Ajouter un lieu</string>
     <string name="content_description_add_reminder">Ajouter un rappel</string>
-    <string name="content_description_location">Lieu</string>
     <string name="content_description_reminder">Rappel</string>
     <string name="content_description_cancel">Annuler</string>
     <string name="reminder_select_location">Sélectionner un lieu</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Carte</string>
     <string name="btn_select_on_map">Sélectionner sur la carte</string>
     <string name="btn_use_gps">Utiliser le GPS</string>
-    <string name="btn_map_picker">Sélecteur de carte</string>
     <string name="label_map_picker_title">Sélectionner un lieu sur la carte</string>
     <string name="label_selected_location">Lieu sélectionné</string>
     <string name="btn_confirm_selection">Confirmer la sélection</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">Système</string>
     <string name="settings_theme_light">Clair</string>
     <string name="settings_theme_dark">Sombre</string>
-    <string name="geofence_limit_error">Limite de géobarrières atteinte (maximum 100). Vous ne pouvez pas en activer plus.</string>
-    <string name="geofence_limit_warning">Vous avez atteint la limite maximale de 100 géobarrières actives.</string>
-    <string name="geofence_limit_fab_warning">Limite de 100 géobarrières atteinte. Vous ne pouvez ajouter des rappels que pour les lieux ayant des géobarrières actives.</string>
-    <string name="geofence_limit_dialog_error">Limite de 100 géobarrières atteinte. Veuillez sélectionner un lieu avec des rappels actifs.</string>
     <string name="label_notification_responsiveness">Réactivité des notifications</string>
     <string name="label_minutes_value">%1$d min</string>
     <string name="label_0min">0 min (Instantané)</string>
@@ -114,4 +104,16 @@
     <string name="label_my_location">Ma position</string>
     <string name="content_description_back">Retour</string>
     <string name="content_description_center_on_gps">Centrer sur le GPS</string>
+    <string name="err_location_missing">Ce lieu n\'existe plus</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d rappel actif</item>
+        <item quantity="many">%d de rappels actifs</item>
+        <item quantity="other">%d rappels actifs</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" supprimé</string>
+    <string name="reminder_cancelled">Rappel annulé</string>
+    <string name="reminder_deleted">Rappel supprimé</string>
+    <string name="label_transition_unknown">Inconnu</string>
 </resources>

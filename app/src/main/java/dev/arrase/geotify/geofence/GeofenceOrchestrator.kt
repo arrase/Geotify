@@ -14,6 +14,15 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Schedules [GeofenceRecalculationWorker] runs.
+ *
+ * The two paths use separate unique work names so they cannot cancel one another, and the policy
+ * differs by intent: a recalculation replaces the whole GMS geofence set, so a debounced run that is
+ * already pending must be *replaced* to collapse a burst of edits into a single run starting after
+ * the last one, while an expedited run must be *kept* so that a fix already in progress is never
+ * interrupted midway.
+ */
 @Singleton
 class GeofenceOrchestrator @Inject constructor(
     @param:ApplicationContext private val context: Context,
@@ -21,50 +30,48 @@ class GeofenceOrchestrator @Inject constructor(
 ) {
 
     /**
-     * Enqueues an expedited recalculation worker immediately.
-     * Safe to call from non-suspend context (e.g. BroadcastReceiver.onReceive).
+     * Enqueues an expedited recalculation as soon as the platform allows.
+     * Safe to call from a non-suspending context such as `BroadcastReceiver.onReceive`.
      *
-     * Note on FOREGROUND_SERVICE: Under Android 12+, expedited work can run immediately even
-     * when the app is in the background. We use [OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST]
-     * to fall back to a regular work request if quota is exhausted. Since this work runs in
-     * milliseconds (purely local DB query and geofence updates), we do not need to bind a
-     * Foreground Service notification, avoiding a flashing notification to the user.
+     * Under Android 12+ expedited work may run immediately in the background. If the quota is
+     * exhausted the request degrades to a normal one; since the work is a local database query
+     * plus a GMS call it does not need a foreground-service notification.
      */
     fun triggerExpeditedRecalculation() {
-        Log.i(TAG, "Enqueuing EXPEDITED geofence recalculation...")
         val request = OneTimeWorkRequestBuilder<GeofenceRecalculationWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .build()
-        enqueue(request)
+        enqueue(EXPEDITED_WORK_NAME, ExistingWorkPolicy.KEEP, request)
     }
 
     /**
-     * Enqueues a debounced recalculation worker.
-     * The debounce delay is read from [SettingsManager] and uses [ExistingWorkPolicy.REPLACE]
-     * so rapid successive calls collapse into a single execution.
+     * Enqueues a recalculation after the user-configured debounce delay. Successive calls replace
+     * the pending one, so a burst of edits results in a single run once the user stops changing
+     * things.
      */
     suspend fun triggerRecalculation() {
         val debounceSecs = settingsManager.recalculationDebounceSecs.first().toLong()
-        Log.i(TAG, "Enqueuing debounced geofence recalculation (delay=${debounceSecs}s)...")
         val request = OneTimeWorkRequestBuilder<GeofenceRecalculationWorker>()
             .setInitialDelay(debounceSecs, TimeUnit.SECONDS)
             .build()
-        enqueue(request)
+        enqueue(DEBOUNCED_WORK_NAME, ExistingWorkPolicy.REPLACE, request)
     }
 
-    private fun enqueue(request: OneTimeWorkRequest) {
+    private fun enqueue(
+        uniqueWorkName: String,
+        policy: ExistingWorkPolicy,
+        request: OneTimeWorkRequest
+    ) {
         try {
-            WorkManager.getInstance(context)
-                .enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, request)
+            WorkManager.getInstance(context).enqueueUniqueWork(uniqueWorkName, policy, request)
         } catch (e: IllegalStateException) {
-            Log.w(TAG, "WorkManager not initialized (test environment). Skipping enqueue.")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to enqueue recalculation worker", e)
+            Log.w(TAG, "WorkManager not initialized; skipping recalculation.", e)
         }
     }
 
-    companion object {
-        private const val TAG = "GeofenceOrchestrator"
-        private const val WORK_NAME = "geofence_recalculation"
+    private companion object {
+        const val TAG = "GeotifyOrchestrator"
+        const val EXPEDITED_WORK_NAME = "geofence_recalculation_expedited"
+        const val DEBOUNCED_WORK_NAME = "geofence_recalculation_debounced"
     }
 }

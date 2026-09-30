@@ -1,15 +1,13 @@
 package dev.arrase.geotify.ui.screen
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.arrase.geotify.data.SettingsDefaults
 import dev.arrase.geotify.data.SettingsManager
 import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.geofence.GeofenceOrchestrator
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
+import dev.arrase.geotify.ui.BaseViewModel
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,81 +15,77 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val settingsManager: SettingsManager,
     private val geofenceOrchestrator: GeofenceOrchestrator
-) : ViewModel() {
+) : BaseViewModel() {
 
-    val appTheme: StateFlow<ThemeSetting> = settingsManager.appTheme
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.APP_THEME)
+    val appTheme: StateFlow<ThemeSetting> =
+        settingsManager.appTheme.settingFlow(SettingsDefaults.APP_THEME)
 
-    val mapTheme: StateFlow<ThemeSetting> = settingsManager.mapTheme
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.MAP_THEME)
+    val mapTheme: StateFlow<ThemeSetting> =
+        settingsManager.mapTheme.settingFlow(SettingsDefaults.MAP_THEME)
 
-    val outerRadiusN: StateFlow<Float> = settingsManager.outerRadiusN
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.OUTER_RADIUS_N)
+    val outerRadiusN: StateFlow<Float> =
+        settingsManager.outerRadiusN.settingFlow(SettingsDefaults.OUTER_RADIUS_N)
 
-    val innerRadiusR: StateFlow<Float> = settingsManager.innerRadiusR
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.INNER_RADIUS_R)
+    val innerRadiusR: StateFlow<Float> =
+        settingsManager.innerRadiusR.settingFlow(SettingsDefaults.INNER_RADIUS_R)
 
     val locationCacheTimeoutSecs: StateFlow<Int> = settingsManager.locationCacheTimeoutSecs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.LOCATION_CACHE_TIMEOUT_SECS)
+        .settingFlow(SettingsDefaults.LOCATION_CACHE_TIMEOUT_SECS)
 
     val recalculationDebounceSecs: StateFlow<Int> = settingsManager.recalculationDebounceSecs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.RECALCULATION_DEBOUNCE_SECS)
+        .settingFlow(SettingsDefaults.RECALCULATION_DEBOUNCE_SECS)
 
-    val masterGeofenceResponsivenessSecs: StateFlow<Int> = settingsManager.masterGeofenceResponsivenessSecs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.MASTER_GEOFENCE_RESPONSIVENESS_SECS)
+    val masterGeofenceResponsivenessSecs: StateFlow<Int> =
+        settingsManager.masterGeofenceResponsivenessSecs
+            .settingFlow(SettingsDefaults.MASTER_GEOFENCE_RESPONSIVENESS_SECS)
 
     val poiGeofenceResponsivenessSecs: StateFlow<Int> = settingsManager.poiGeofenceResponsivenessSecs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsDefaults.POI_GEOFENCE_RESPONSIVENESS_SECS)
+        .settingFlow(SettingsDefaults.POI_GEOFENCE_RESPONSIVENESS_SECS)
 
-    fun setAppTheme(theme: ThemeSetting) {
-        viewModelScope.launch {
-            settingsManager.setAppTheme(theme)
+    fun setAppTheme(theme: ThemeSetting) = persist {
+        settingsManager.setAppTheme(theme)
+    }
+
+    fun setMapTheme(theme: ThemeSetting) = persist {
+        settingsManager.setMapTheme(theme)
+    }
+
+    fun setLocationCacheTimeoutSecs(secs: Int) = persist {
+        settingsManager.setLocationCacheTimeoutSecs(secs)
+    }
+
+    fun setRecalculationDebounceSecs(secs: Int) = persist {
+        settingsManager.setRecalculationDebounceSecs(secs)
+    }
+
+    /**
+     * The sliding window depends on both radii, so they are written together and the
+     * recalculation is triggered once, after both have been persisted.
+     */
+    fun setRadii(outerRadiusKm: Float, innerRadiusKm: Float) = viewModelScope.launch {
+        mutate(ERROR_SAVE, onSuccess = geofenceOrchestrator::triggerRecalculation) {
+            settingsManager.setOuterRadiusN(outerRadiusKm)
+            settingsManager.setInnerRadiusR(innerRadiusKm)
         }
     }
 
-    fun setMapTheme(theme: ThemeSetting) {
-        viewModelScope.launch {
-            settingsManager.setMapTheme(theme)
-        }
+    fun setMasterGeofenceResponsivenessSecs(secs: Int) = recalculate {
+        settingsManager.setMasterGeofenceResponsivenessSecs(secs)
     }
 
-    fun setOuterRadiusN(radius: Float) {
-        viewModelScope.launch {
-            settingsManager.setOuterRadiusN(radius)
-            geofenceOrchestrator.triggerRecalculation()
-        }
+    fun setPoiGeofenceResponsivenessSecs(secs: Int) = recalculate {
+        settingsManager.setPoiGeofenceResponsivenessSecs(secs)
     }
 
-    fun setInnerRadiusR(radius: Float) {
-        viewModelScope.launch {
-            settingsManager.setInnerRadiusR(radius)
-            geofenceOrchestrator.triggerRecalculation()
-        }
+    private fun persist(write: suspend () -> Unit) = viewModelScope.launch {
+        mutate(ERROR_SAVE, onSuccess = {}, action = write)
     }
 
-    fun setLocationCacheTimeoutSecs(secs: Int) {
-        viewModelScope.launch {
-            settingsManager.setLocationCacheTimeoutSecs(secs)
-        }
+    private fun recalculate(write: suspend () -> Unit) = viewModelScope.launch {
+        mutate(ERROR_SAVE, onSuccess = geofenceOrchestrator::triggerRecalculation, action = write)
     }
 
-    fun setRecalculationDebounceSecs(secs: Int) {
-        viewModelScope.launch {
-            settingsManager.setRecalculationDebounceSecs(secs)
-        }
-    }
-
-    fun setMasterGeofenceResponsivenessSecs(secs: Int) {
-        viewModelScope.launch {
-            settingsManager.setMasterGeofenceResponsivenessSecs(secs)
-            geofenceOrchestrator.triggerRecalculation()
-        }
-    }
-
-    fun setPoiGeofenceResponsivenessSecs(secs: Int) {
-        viewModelScope.launch {
-            settingsManager.setPoiGeofenceResponsivenessSecs(secs)
-            geofenceOrchestrator.triggerRecalculation()
-        }
+    private companion object {
+        const val ERROR_SAVE = "Could not save the setting"
     }
 }

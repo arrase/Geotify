@@ -53,6 +53,7 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
@@ -139,19 +140,21 @@ fun MapPicker(
             color = MaterialTheme.colorScheme.background
         ) {
             Box(modifier = modifier.fillMaxSize()) {
+                val tileFilter = remember { darkTileFilter() }
+
                 AndroidView(
                     factory = { ctx ->
                         MapView(ctx).apply {
                             setTileSource(TileSourceFactory.MAPNIK)
                             setMultiTouchControls(true)
-                            zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
-                            controller.setZoom(16.0)
+                            zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
+                            controller.setZoom(DEFAULT_ZOOM)
                             mapViewRef = this
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
                     update = { map ->
-                        applyTileThemeFilter(map, isDarkTheme)
+                        map.applyTileThemeFilter(isDarkTheme, tileFilter)
                         configureOverlays(
                             map = map,
                             selectedPoint = selectedPoint,
@@ -358,3 +361,5 @@ private fun configureOverlays(
     map.invalidate()
 }
 
+/** Zoom level the map opens at; the user pin is the subject of this dialog. */
+private const val DEFAULT_ZOOM = 16.0

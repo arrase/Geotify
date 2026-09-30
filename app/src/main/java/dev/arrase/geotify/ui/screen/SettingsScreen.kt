@@ -106,8 +106,9 @@ private fun SpatialRecalculationSection(viewModel: SettingsViewModel) {
     val outerRadiusN by viewModel.outerRadiusN.collectAsStateWithLifecycle()
     val innerRadiusR by viewModel.innerRadiusR.collectAsStateWithLifecycle()
 
-    var localOuterRadius by remember(outerRadiusN) { mutableFloatStateOf(outerRadiusN) }
-    var localInnerRadius by remember(innerRadiusR) { mutableFloatStateOf(innerRadiusR) }
+    // Seeded once: re-keying on the upstream flow would reset the slider mid-drag.
+    var localOuterRadius by remember { mutableFloatStateOf(outerRadiusN) }
+    var localInnerRadius by remember { mutableFloatStateOf(innerRadiusR.coerceIn(MIN_RADIUS_KM, outerRadiusN)) }
     var showRecalcInfo by remember { mutableStateOf(false) }
 
     SettingsCard(
@@ -144,15 +145,16 @@ private fun SpatialRecalculationSection(viewModel: SettingsViewModel) {
                     onValueChange = { newVal ->
                         val cleanVal = round(newVal * 10f) / 10f
                         localOuterRadius = cleanVal
-                        if (localInnerRadius > cleanVal) {
-                            localInnerRadius = cleanVal
-                        }
+                        // The inner radius must never exceed the outer one.
+                        localInnerRadius =
+                            localInnerRadius.coerceIn(MIN_RADIUS_KM, cleanVal)
                     },
                     onValueChangeFinished = {
-                        viewModel.setOuterRadiusN(localOuterRadius)
-                        if (innerRadiusR > localOuterRadius) {
-                            viewModel.setInnerRadiusR(localOuterRadius)
-                        }
+                        // Both radii feed the same recalculation, so they are persisted together.
+                        viewModel.setRadii(
+                            outerRadiusKm = localOuterRadius,
+                            innerRadiusKm = localInnerRadius
+                        )
                     },
                     valueRange = 1.0f..10.0f
                 )
@@ -180,13 +182,16 @@ private fun SpatialRecalculationSection(viewModel: SettingsViewModel) {
                 Slider(
                     value = localInnerRadius,
                     onValueChange = { newVal ->
-                        val cleanVal = round(newVal * 10f) / 10f
-                        localInnerRadius = cleanVal
+                        localInnerRadius = (round(newVal * 10f) / 10f)
+                            .coerceIn(MIN_RADIUS_KM, localOuterRadius)
                     },
                     onValueChangeFinished = {
-                        viewModel.setInnerRadiusR(localInnerRadius)
+                        viewModel.setRadii(
+                            outerRadiusKm = localOuterRadius,
+                            innerRadiusKm = localInnerRadius
+                        )
                     },
-                    valueRange = 0.5f..localOuterRadius
+                    valueRange = MIN_RADIUS_KM..localOuterRadius
                 )
             }
         }
@@ -519,3 +524,6 @@ private fun ThemeSelector(
         }
     }
 }
+
+/** Smallest selectable inner radius, in km. */
+private const val MIN_RADIUS_KM = 0.5f

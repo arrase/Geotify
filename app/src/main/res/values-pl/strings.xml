@@ -6,7 +6,6 @@
     <string name="btn_save">Zapisz</string>
     <string name="btn_skip">Pomiń</string>
     <string name="btn_open_settings">Otwórz ustawienia</string>
-    <string name="btn_use_current_gps">Użyj aktualnych współrzędnych GPS</string>
     <string name="btn_querying_gps">Pytanie o GPS…</string>
     <string name="label_locations">Lokalizacje</string>
     <string name="label_reminders">Przypomnienia</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Edytuj lokalizację</string>
     <string name="dialog_new_reminder">Nowe przypomnienie</string>
     <string name="dialog_edit_reminder">Edytuj przypomnienie</string>
-    <string name="toast_location_deleted">\"%1$s\" usunięte</string>
-    <string name="toast_reminder_cancelled">Przypomnienie anulowane</string>
-    <string name="toast_reminder_deleted">Przypomnienie usunięte</string>
     <string name="content_description_add_location">Dodaj lokalizację</string>
     <string name="content_description_add_reminder">Dodaj przypomnienie</string>
-    <string name="content_description_location">Lokalizacja</string>
     <string name="content_description_reminder">Przypomnienie</string>
     <string name="content_description_cancel">Anuluj</string>
     <string name="reminder_select_location">Wybierz lokalizację</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Mapa</string>
     <string name="btn_select_on_map">Wybierz na mapie</string>
     <string name="btn_use_gps">Użyj GPS</string>
-    <string name="btn_map_picker">Wybór mapy</string>
     <string name="label_map_picker_title">Wybierz lokalizację na mapie</string>
     <string name="label_selected_location">Wybrana lokalizacja</string>
     <string name="btn_confirm_selection">Potwierdź wybór</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">Systemowy</string>
     <string name="settings_theme_light">Jasny</string>
     <string name="settings_theme_dark">Ciemny</string>
-    <string name="geofence_limit_error">Osiągnięto limit geofencingu (maksymalnie 100). Nie możesz aktywować więcej.</string>
-    <string name="geofence_limit_warning">Osiągnąłeś maksymalny limit 100 aktywnych geofencingów.</string>
-    <string name="geofence_limit_fab_warning">Osiągnięto limit geofencingu 100. Możesz dodawać przypomnienia tylko do lokalizacji z aktywnymi geofencingami.</string>
-    <string name="geofence_limit_dialog_error">Osiągnięto limit geofencingu 100. Wybierz lokalizację z aktywnymi przypomnieniami.</string>
     <string name="label_notification_responsiveness">Reaktywność powiadomień</string>
     <string name="label_minutes_value">%1$d min</string>
     <string name="label_0min">0 min (natychmiast)</string>
@@ -116,4 +106,17 @@
     <string name="content_description_back">Wstecz</string>
     <string name="content_description_center_on_gps">Wyśrodkuj na GPS</string>
 
+    <string name="err_location_missing">Ta lokalizacja już nie istnieje</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d aktywne przypomnienie</item>
+        <item quantity="few">%d aktywne przypomnienia</item>
+        <item quantity="many">%d aktywnych przypomnień</item>
+        <item quantity="other">%d aktywnego przypomnienia</item>
+    </plurals>
+    <string name="location_deleted">Usunięto "%1$s"</string>
+    <string name="reminder_cancelled">Przypomnienie anulowane</string>
+    <string name="reminder_deleted">Przypomnienie usunięte</string>
+    <string name="label_transition_unknown">Nieznany</string>
 </resources>

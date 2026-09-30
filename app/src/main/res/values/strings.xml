@@ -6,7 +6,6 @@
     <string name="btn_save">Save</string>
     <string name="btn_skip">Skip</string>
     <string name="btn_open_settings">Open Settings</string>
-    <string name="btn_use_current_gps">Use Current GPS Coordinates</string>
     <string name="btn_querying_gps">Querying GPS…</string>
     <string name="label_locations">Locations</string>
     <string name="label_reminders">Reminders</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Edit Location</string>
     <string name="dialog_new_reminder">New Reminder</string>
     <string name="dialog_edit_reminder">Edit Reminder</string>
-    <string name="toast_location_deleted">\"%1$s\" deleted</string>
-    <string name="toast_reminder_cancelled">Reminder cancelled</string>
-    <string name="toast_reminder_deleted">Reminder deleted</string>
     <string name="content_description_add_location">Add Location</string>
     <string name="content_description_add_reminder">Add Reminder</string>
-    <string name="content_description_location">Location</string>
     <string name="content_description_reminder">Reminder</string>
     <string name="content_description_cancel">Cancel</string>
     <string name="reminder_select_location">Select Location</string>
@@ -57,18 +52,24 @@
     <string name="notif_channel_name">Geofence Reminders</string>
     <string name="notif_channel_desc">Notifications triggered when you enter or leave a saved location</string>
     <string name="err_gps_failed">Failed to obtain GPS coordinates. Please make sure location services are enabled.</string>
+    <string name="err_location_missing">That location no longer exists</string>
     <string name="warn_bg_location_missing">Background location permission is missing. Geofences will not trigger until you grant \"Allow all the time\" permission.</string>
     <string name="btn_fix">Fix</string>
     <string name="tab_list">List</string>
     <string name="tab_map">Map</string>
     <string name="btn_select_on_map">Select on Map</string>
     <string name="btn_use_gps">Use GPS</string>
-    <string name="btn_map_picker">Map Picker</string>
     <string name="label_map_picker_title">Select Location on Map</string>
     <string name="label_selected_location">Selected Location</string>
     <string name="btn_confirm_selection">Confirm Selection</string>
     <string name="label_latitude">Latitude</string>
     <string name="label_longitude">Longitude</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d active reminder</item>
+        <item quantity="other">%d active reminders</item>
+    </plurals>
     <string name="label_settings">Settings</string>
     <string name="settings_app_theme_title">App Theme</string>
     <string name="settings_app_theme_desc">Choose whether the application uses light, dark, or system theme.</string>
@@ -78,10 +79,6 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
-    <string name="geofence_limit_error">Geofence limit reached (maximum 100). You cannot activate more.</string>
-    <string name="geofence_limit_warning">You have reached the maximum limit of 100 active geofences.</string>
-    <string name="geofence_limit_fab_warning">Geofence limit of 100 reached. You can only add reminders to locations with active geofences.</string>
-    <string name="geofence_limit_dialog_error">Geofence limit of 100 reached. Please select a location with active reminders.</string>
     <string name="label_notification_responsiveness">Notification Responsiveness</string>
     <string name="label_minutes_value">%1$d min</string>
     <string name="label_0min">0 min (Instant)</string>
@@ -114,4 +111,8 @@
     <string name="label_my_location">My Location</string>
     <string name="content_description_back">Back</string>
     <string name="content_description_center_on_gps">Center on GPS</string>
+    <string name="location_deleted">"%1$s" deleted</string>
+    <string name="reminder_cancelled">Reminder cancelled</string>
+    <string name="reminder_deleted">Reminder deleted</string>
+    <string name="label_transition_unknown">Unknown</string>
 </resources>
