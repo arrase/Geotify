@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -72,9 +71,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.arrase.geotify.R
-import dev.arrase.geotify.data.ThemeSetting
 import dev.arrase.geotify.data.entity.LocationEntity
-import dev.arrase.geotify.ui.UiText
+import dev.arrase.geotify.ui.theme.resolve
 import dev.arrase.geotify.ui.component.BackgroundLocationWarningBanner
 import dev.arrase.geotify.ui.component.DialogDismissButtons
 import dev.arrase.geotify.ui.component.EmptyState
@@ -85,12 +83,6 @@ import dev.arrase.geotify.ui.component.SwipeToDeleteContainer
 import dev.arrase.geotify.ui.component.ViewModeSwitcher
 import kotlinx.coroutines.launch
 import java.util.Locale
-
-private fun isMapDark(themeSetting: ThemeSetting, isSystemDark: Boolean): Boolean = when (themeSetting) {
-    ThemeSetting.SYSTEM -> isSystemDark
-    ThemeSetting.LIGHT -> false
-    ThemeSetting.DARK -> true
-}
 
 private fun isValidCoordinate(coord: Double?, min: Double, max: Double): Boolean =
     coord != null && coord in min..max
@@ -133,42 +125,42 @@ fun LocationsScreen(
     val context = LocalContext.current
     val mapThemeSetting by viewModel.mapTheme.collectAsStateWithLifecycle()
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
-    val isMapDarkTheme = isMapDark(mapThemeSetting, isSystemDark)
+    val isMapDarkTheme = mapThemeSetting.resolve(isSystemDark)
     val locations by viewModel.locations.collectAsStateWithLifecycle()
     val activeReminderCounts by viewModel.activeReminderCounts.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(viewModel) {
-        viewModel.snackbarMessage.collect { uiText ->
-            val msg = when (uiText) {
-                is UiText.DynamicString -> uiText.value
-                is UiText.StringResource -> context.applicationContext.getString(uiText.resId)
-            }
+        viewModel.messagesFlow.collect { message ->
             snackbarHostState.showSnackbar(
-                message = msg,
+                message = message.resolve(context),
                 duration = SnackbarDuration.Short
             )
         }
     }
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var editingLocation by remember { mutableStateOf<LocationEntity?>(null) }
-    var alias by remember { mutableStateOf("") }
-    var latitudeString by remember { mutableStateOf("") }
-    var longitudeString by remember { mutableStateOf("") }
-    var radiusMeters by remember { mutableFloatStateOf(150f) }
-    var responsivenessMinutes by remember { mutableFloatStateOf(0f) }
-    var showResponsivenessInfo by remember { mutableStateOf(false) }
+    var editingLocationId by rememberSaveable { mutableStateOf<String?>(null) }
+    var alias by rememberSaveable { mutableStateOf("") }
+    var latitudeString by rememberSaveable { mutableStateOf("") }
+    var longitudeString by rememberSaveable { mutableStateOf("") }
+    var radiusMeters by rememberSaveable { mutableFloatStateOf(150f) }
+    var responsivenessMinutes by rememberSaveable { mutableFloatStateOf(0f) }
+    var showResponsivenessInfo by rememberSaveable { mutableStateOf(false) }
     var isGpsLoading by remember { mutableStateOf(false) }
 
     var isMapView by rememberSaveable { mutableStateOf(false) }
     var selectedLocationOnMap by remember { mutableStateOf<LocationEntity?>(null) }
-    var showMapPicker by remember { mutableStateOf(false) }
+    var showMapPicker by rememberSaveable { mutableStateOf(false) }
+
+    val editingLocation = remember(editingLocationId, locations) {
+        locations.firstOrNull { it.id == editingLocationId }
+    }
 
     val aliasExists = remember(alias, editingLocation, locations) {
-        locations.any { it.alias.equals(alias, ignoreCase = true) && it.id != editingLocation?.id }
+        locations.any { it.alias.equals(alias.trim(), ignoreCase = true) && it.id != editingLocation?.id }
     }
 
     val lat = latitudeString.toDoubleOrNull()
@@ -177,7 +169,7 @@ fun LocationsScreen(
     val isLongitudeValid = isValidCoordinate(lng, -180.0, 180.0)
 
     fun openFormForNew() {
-        editingLocation = null
+        editingLocationId = null
         alias = ""
         latitudeString = ""
         longitudeString = ""
@@ -187,7 +179,7 @@ fun LocationsScreen(
     }
 
     fun openFormForEditing(location: LocationEntity) {
-        editingLocation = location
+        editingLocationId = location.id
         alias = location.alias
         latitudeString = location.latitude.toString()
         longitudeString = location.longitude.toString()
@@ -240,24 +232,18 @@ fun LocationsScreen(
         onSave = {
             saveLocation(viewModel, editingLocation, alias, lat, lng, radiusMeters, responsivenessMinutes)
             showDialog = false
-            editingLocation = null
+            editingLocationId = null
         },
-        onDelete = if (editingLocation != null) {
+        onDelete = editingLocation?.let { location ->
             {
-                viewModel.deleteLocation(editingLocation!!.alias)
+                viewModel.deleteLocation(location)
                 showDialog = false
-                editingLocation = null
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = context.applicationContext.getString(R.string.toast_location_deleted, alias),
-                        duration = SnackbarDuration.Short
-                    )
-                }
+                editingLocationId = null
             }
-        } else null,
+        },
         onCancel = {
             showDialog = false
-            editingLocation = null
+            editingLocationId = null
         },
         onResponsivenessInfoChange = { showResponsivenessInfo = it }
     )
@@ -275,15 +261,9 @@ fun LocationsScreen(
         onMapSelected = { isMapView = true },
         onLocationSelected = { selectedLocationOnMap = it },
         onDeleteLocation = { location ->
-            viewModel.deleteLocation(location.alias)
+            viewModel.deleteLocation(location)
             if (selectedLocationOnMap?.id == location.id) {
                 selectedLocationOnMap = null
-            }
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = context.applicationContext.getString(R.string.toast_location_deleted, location.alias),
-                    duration = SnackbarDuration.Short
-                )
             }
         },
         onEditLocation = { location -> openFormForEditing(location) },
@@ -337,7 +317,7 @@ fun LocationsScreen(
             formActions = formActions,
             onDismissRequest = {
                 showDialog = false
-                editingLocation = null
+                editingLocationId = null
             }
         )
     }
@@ -948,8 +928,13 @@ private fun SelectedLocationCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = stringResource(R.string.label_latitude) + String.format(Locale.US, ": %.5f, ", location.latitude) +
-                            stringResource(R.string.label_longitude) + String.format(Locale.US, ": %.5f", location.longitude),
+                    text = stringResource(
+                        R.string.label_coordinates_pair,
+                        stringResource(R.string.label_latitude),
+                        location.latitude,
+                        stringResource(R.string.label_longitude),
+                        location.longitude
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

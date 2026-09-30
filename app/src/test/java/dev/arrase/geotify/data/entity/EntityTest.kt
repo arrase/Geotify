@@ -146,7 +146,8 @@ class EntityTest {
 
         assertFalse(reminder.isArrival)
         assertFalse(reminder.isDeparture)
-        assertEquals("departure", reminder.triggerTypeString)
+        // Unsupported transitions must not be reported as a departure.
+        assertEquals("unknown", reminder.triggerTypeString)
     }
 
     @Test

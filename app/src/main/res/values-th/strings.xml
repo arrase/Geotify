@@ -6,7 +6,6 @@
     <string name="btn_save">บันทึก</string>
     <string name="btn_skip">ข้าม</string>
     <string name="btn_open_settings">เปิดการตั้งค่า</string>
-    <string name="btn_use_current_gps">ใช้พิกัด GPS ปัจจุบัน</string>
     <string name="btn_querying_gps">กำลังสอบถาม GPS…</string>
     <string name="label_locations">สถานที่</string>
     <string name="label_reminders">การแจ้งเตือน</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">แก้ไขสถานที่</string>
     <string name="dialog_new_reminder">การแจ้งเตือนใหม่</string>
     <string name="dialog_edit_reminder">แก้ไขการแจ้งเตือน</string>
-    <string name="toast_location_deleted">\"%1$s\" ถูกลบแล้ว</string>
-    <string name="toast_reminder_cancelled">ยกเลิกการแจ้งเตือนแล้ว</string>
-    <string name="toast_reminder_deleted">ลบการแจ้งเตือนแล้ว</string>
     <string name="content_description_add_location">เพิ่มสถานที่</string>
     <string name="content_description_add_reminder">เพิ่มการแจ้งเตือน</string>
-    <string name="content_description_location">สถานที่</string>
     <string name="content_description_reminder">การแจ้งเตือน</string>
     <string name="content_description_cancel">ยกเลิก</string>
     <string name="reminder_select_location">เลือกสถานที่</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">แผนที่</string>
     <string name="btn_select_on_map">เลือกบนแผนที่</string>
     <string name="btn_use_gps">ใช้ GPS</string>
-    <string name="btn_map_picker">ตัวเลือกแผนที่</string>
     <string name="label_map_picker_title">เลือกสถานที่บนแผนที่</string>
     <string name="label_selected_location">สถานที่ที่เลือก</string>
     <string name="btn_confirm_selection">ยืนยันการเลือก</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">ระบบ</string>
     <string name="settings_theme_light">สว่าง</string>
     <string name="settings_theme_dark">มืด</string>
-    <string name="geofence_limit_error">ถึงขีดจำกัด Geofence (สูงสุด 100) ไม่สามารถเปิดใช้งานเพิ่มได้</string>
-    <string name="geofence_limit_warning">คุณถึงขีดจำกัดสูงสุดของ Geofence ที่ใช้งานอยู่คือ 100 แล้ว</string>
-    <string name="geofence_limit_fab_warning">ถึงขีดจำกัด Geofence 100 คุณสามารถเพิ่มการแจ้งเตือนได้เฉพาะในสถานที่ที่มี Geofence ทำงานอยู่เท่านั้น</string>
-    <string name="geofence_limit_dialog_error">ถึงขีดจำกัด Geofence 100 โปรดเลือกสถานที่ที่มีการแจ้งเตือนที่ใช้งานอยู่</string>
     <string name="label_notification_responsiveness">ความเร็วในการตอบสนองของการแจ้งเตือน</string>
     <string name="label_minutes_value">%1$d นาที</string>
     <string name="label_0min">0 นาที (ทันที)</string>
@@ -116,4 +106,14 @@
     <string name="content_description_back">ย้อนกลับ</string>
     <string name="content_description_center_on_gps">จัดกึ่งกลางตาม GPS</string>
 
+    <string name="err_location_missing">ไม่พบสถานที่นี้แล้ว</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="other">การแจ้งเตือนที่ใช้งานอยู่ %d รายการ</item>
+    </plurals>
+    <string name="location_deleted">ลบ "%1$s" แล้ว</string>
+    <string name="reminder_cancelled">ยกเลิกการแจ้งเตือนแล้ว</string>
+    <string name="reminder_deleted">ลบการแจ้งเตือนแล้ว</string>
+    <string name="label_transition_unknown">ไม่ทราบ</string>
 </resources>

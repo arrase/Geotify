@@ -6,7 +6,6 @@
     <string name="btn_save">Mentés</string>
     <string name="btn_skip">Ugrás</string>
     <string name="btn_open_settings">Beállítások megnyitása</string>
-    <string name="btn_use_current_gps">Aktuális GPS koordináták használata</string>
     <string name="btn_querying_gps">GPS lekérdezés…</string>
     <string name="label_locations">Helyszínek</string>
     <string name="label_reminders">Emlékeztetők</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Helyszín szerkesztése</string>
     <string name="dialog_new_reminder">Új emlékeztető</string>
     <string name="dialog_edit_reminder">Emlékeztető szerkesztése</string>
-    <string name="toast_location_deleted">\"%1$s\" törölve</string>
-    <string name="toast_reminder_cancelled">Emlékeztető megállítva</string>
-    <string name="toast_reminder_deleted">Emlékeztető törölve</string>
     <string name="content_description_add_location">Helyszín hozzáadása</string>
     <string name="content_description_add_reminder">Emlékeztető hozzáadása</string>
-    <string name="content_description_location">Helyszín</string>
     <string name="content_description_reminder">Emlékeztető</string>
     <string name="content_description_cancel">Mégse</string>
     <string name="reminder_select_location">Helyszín választása</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Térkép</string>
     <string name="btn_select_on_map">Választás térképen</string>
     <string name="btn_use_gps">GPS használata</string>
-    <string name="btn_map_picker">Térképválogató</string>
     <string name="label_map_picker_title">Helyszín választása térképen</string>
     <string name="label_selected_location">Kiválasztott helyszín</string>
     <string name="btn_confirm_selection">Választás megerősítése</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">Rendszer</string>
     <string name="settings_theme_light">Világos</string>
     <string name="settings_theme_dark">Sötét</string>
-    <string name="geofence_limit_error">Elért a geofence korlát (maximum 100). Nem tud többet aktiválni.</string>
-    <string name="geofence_limit_warning">Elért az aktív geofencek maximum 100-es korlátja.</string>
-    <string name="geofence_limit_fab_warning">Elért a geofence korlát 100. Csak olyan helyszínekhez adhat emlékeztetőt, amelyek aktív geofencenekkel rendelkeznek.</string>
-    <string name="geofence_limit_dialog_error">Elért a geofence korlát 100. Kérjük, válassza ki egy olyan helyszínt, amelyben aktív emlékeztető van.</string>
     <string name="label_notification_responsiveness">Értesítés válaszideje</string>
     <string name="label_minutes_value">%1$d perc</string>
     <string name="label_0min">0 perc (azonnali)</string>
@@ -116,4 +106,15 @@
     <string name="content_description_back">Vissza</string>
     <string name="content_description_center_on_gps">Középpontba helyezés GPS alapján</string>
 
+    <string name="err_location_missing">Ez a hely már nem létezik</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d aktív emlékeztető</item>
+        <item quantity="other">%d aktív emlékeztető</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" törölve</string>
+    <string name="reminder_cancelled">Emlékeztető törölve</string>
+    <string name="reminder_deleted">Emlékeztető törölve</string>
+    <string name="label_transition_unknown">Ismeretlen</string>
 </resources>

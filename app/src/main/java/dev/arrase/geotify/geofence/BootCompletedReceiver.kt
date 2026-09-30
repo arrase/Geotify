@@ -12,6 +12,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 
+/**
+ * Re-registers the geofence window after the device boots or the app is updated, since Play
+ * services drops every geofence in both cases.
+ */
 class BootCompletedReceiver : BroadcastReceiver() {
 
     @EntryPoint
@@ -21,23 +25,23 @@ class BootCompletedReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
+        if (intent.action !in RELEVANT_ACTIONS) return
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.w(TAG, "Location permission not granted. Skipping geofence re-registration after boot.")
+            Log.w(TAG, "Location permission not granted. Skipping geofence re-registration.")
             return
         }
 
-        Log.i(TAG, "Boot completed. Re-registering geofences...")
-        val entryPoint = EntryPointAccessors.fromApplication(
-            context, BootEntryPoint::class.java
-        )
-        entryPoint.geofenceOrchestrator().triggerExpeditedRecalculation()
+        Log.i(TAG, "Triggering geofence re-registration after ${intent.action}")
+        EntryPointAccessors.fromApplication(context, BootEntryPoint::class.java)
+            .geofenceOrchestrator()
+            .triggerExpeditedRecalculation()
     }
 
-    companion object {
-        private const val TAG = "BootCompletedReceiver"
+    private companion object {
+        const val TAG = "GeotifyBootReceiver"
+        val RELEVANT_ACTIONS = setOf(Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED)
     }
 }

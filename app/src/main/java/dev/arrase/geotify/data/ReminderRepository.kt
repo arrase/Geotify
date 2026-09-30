@@ -1,5 +1,6 @@
 package dev.arrase.geotify.data
 
+import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.data.dao.ReminderDao
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.LocationReminderCount
@@ -23,16 +24,19 @@ class ReminderRepository @Inject constructor(
     fun observeActiveReminderCounts(): Flow<List<LocationReminderCount>> =
         reminderDao.observeActiveReminderCounts()
 
-
     suspend fun createReminder(
         location: LocationEntity,
         message: String,
         transitionType: Int
     ): ReminderEntity = withContext(ioDispatcher) {
+        require(message.isNotBlank()) { "Reminder message must not be blank" }
+        require(transitionType in SUPPORTED_TRANSITIONS) {
+            "Unsupported geofence transition type: $transitionType"
+        }
         val reminder = ReminderEntity(
             id = UUID.randomUUID().toString(),
             locationId = location.id,
-            message = message,
+            message = message.trim(),
             transitionType = transitionType,
             createdAt = System.currentTimeMillis()
         )
@@ -41,6 +45,10 @@ class ReminderRepository @Inject constructor(
     }
 
     suspend fun updateReminder(reminder: ReminderEntity) = withContext(ioDispatcher) {
+        require(reminder.message.isNotBlank()) { "Reminder message must not be blank" }
+        require(reminder.transitionType in SUPPORTED_TRANSITIONS) {
+            "Unsupported geofence transition type: ${reminder.transitionType}"
+        }
         reminderDao.update(reminder)
     }
 
@@ -48,20 +56,28 @@ class ReminderRepository @Inject constructor(
         reminderDao.deactivate(reminderId)
     }
 
-    suspend fun cancelReminder(reminderId: String) = withContext(ioDispatcher) {
-        reminderDao.deleteById(reminderId)
+    /** @return `true` if a reminder was removed. */
+    suspend fun cancelReminder(reminderId: String): Boolean = withContext(ioDispatcher) {
+        reminderDao.deleteById(reminderId) > 0
     }
-
 
     suspend fun getActiveReminders(): List<ReminderEntity> = withContext(ioDispatcher) {
         reminderDao.getActiveReminders()
     }
 
-    suspend fun getActiveRemindersForLocation(locationId: String): List<ReminderEntity> = withContext(ioDispatcher) {
-        reminderDao.getActiveByLocationId(locationId)
-    }
+    suspend fun getActiveRemindersForLocation(locationId: String): List<ReminderEntity> =
+        withContext(ioDispatcher) {
+            reminderDao.getActiveByLocationId(locationId)
+        }
 
     suspend fun updateInRangeStatus(locationIds: List<String>) = withContext(ioDispatcher) {
         reminderDao.updateInRangeStatus(locationIds)
+    }
+
+    private companion object {
+        val SUPPORTED_TRANSITIONS = setOf(
+            Geofence.GEOFENCE_TRANSITION_ENTER,
+            Geofence.GEOFENCE_TRANSITION_EXIT
+        )
     }
 }

@@ -7,20 +7,20 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import dev.arrase.geotify.MainActivity
 import dev.arrase.geotify.R
+import dev.arrase.geotify.ui.navigation.GeotifyTab
 
 object NotificationHelper {
 
     const val CHANNEL_GEOFENCE = "geofence_reminders"
-    const val EXTRA_TAB = "tab"
-    const val TAB_REMINDERS = "reminders"
 
     fun createNotificationChannels(context: Context) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = context.getSystemService(NotificationManager::class.java)
 
             val geofenceChannel = NotificationChannel(
@@ -38,11 +38,9 @@ object NotificationHelper {
     /**
      * Shows a geofence notification for a specific reminder.
      *
-     * @param notificationId An integer ID for this notification. Note: If using `reminderId.hashCode()`,
-     *                       there is a small theoretical risk of hash collision where another active reminder
-     *                       shares the same hashCode and overwrites its notification. For this app, this is
-     *                       a reasonable trade-off to map string UUIDs to 32-bit Android notification IDs,
-     *                       as the number of simultaneously active notifications is small.
+     * @param notificationId Android notification id. Also used as the [PendingIntent] request code,
+     * so it must be unique per notification — reusing a value across two notifications makes the
+     * second one overwrite the first's `PendingIntent` extras.
      */
     fun showGeofenceNotification(
         context: Context,
@@ -50,19 +48,25 @@ object NotificationHelper {
         alias: String,
         message: String
     ) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED
-        ) return
+        // `POST_NOTIFICATIONS` is a runtime permission only from Android 13 (API 33). On older
+        // versions the permission does not exist and checking it always reports denied, so the
+        // check must be skipped entirely or notifications would never be posted.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
 
         val openIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra(EXTRA_TAB, TAB_REMINDERS)
+            putExtra(MainActivity.EXTRA_TAB, GeotifyTab.Reminders.name)
         }
         val openPending = PendingIntent.getActivity(
             context, notificationId, openIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
 
         val notification = NotificationCompat.Builder(context, CHANNEL_GEOFENCE)
             .setSmallIcon(R.drawable.ic_notification)

@@ -8,7 +8,6 @@ import dev.arrase.geotify.geofence.AndroidGeofenceManager
 import dev.arrase.geotify.geofence.GeofenceManager
 import dev.arrase.geotify.location.DefaultLocationProvider
 import dev.arrase.geotify.location.LocationProvider
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -16,10 +15,8 @@ import javax.inject.Singleton
 interface BindingsModule {
 
     @Binds
-    @Singleton
     fun bindGeofenceManager(impl: AndroidGeofenceManager): GeofenceManager
 
     @Binds
-    @Singleton
     fun bindLocationProvider(impl: DefaultLocationProvider): LocationProvider
 }

@@ -17,8 +17,10 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -170,21 +172,24 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun setOuterRadiusN_callsSettingsManagerAndTriggersRecalculation() = runTest(testDispatcher) {
-        viewModel.setOuterRadiusN(3000f)
+    fun setRadii_persistsBothRadiiAndTriggersASingleRecalculation() = runTest(testDispatcher) {
+        viewModel.setRadii(outerRadiusKm = 3.0f, innerRadiusKm = 1.0f)
         advanceUntilIdle()
 
-        verify(settingsManager).setOuterRadiusN(3000f)
-        verify(geofenceOrchestrator).triggerRecalculation()
+        verify(settingsManager).setOuterRadiusN(3.0f)
+        verify(settingsManager).setInnerRadiusR(1.0f)
+        // One recalculation for the pair: the sliding window depends on both.
+        verify(geofenceOrchestrator, times(1)).triggerRecalculation()
     }
 
     @Test
-    fun setInnerRadiusR_callsSettingsManagerAndTriggersRecalculation() = runTest(testDispatcher) {
-        viewModel.setInnerRadiusR(1000f)
+    fun setRadii_skipsRecalculationWhenPersistingFails() = runTest(testDispatcher) {
+        whenever(settingsManager.setOuterRadiusN(any())).thenThrow(RuntimeException("disk full"))
+
+        viewModel.setRadii(outerRadiusKm = 3.0f, innerRadiusKm = 1.0f)
         advanceUntilIdle()
 
-        verify(settingsManager).setInnerRadiusR(1000f)
-        verify(geofenceOrchestrator).triggerRecalculation()
+        verify(geofenceOrchestrator, never()).triggerRecalculation()
     }
 
     @Test

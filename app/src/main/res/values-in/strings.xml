@@ -6,7 +6,6 @@
     <string name="btn_save">Simpan</string>
     <string name="btn_skip">Lewati</string>
     <string name="btn_open_settings">Buka Pengaturan</string>
-    <string name="btn_use_current_gps">Gunakan Koordinat GPS Saat Ini</string>
     <string name="btn_querying_gps">Sedang Mencari GPS…</string>
     <string name="label_locations">Lokasi</string>
     <string name="label_reminders">Pengingat</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Edit Lokasi</string>
     <string name="dialog_new_reminder">Pengingat Baru</string>
     <string name="dialog_edit_reminder">Edit Pengingat</string>
-    <string name="toast_location_deleted">\"%1$s\" dihapus</string>
-    <string name="toast_reminder_cancelled">Pengingat dibatalkan</string>
-    <string name="toast_reminder_deleted">Pengingat dihapus</string>
     <string name="content_description_add_location">Tambah Lokasi</string>
     <string name="content_description_add_reminder">Tambah Pengingat</string>
-    <string name="content_description_location">Lokasi</string>
     <string name="content_description_reminder">Pengingat</string>
     <string name="content_description_cancel">Batal</string>
     <string name="reminder_select_location">Pilih Lokasi</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Peta</string>
     <string name="btn_select_on_map">Pilih di Peta</string>
     <string name="btn_use_gps">Gunakan GPS</string>
-    <string name="btn_map_picker">Pemilih Peta</string>
     <string name="label_map_picker_title">Pilih Lokasi di Peta</string>
     <string name="label_selected_location">Lokasi Terpilih</string>
     <string name="btn_confirm_selection">Konfirmasi Pilihan</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">Sistem</string>
     <string name="settings_theme_light">Terang</string>
     <string name="settings_theme_dark">Gelap</string>
-    <string name="geofence_limit_error">Batas geofence tercapai (maksimal 100). Anda tidak dapat mengaktifkan lebih banyak lagi.</string>
-    <string name="geofence_limit_warning">Anda telah mencapai batas maksimum 100 geofence aktif.</string>
-    <string name="geofence_limit_fab_warning">Batas geofence 100 tercapai. Anda hanya dapat menambahkan pengingat ke lokasi dengan geofence aktif.</string>
-    <string name="geofence_limit_dialog_error">Batas geofence 100 tercapai. Harap pilih lokasi dengan pengingat aktif.</string>
     <string name="label_notification_responsiveness">Responsivitas Notifikasi</string>
     <string name="label_minutes_value">%1$d menit</string>
     <string name="label_0min">0 menit (Instan)</string>
@@ -116,4 +106,14 @@
     <string name="content_description_back">Kembali</string>
     <string name="content_description_center_on_gps">Pusatkan pada GPS</string>
 
+    <string name="err_location_missing">Lokasi tersebut tidak ada lagi</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="other">%d pengingat aktif</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" dihapus</string>
+    <string name="reminder_cancelled">Pengingat dibatalkan</string>
+    <string name="reminder_deleted">Pengingat dihapus</string>
+    <string name="label_transition_unknown">Tidak diketahui</string>
 </resources>

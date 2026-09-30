@@ -8,6 +8,7 @@ import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
+import dev.arrase.geotify.geofence.GeofenceOrchestrator
 import dev.arrase.geotify.location.LocationProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -47,6 +48,7 @@ class GeotifyAppFunctionsTest {
     private val locationRepository: LocationRepository = mock()
     private val reminderRepository: ReminderRepository = mock()
     private val locationProvider: LocationProvider = mock()
+    private val geofenceOrchestrator: GeofenceOrchestrator = mock()
     private val appFunctionContext: AppFunctionContext = mock()
 
     private lateinit var appFunctions: GeotifyAppFunctions
@@ -56,8 +58,14 @@ class GeotifyAppFunctionsTest {
         appFunctions = GeotifyAppFunctions(
             locationRepository = locationRepository,
             reminderRepository = reminderRepository,
+            geofenceOrchestrator = geofenceOrchestrator,
             locationProvider = locationProvider
         )
+        runBlocking {
+            // Deletions report the number of affected rows.
+            whenever(locationRepository.deleteLocation(any())).thenReturn(true)
+            whenever(reminderRepository.cancelReminder(any())).thenReturn(true)
+        }
     }
 
     // ── saveCurrentLocation tests ──

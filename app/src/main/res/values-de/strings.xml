@@ -6,7 +6,6 @@
     <string name="btn_save">Speichern</string>
     <string name="btn_skip">Überspringen</string>
     <string name="btn_open_settings">Einstellungen öffnen</string>
-    <string name="btn_use_current_gps">Aktuelle GPS-Koordinaten nutzen</string>
     <string name="btn_querying_gps">GPS-Abfrage…</string>
     <string name="label_locations">Orte</string>
     <string name="label_reminders">Erinnerungen</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Ort bearbeiten</string>
     <string name="dialog_new_reminder">Neue Erinnerung</string>
     <string name="dialog_edit_reminder">Erinnerung bearbeiten</string>
-    <string name="toast_location_deleted">„%1$s“ gelöscht</string>
-    <string name="toast_reminder_cancelled">Erinnerung abgebrochen</string>
-    <string name="toast_reminder_deleted">Erinnerung gelöscht</string>
     <string name="content_description_add_location">Ort hinzufügen</string>
     <string name="content_description_add_reminder">Erinnerung hinzufügen</string>
-    <string name="content_description_location">Ort</string>
     <string name="content_description_reminder">Erinnerung</string>
     <string name="content_description_cancel">Abbrechen</string>
     <string name="reminder_select_location">Ort auswählen</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Karte</string>
     <string name="btn_select_on_map">Auf Karte auswählen</string>
     <string name="btn_use_gps">GPS nutzen</string>
-    <string name="btn_map_picker">Kartenauswahl</string>
     <string name="label_map_picker_title">Ort auf Karte auswählen</string>
     <string name="label_selected_location">Ausgewählter Ort</string>
     <string name="btn_confirm_selection">Auswahl bestätigen</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Hell</string>
     <string name="settings_theme_dark">Dunkel</string>
-    <string name="geofence_limit_error">Geofence-Limit erreicht (maximal 100). Sie können keine weiteren aktivieren.</string>
-    <string name="geofence_limit_warning">Sie haben das maximale Limit von 100 aktiven Geofences erreicht.</string>
-    <string name="geofence_limit_fab_warning">Geofence-Limit von 100 erreicht. Sie können Erinnerungen nur für Orte mit aktiven Geofences hinzufügen.</string>
-    <string name="geofence_limit_dialog_error">Geofence-Limit von 100 erreicht. Bitte wählen Sie einen Ort mit aktiven Erinnerungen.</string>
     <string name="label_notification_responsiveness">Reaktionszeit</string>
     <string name="label_minutes_value">%1$d Min.</string>
     <string name="label_0min">0 Min. (Sofort)</string>
@@ -114,4 +104,15 @@
     <string name="label_my_location">Mein Standort</string>
     <string name="content_description_back">Zurück</string>
     <string name="content_description_center_on_gps">Auf GPS zentrieren</string>
+    <string name="err_location_missing">Dieser Ort existiert nicht mehr</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d aktive Erinnerung</item>
+        <item quantity="other">%d aktive Erinnerungen</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" gelöscht</string>
+    <string name="reminder_cancelled">Erinnerung abgebrochen</string>
+    <string name="reminder_deleted">Erinnerung gelöscht</string>
+    <string name="label_transition_unknown">Unbekannt</string>
 </resources>

@@ -1,5 +1,6 @@
 package dev.arrase.geotify.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -51,6 +52,11 @@ fun GeotifyNavHost(
     var selectedTab by rememberSaveable { mutableStateOf(initialTab) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
+    // Back from a secondary tab returns to the default one instead of leaving the app.
+    BackHandler(enabled = selectedTab != GeotifyTab.Reminders) {
+        selectedTab = GeotifyTab.Reminders
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -85,9 +91,10 @@ fun GeotifyNavHost(
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             label = "tabContent"
         ) { tab ->
+            // Exhaustive `when` expression: adding a tab without rendering it fails to compile.
             when (tab) {
-                GeotifyTab.Locations -> LocationsScreen(viewModel = hiltViewModel())
                 GeotifyTab.Reminders -> RemindersScreen(viewModel = hiltViewModel())
+                GeotifyTab.Locations -> LocationsScreen(viewModel = hiltViewModel())
                 GeotifyTab.Settings -> SettingsScreen(viewModel = hiltViewModel())
             }
         }

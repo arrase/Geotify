@@ -16,27 +16,14 @@ interface ReminderDao {
     @Query("SELECT location_id, COUNT(*) as count FROM reminders WHERE is_active = 1 GROUP BY location_id")
     fun observeActiveReminderCounts(): Flow<List<LocationReminderCount>>
 
-    @Query("SELECT COUNT(DISTINCT location_id) FROM reminders WHERE is_active = 1")
-    suspend fun getActiveGeofenceCount(): Int
-
-
-
-    @Query(
-        """
-        SELECT r.* FROM reminders r
-        INNER JOIN locations l ON r.location_id = l.id
-        ORDER BY r.is_active DESC, r.created_at DESC
-        """
-    )
+    @Query("SELECT * FROM reminders ORDER BY is_active DESC, created_at DESC")
     fun observeAll(): Flow<List<ReminderEntity>>
 
     @Query("SELECT * FROM reminders WHERE is_active = 1")
     suspend fun getActiveReminders(): List<ReminderEntity>
 
-
     @Query("SELECT * FROM reminders WHERE location_id = :locationId AND is_active = 1")
     suspend fun getActiveByLocationId(locationId: String): List<ReminderEntity>
-
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(reminder: ReminderEntity)
@@ -50,18 +37,17 @@ interface ReminderDao {
     @Query("DELETE FROM reminders WHERE id = :id")
     suspend fun deleteById(id: String): Int
 
+    @Transaction
+    suspend fun updateInRangeStatus(locationIds: List<String>) {
+        clearAllInRange()
+        if (locationIds.isNotEmpty()) {
+            setInRangeForLocationIds(locationIds)
+        }
+    }
 
     @Query("UPDATE reminders SET is_in_range = 0")
     suspend fun clearAllInRange()
 
     @Query("UPDATE reminders SET is_in_range = 1 WHERE location_id IN (:locationIds) AND is_active = 1")
-    suspend fun setInRangeForLocations(locationIds: List<String>)
-
-    @Transaction
-    suspend fun updateInRangeStatus(locationIds: List<String>) {
-        clearAllInRange()
-        if (locationIds.isNotEmpty()) {
-            setInRangeForLocations(locationIds)
-        }
-    }
+    suspend fun setInRangeForLocationIds(locationIds: List<String>)
 }

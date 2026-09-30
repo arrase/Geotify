@@ -1,5 +1,6 @@
 package dev.arrase.geotify.data
 
+import com.google.android.gms.location.Geofence
 import dev.arrase.geotify.data.dao.ReminderDao
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.LocationReminderCount
@@ -9,10 +10,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -28,6 +32,7 @@ class ReminderRepositoryTest {
             reminderDao = reminderDao,
             ioDispatcher = Dispatchers.Unconfined
         )
+        runBlocking { whenever(reminderDao.deleteById(any())).thenReturn(1) }
     }
 
     @Test
@@ -147,6 +152,65 @@ class ReminderRepositoryTest {
 
             assertEquals(reminders, result)
             verify(reminderDao).observeAll()
+        }
+    }
+
+    @Test
+    fun createReminder_rejectsBlankMessage() {
+        runBlocking {
+            val location = LocationEntity("loc-abc", "Supermarket", 40.0, -3.0)
+            try {
+                repository.createReminder(location, "   ", 1)
+                fail("expected IllegalArgumentException")
+            } catch (e: IllegalArgumentException) {
+                assertTrue(e.message!!.contains("message"))
+            }
+        }
+    }
+
+    @Test
+    fun createReminder_rejectsUnsupportedTransitionType() {
+        runBlocking {
+            val location = LocationEntity("loc-abc", "Supermarket", 40.0, -3.0)
+            try {
+                repository.createReminder(location, "Buy milk", Geofence.GEOFENCE_TRANSITION_DWELL)
+                fail("expected IllegalArgumentException")
+            } catch (e: IllegalArgumentException) {
+                assertTrue(e.message!!.contains("transition"))
+            }
+        }
+    }
+
+    @Test
+    fun updateReminder_rejectsUnsupportedTransitionType() {
+        runBlocking {
+            val reminder = ReminderEntity("rem-1", "loc-1", "Msg", 42, true, 0L)
+            try {
+                repository.updateReminder(reminder)
+                fail("expected IllegalArgumentException")
+            } catch (e: IllegalArgumentException) {
+                assertTrue(e.message!!.contains("transition"))
+            }
+        }
+    }
+
+    @Test
+    fun cancelReminder_reportsWhetherARowWasDeleted() {
+        runBlocking {
+            whenever(reminderDao.deleteById("rem-1")).thenReturn(1)
+            assertTrue(repository.cancelReminder("rem-1"))
+
+            whenever(reminderDao.deleteById("missing")).thenReturn(0)
+            assertFalse(repository.cancelReminder("missing"))
+        }
+    }
+
+    @Test
+    fun createReminder_trimsTheMessage() {
+        runBlocking {
+            val location = LocationEntity("loc-abc", "Supermarket", 40.0, -3.0)
+            val reminder = repository.createReminder(location, "  Buy milk  ", 1)
+            assertEquals("Buy milk", reminder.message)
         }
     }
 

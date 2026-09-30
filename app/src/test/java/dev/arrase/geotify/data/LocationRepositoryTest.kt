@@ -7,9 +7,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -29,6 +31,11 @@ class LocationRepositoryTest {
             locationDao = locationDao,
             ioDispatcher = Dispatchers.Unconfined
         )
+        runBlocking {
+            // Room returns the new row id, or -1 when the unique alias conflicts.
+            whenever(locationDao.insert(any())).thenReturn(1L)
+            whenever(locationDao.deleteByAlias(any())).thenReturn(1)
+        }
     }
 
     @Test
@@ -66,6 +73,44 @@ class LocationRepositoryTest {
             assertEquals(150f, result.radiusMeters, 0.0001f)
             assertEquals(0, result.notificationResponsivenessMs)
             verify(locationDao).insert(result)
+        }
+    }
+
+    @Test
+    fun saveLocation_trimsTheAlias() {
+        runBlocking {
+            val result = repository.saveLocation("  Home  ", 40.0, -3.0)
+
+            assertEquals("Home", result.alias)
+        }
+    }
+
+    @Test
+    fun saveLocation_rejectsABlankAlias() {
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repository.saveLocation("   ", 40.0, -3.0) }
+        }
+    }
+
+    @Test
+    fun saveLocation_throwsDuplicateAliasExceptionWhenTheAliasIsTaken() {
+        runBlocking { whenever(locationDao.insert(any())).thenReturn(-1L) }
+
+        val error = assertThrows(DuplicateAliasException::class.java) {
+            runBlocking { repository.saveLocation("Home", 40.0, -3.0) }
+        }
+        assertTrue(error.message!!.contains("Home"))
+    }
+
+    @Test
+    fun updateLocation_rejectsNegativeNotificationResponsiveness() {
+        val location = LocationEntity(
+            id = "1", alias = "Home", latitude = 40.0, longitude = -3.0,
+            notificationResponsivenessMs = -1
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repository.updateLocation(location) }
         }
     }
 
@@ -277,9 +322,28 @@ class LocationRepositoryTest {
     @Test
     fun deleteLocation_callsDaoDeleteByAlias() {
         runBlocking {
-            repository.deleteLocation("OldPlace")
+            assertTrue(repository.deleteLocation("OldPlace"))
 
             verify(locationDao).deleteByAlias("OldPlace")
+        }
+    }
+
+    @Test
+    fun deleteLocation_reportsWhenNothingWasRemoved() {
+        runBlocking { whenever(locationDao.deleteByAlias(any())).thenReturn(0) }
+
+        runBlocking { assertFalse(repository.deleteLocation("Missing")) }
+    }
+
+    @Test
+    fun findLocationsInBoundingBox_delegatesToDao() {
+        runBlocking {
+            val matches = listOf(LocationEntity("1", "Near", 0.0, 0.0))
+            whenever(
+                locationDao.getLocationsInBoundingBox(1.0, 2.0, 3.0, 4.0)
+            ).thenReturn(matches)
+
+            assertEquals(matches, repository.findLocationsInBoundingBox(1.0, 2.0, 3.0, 4.0))
         }
     }
 

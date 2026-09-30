@@ -1,6 +1,7 @@
 package dev.arrase.geotify.ui.screen
 
 import android.location.Location
+import dev.arrase.geotify.R
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.SettingsDefaults
@@ -14,6 +15,7 @@ import dev.arrase.geotify.ui.UiText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -41,23 +43,15 @@ class LocationsViewModelTest {
     private val settingsManager: SettingsManager = mock()
 
     private val testDispatcher = UnconfinedTestDispatcher()
-    private lateinit var viewModel: LocationsViewModel
+    private val messages = mutableListOf<UiText>()
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-
+        runBlocking { whenever(locationRepository.deleteLocation(any())).thenReturn(true) }
         whenever(locationRepository.observeLocations()).thenReturn(flowOf(emptyList()))
         whenever(reminderRepository.observeActiveReminderCounts()).thenReturn(flowOf(emptyList()))
         whenever(settingsManager.mapTheme).thenReturn(flowOf(SettingsDefaults.MAP_THEME))
-
-        viewModel = LocationsViewModel(
-            locationRepository = locationRepository,
-            reminderRepository = reminderRepository,
-            geofenceOrchestrator = geofenceOrchestrator,
-            locationProvider = locationProvider,
-            settingsManager = settingsManager
-        )
     }
 
     @After
@@ -65,224 +59,177 @@ class LocationsViewModelTest {
         Dispatchers.resetMain()
     }
 
-    // ── StateFlows initialization tests ──
+    private fun buildViewModel(): LocationsViewModel = LocationsViewModel(
+        locationRepository = locationRepository,
+        reminderRepository = reminderRepository,
+        geofenceOrchestrator = geofenceOrchestrator,
+        locationProvider = locationProvider,
+        settingsManager = settingsManager
+    )
+
+    private fun LocationsViewModel.collectingMessages(scope: kotlinx.coroutines.CoroutineScope) =
+        scope.launch(testDispatcher) { messagesFlow.collect { messages.add(it) } }
+
+    // ── State exposure ──
 
     @Test
-    fun locations_emitsFlowFromRepository() {
-        runTest {
-            val entities = listOf(LocationEntity("1", "Casa", 40.0, -3.0))
-            whenever(locationRepository.observeLocations()).thenReturn(flowOf(entities))
+    fun `locations emits the repository flow`() = runTest {
+        val entities = listOf(LocationEntity("1", "Casa", 40.0, -3.0))
+        whenever(locationRepository.observeLocations()).thenReturn(flowOf(entities))
 
-            val vm = LocationsViewModel(
-                locationRepository, reminderRepository, geofenceOrchestrator, locationProvider, settingsManager
-            )
-            backgroundScope.launch(testDispatcher) { vm.locations.collect {} }
+        val vm = buildViewModel()
+        backgroundScope.launch(testDispatcher) { vm.locations.collect {} }
 
-            assertEquals(entities, vm.locations.value)
-        }
+        assertEquals(entities, vm.locations.value)
     }
 
     @Test
-    fun activeReminderCounts_mapsAndEmitsCountsFromRepository() {
-        runTest {
-            val counts = listOf(
-                LocationReminderCount("loc-1", 3),
-                LocationReminderCount("loc-2", 1)
-            )
-            whenever(reminderRepository.observeActiveReminderCounts()).thenReturn(flowOf(counts))
+    fun `activeReminderCounts maps counts keyed by location id`() = runTest {
+        val counts = listOf(LocationReminderCount("loc-1", 3), LocationReminderCount("loc-2", 1))
+        whenever(reminderRepository.observeActiveReminderCounts()).thenReturn(flowOf(counts))
 
-            val vm = LocationsViewModel(
-                locationRepository, reminderRepository, geofenceOrchestrator, locationProvider, settingsManager
-            )
-            backgroundScope.launch(testDispatcher) { vm.activeReminderCounts.collect {} }
+        val vm = buildViewModel()
+        backgroundScope.launch(testDispatcher) { vm.activeReminderCounts.collect {} }
 
-            val expected = mapOf("loc-1" to 3, "loc-2" to 1)
-            assertEquals(expected, vm.activeReminderCounts.value)
-        }
+        assertEquals(mapOf("loc-1" to 3, "loc-2" to 1), vm.activeReminderCounts.value)
     }
 
     @Test
-    fun mapTheme_emitsThemeFromSettings() {
-        runTest {
-            whenever(settingsManager.mapTheme).thenReturn(flowOf(ThemeSetting.DARK))
+    fun `mapTheme emits the configured theme`() = runTest {
+        whenever(settingsManager.mapTheme).thenReturn(flowOf(ThemeSetting.DARK))
 
-            val vm = LocationsViewModel(
-                locationRepository, reminderRepository, geofenceOrchestrator, locationProvider, settingsManager
-            )
-            backgroundScope.launch(testDispatcher) { vm.mapTheme.collect {} }
+        val vm = buildViewModel()
+        backgroundScope.launch(testDispatcher) { vm.mapTheme.collect {} }
 
-            assertEquals(ThemeSetting.DARK, vm.mapTheme.value)
-        }
+        assertEquals(ThemeSetting.DARK, vm.mapTheme.value)
     }
 
-    // ── saveLocation tests ──
+    // ── saveLocation ──
 
     @Test
-    fun saveLocation_success_callsRepositoryAndTriggersRecalculation() {
-        runTest {
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
+    fun `saveLocation saves and recalculates`() = runTest {
+        val vm = buildViewModel().also { it.collectingMessages(backgroundScope) }
 
-            viewModel.saveLocation("Casa", 40.0, -3.0, 150f, 1000)
+        vm.saveLocation("Casa", 40.0, -3.0, 150f, 1000)
 
-            verify(locationRepository).saveLocation("Casa", 40.0, -3.0, 150f, 1000)
-            verify(geofenceOrchestrator).triggerRecalculation()
-            assertTrue(messages.isEmpty())
-        }
+        verify(locationRepository).saveLocation("Casa", 40.0, -3.0, 150f, 1000)
+        verify(geofenceOrchestrator).triggerRecalculation()
+        assertTrue(messages.isEmpty())
     }
 
     @Test
-    fun saveLocation_onRepositoryException_emitsErrorMessageToSnackbar() {
-        runTest {
-            whenever(locationRepository.saveLocation(any(), any(), any(), any(), any()))
-                .thenThrow(RuntimeException("Duplicate alias"))
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
+    fun `saveLocation surfaces the failure and skips recalculation`() = runTest {
+        whenever(locationRepository.saveLocation(any(), any(), any(), any(), any()))
+            .thenThrow(RuntimeException("Duplicate alias"))
+        val vm = buildViewModel().also { it.collectingMessages(backgroundScope) }
 
-            viewModel.saveLocation("Casa", 40.0, -3.0, 150f, 0)
+        vm.saveLocation("Casa", 40.0, -3.0, 150f, 0)
 
-            verify(geofenceOrchestrator, never()).triggerRecalculation()
-            assertEquals(1, messages.size)
-            assertEquals(UiText.DynamicString("Duplicate alias"), messages[0])
-        }
+        verify(geofenceOrchestrator, never()).triggerRecalculation()
+        assertEquals(
+            listOf(UiText.DynamicString("Could not save the location: Duplicate alias")),
+            messages
+        )
     }
 
     @Test
-    fun saveLocation_onExceptionWithoutMessage_emitsDefaultErrorMessage() {
-        runTest {
-            whenever(locationRepository.saveLocation(any(), any(), any(), any(), any()))
-                .thenThrow(RuntimeException())
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
+    fun `saveLocation falls back to a generic message when the cause has none`() = runTest {
+        whenever(locationRepository.saveLocation(any(), any(), any(), any(), any()))
+            .thenThrow(RuntimeException())
+        val vm = buildViewModel().also { it.collectingMessages(backgroundScope) }
 
-            viewModel.saveLocation("Casa", 40.0, -3.0, 150f, 0)
+        vm.saveLocation("Casa", 40.0, -3.0, 150f, 0)
 
-            assertEquals(1, messages.size)
-            assertEquals(UiText.DynamicString("Unknown error saving location"), messages[0])
-        }
-    }
-
-    // ── updateLocation tests ──
-
-    @Test
-    fun updateLocation_success_callsRepositoryAndTriggersRecalculation() {
-        runTest {
-            val location = LocationEntity("1", "Trabajo", 41.0, 2.0)
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
-
-            viewModel.updateLocation(location)
-
-            verify(locationRepository).updateLocation(location)
-            verify(geofenceOrchestrator).triggerRecalculation()
-            assertTrue(messages.isEmpty())
-        }
+        assertEquals(listOf(UiText.DynamicString("Could not save the location")), messages)
     }
 
     @Test
-    fun updateLocation_onRepositoryException_emitsErrorMessageToSnackbar() {
-        runTest {
-            val location = LocationEntity("1", "Trabajo", 41.0, 2.0)
-            whenever(locationRepository.updateLocation(location))
-                .thenThrow(RuntimeException("Location not found"))
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
+    fun `a message emitted before collection starts is not lost`() = runTest {
+        whenever(locationRepository.saveLocation(any(), any(), any(), any(), any()))
+            .thenThrow(RuntimeException("boom"))
+        val vm = buildViewModel()
 
-            viewModel.updateLocation(location)
+        // No collector yet: a SharedFlow would drop this event silently.
+        vm.saveLocation("Casa", 40.0, -3.0, 150f, 0)
+        vm.collectingMessages(backgroundScope)
 
-            verify(geofenceOrchestrator, never()).triggerRecalculation()
-            assertEquals(1, messages.size)
-            assertEquals(UiText.DynamicString("Location not found"), messages[0])
-        }
+        assertEquals(listOf(UiText.DynamicString("Could not save the location: boom")), messages)
+    }
+
+    // ── updateLocation ──
+
+    @Test
+    fun `updateLocation saves and recalculates`() = runTest {
+        val location = LocationEntity("1", "Trabajo", 41.0, 2.0)
+        val vm = buildViewModel().also { it.collectingMessages(backgroundScope) }
+
+        vm.updateLocation(location)
+
+        verify(locationRepository).updateLocation(location)
+        verify(geofenceOrchestrator).triggerRecalculation()
+        assertTrue(messages.isEmpty())
     }
 
     @Test
-    fun updateLocation_onExceptionWithoutMessage_emitsDefaultErrorMessage() {
-        runTest {
-            val location = LocationEntity("1", "Trabajo", 41.0, 2.0)
-            whenever(locationRepository.updateLocation(location))
-                .thenThrow(RuntimeException())
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
+    fun `updateLocation surfaces the failure and skips recalculation`() = runTest {
+        val location = LocationEntity("1", "Trabajo", 41.0, 2.0)
+        whenever(locationRepository.updateLocation(location))
+            .thenThrow(RuntimeException("Location not found"))
+        val vm = buildViewModel().also { it.collectingMessages(backgroundScope) }
 
-            viewModel.updateLocation(location)
+        vm.updateLocation(location)
 
-            assertEquals(1, messages.size)
-            assertEquals(UiText.DynamicString("Unknown error updating location"), messages[0])
-        }
+        verify(geofenceOrchestrator, never()).triggerRecalculation()
+        assertEquals(
+            listOf(UiText.DynamicString("Could not update the location: Location not found")),
+            messages
+        )
     }
 
-    // ── deleteLocation tests ──
+    // ── deleteLocation ──
 
     @Test
-    fun deleteLocation_success_callsRepositoryAndTriggersRecalculation() {
-        runTest {
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
+    fun `deleteLocation removes by alias, recalculates and confirms`() = runTest {
+        val location = LocationEntity("1", "Casa", 40.0, -3.0)
+        val vm = buildViewModel().also { it.collectingMessages(backgroundScope) }
 
-            viewModel.deleteLocation("Casa")
+        vm.deleteLocation(location)
 
-            verify(locationRepository).deleteLocation("Casa")
-            verify(geofenceOrchestrator).triggerRecalculation()
-            assertTrue(messages.isEmpty())
-        }
-    }
-
-    @Test
-    fun deleteLocation_onRepositoryException_emitsErrorMessageToSnackbar() {
-        runTest {
-            whenever(locationRepository.deleteLocation("Casa"))
-                .thenThrow(RuntimeException("Delete constraint error"))
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
-
-            viewModel.deleteLocation("Casa")
-
-            verify(geofenceOrchestrator, never()).triggerRecalculation()
-            assertEquals(1, messages.size)
-            assertEquals(UiText.DynamicString("Delete constraint error"), messages[0])
-        }
+        verify(locationRepository).deleteLocation("Casa")
+        verify(geofenceOrchestrator).triggerRecalculation()
+        assertEquals(listOf(UiText.StringResource(R.string.location_deleted, "Casa")), messages)
     }
 
     @Test
-    fun deleteLocation_onExceptionWithoutMessage_emitsDefaultErrorMessage() {
-        runTest {
-            whenever(locationRepository.deleteLocation("Casa"))
-                .thenThrow(RuntimeException())
-            val messages = mutableListOf<UiText>()
-            backgroundScope.launch(testDispatcher) { viewModel.snackbarMessage.collect { messages.add(it) } }
+    fun `deleteLocation surfaces the failure and skips recalculation`() = runTest {
+        whenever(locationRepository.deleteLocation("Casa"))
+            .thenThrow(RuntimeException("Delete constraint error"))
+        val vm = buildViewModel().also { it.collectingMessages(backgroundScope) }
 
-            viewModel.deleteLocation("Casa")
+        vm.deleteLocation(LocationEntity("1", "Casa", 40.0, -3.0))
 
-            assertEquals(1, messages.size)
-            assertEquals(UiText.DynamicString("Unknown error deleting location"), messages[0])
-        }
+        verify(geofenceOrchestrator, never()).triggerRecalculation()
+        assertEquals(
+            listOf(UiText.DynamicString("Could not delete the location: Delete constraint error")),
+            messages
+        )
     }
 
-    // ── getCurrentLocation tests ──
+    // ── getCurrentLocation ──
 
     @Test
-    fun getCurrentLocation_returnsLocationFromProvider() {
-        runTest {
-            val mockLocation: Location = mock()
-            whenever(locationProvider.getCurrentLocation()).thenReturn(mockLocation)
+    fun `getCurrentLocation delegates to the provider`() = runTest {
+        val fix: Location = mock()
+        whenever(locationProvider.getCurrentLocation()).thenReturn(fix)
 
-            val result = viewModel.getCurrentLocation()
-
-            assertEquals(mockLocation, result)
-            verify(locationProvider).getCurrentLocation()
-        }
+        assertEquals(fix, buildViewModel().getCurrentLocation())
+        verify(locationProvider).getCurrentLocation()
     }
 
     @Test
-    fun getCurrentLocation_whenProviderReturnsNull_returnsNull() {
-        runTest {
-            whenever(locationProvider.getCurrentLocation()).thenReturn(null)
+    fun `getCurrentLocation returns null when no fix is available`() = runTest {
+        whenever(locationProvider.getCurrentLocation()).thenReturn(null)
 
-            val result = viewModel.getCurrentLocation()
-
-            assertNull(result)
-            verify(locationProvider).getCurrentLocation()
-        }
+        assertNull(buildViewModel().getCurrentLocation())
     }
 }

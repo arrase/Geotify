@@ -6,7 +6,6 @@
     <string name="btn_save">保存</string>
     <string name="btn_skip">スキップ</string>
     <string name="btn_open_settings">設定を開く</string>
-    <string name="btn_use_current_gps">現在のGPS座標を使用</string>
     <string name="btn_querying_gps">GPSを照会中…</string>
     <string name="label_locations">場所</string>
     <string name="label_reminders">リマインダー</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">場所を編集</string>
     <string name="dialog_new_reminder">新しいリマインダー</string>
     <string name="dialog_edit_reminder">リマインダーを編集</string>
-    <string name="toast_location_deleted">\"%1$s\" を削除しました</string>
-    <string name="toast_reminder_cancelled">リマインダーをキャンセルしました</string>
-    <string name="toast_reminder_deleted">リマインダーを削除しました</string>
     <string name="content_description_add_location">場所を追加</string>
     <string name="content_description_add_reminder">リマインダーを追加</string>
-    <string name="content_description_location">場所</string>
     <string name="content_description_reminder">リマインダー</string>
     <string name="content_description_cancel">キャンセル</string>
     <string name="reminder_select_location">場所を選択</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">地図</string>
     <string name="btn_select_on_map">地図上で選択</string>
     <string name="btn_use_gps">GPSを使用</string>
-    <string name="btn_map_picker">マップピッカー</string>
     <string name="label_map_picker_title">地図上の場所を選択</string>
     <string name="label_selected_location">選択された場所</string>
     <string name="btn_confirm_selection">選択を確定</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">システム</string>
     <string name="settings_theme_light">ライト</string>
     <string name="settings_theme_dark">ダーク</string>
-    <string name="geofence_limit_error">ジオフェンスの制限に達しました（最大100）。これ以上アクティブにできません。</string>
-    <string name="geofence_limit_warning">アクティブなジオフェンスの最大制限100に達しました。</string>
-    <string name="geofence_limit_fab_warning">ジオフェンスの制限（100）に達しました。アクティブなジオフェンスがある場所のみリマインダーを追加できます。</string>
-    <string name="geofence_limit_dialog_error">ジオフェンスの制限（100）に達しました。アクティブなリマインダーがある場所を選択してください。</string>
     <string name="label_notification_responsiveness">通知の応答性</string>
     <string name="label_minutes_value">%1$d 分</string>
     <string name="label_0min">0 分（即時）</string>
@@ -116,4 +106,14 @@
     <string name="content_description_back">戻る</string>
     <string name="content_description_center_on_gps">GPS位置に合わせる</string>
 
+    <string name="err_location_missing">その場所は存在しません</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f、%3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f、%2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="other">有効なリマインダー %d 件</item>
+    </plurals>
+    <string name="location_deleted">「%1$s」を削除しました</string>
+    <string name="reminder_cancelled">リマインダーをキャンセルしました</string>
+    <string name="reminder_deleted">リマインダーを削除しました</string>
+    <string name="label_transition_unknown">不明</string>
 </resources>

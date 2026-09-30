@@ -4,6 +4,7 @@ import android.graphics.DashPathEffect
 import android.graphics.drawable.Drawable
 import android.location.Location
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -12,10 +13,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.graphics.toColorInt
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -100,7 +101,9 @@ fun ReminderMapView(
         }
     }
 
-    // Lifecycle observer
+    // Lifecycle management. `onDetach()` shuts down this MapView's own tile-download executor, so it
+    // must be called whenever the view leaves composition (e.g. the user toggles back to the list) —
+    // otherwise each toggle leaks a thread pool.
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(mapViewRef, lifecycle) {
         val map = mapViewRef ?: return@DisposableEffect onDispose {}
@@ -108,41 +111,47 @@ fun ReminderMapView(
             when (event) {
                 Lifecycle.Event.ON_RESUME -> map.onResume()
                 Lifecycle.Event.ON_PAUSE -> map.onPause()
-                Lifecycle.Event.ON_DESTROY -> map.onDetach()
-                else -> {}
+                else -> Unit
             }
         }
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
-            map.onPause()
+            map.onDetach()
         }
     }
 
-    // Custom pins and geofence colors
-    val activeColor = "#FF1744".toColorInt()
-    val inactiveColor = "#3F51B5".toColorInt()
+    // Custom pins and geofence colors. The active/inactive hues are semantic (they encode reminder
+    // state, not the app theme), while map chrome follows the Material theme so it stays legible on
+    // the darkened tiles used in dark mode.
+    val activeColor = MaterialTheme.colorScheme.error.toArgb()
+    val inactiveColor = MaterialTheme.colorScheme.tertiary.toArgb()
+    val slidingWindowColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val userLocationColor = MaterialTheme.colorScheme.primary.toArgb()
 
-    val activeMarkerIcon = remember(context) {
+    val activeMarkerIcon = remember(context, activeColor) {
         getTintedMarkerIcon(context, activeColor, sizeDp = 38)
     }
-    val inactiveMarkerIcon = remember(context) {
+    val inactiveMarkerIcon = remember(context, inactiveColor) {
         getTintedMarkerIcon(context, inactiveColor, sizeDp = 38)
     }
-    val userMarkerIcon = remember(context) {
-        getTintedMarkerIcon(context, "#2196F3".toColorInt(), sizeDp = 24)
+    val userMarkerIcon = remember(context, userLocationColor) {
+        getTintedMarkerIcon(context, userLocationColor, sizeDp = 24)
     }
-    val centerMarkerIcon = remember(context) {
-        getTintedMarkerIcon(context, android.graphics.Color.BLACK, sizeDp = 20)
+    val centerMarkerIcon = remember(context, slidingWindowColor) {
+        getTintedMarkerIcon(context, slidingWindowColor, sizeDp = 20)
     }
 
-    val activeFillColor = android.graphics.Color.argb(55, 255, 23, 68)
-    val inactiveFillColor = android.graphics.Color.argb(35, 63, 81, 181)
+    val activeFillColor = activeColor.withAlpha(FILL_ALPHA)
+    val inactiveFillColor = inactiveColor.withAlpha(FILL_ALPHA)
 
     val labelSlidingWindowCenter = stringResource(R.string.label_sliding_window_center)
     val labelMyLocation = stringResource(R.string.label_my_location)
 
-    val markerStyle = remember(activeMarkerIcon, inactiveMarkerIcon) {
+    val markerStyle = remember(
+        activeMarkerIcon, inactiveMarkerIcon, activeColor, inactiveColor,
+        activeFillColor, inactiveFillColor
+    ) {
         ReminderMarkerStyle(
             activeIcon = activeMarkerIcon,
             inactiveIcon = inactiveMarkerIcon,
@@ -152,6 +161,8 @@ fun ReminderMapView(
             inactiveFillColor = inactiveFillColor
         )
     }
+
+    val tileFilter = remember { darkTileFilter() }
 
     AndroidView(
         factory = { ctx ->
@@ -166,7 +177,7 @@ fun ReminderMapView(
         },
         modifier = modifier.fillMaxSize(),
         update = { map ->
-            applyTileThemeFilter(map, isDarkTheme)
+            map.applyTileThemeFilter(isDarkTheme, tileFilter)
             map.overlays.clear()
 
             // Deselect single tap listener
@@ -180,7 +191,13 @@ fun ReminderMapView(
             })
             map.overlays.add(mapEventsOverlay)
 
-            drawSpatialCircles(map, data.spatialArea, centerMarkerIcon, labelSlidingWindowCenter)
+            drawSpatialCircles(
+                map = map,
+                spatialArea = data.spatialArea,
+                centerMarkerIcon = centerMarkerIcon,
+                centerLabel = labelSlidingWindowCenter,
+                slidingWindowColor = slidingWindowColor
+            )
             drawUserLocationMarker(map, data.currentUserLocation, userMarkerIcon, labelMyLocation)
             drawReminderMarkers(
                 map = map,
@@ -243,7 +260,8 @@ private fun drawSpatialCircles(
     map: MapView,
     spatialArea: SpatialRecalculationArea,
     centerMarkerIcon: Drawable,
-    centerLabel: String
+    centerLabel: String,
+    slidingWindowColor: Int
 ) {
     val lat = spatialArea.latitude
     val lng = spatialArea.longitude
@@ -253,8 +271,8 @@ private fun drawSpatialCircles(
         // 1a. Outer radius — spatial search area (dashed, subtle)
         val outerCircle = Polygon().apply {
             points = Polygon.pointsAsCircle(centerPoint, spatialArea.outerRadiusMeters.toDouble())
-            fillPaint.color = android.graphics.Color.argb(25, 0, 0, 0)
-            outlinePaint.color = android.graphics.Color.argb(180, 60, 60, 60)
+            fillPaint.color = slidingWindowColor.withAlpha(25)
+            outlinePaint.color = slidingWindowColor.withAlpha(180)
             outlinePaint.strokeWidth = 3f
             outlinePaint.pathEffect = DashPathEffect(floatArrayOf(20f, 15f), 0f)
         }
@@ -263,8 +281,8 @@ private fun drawSpatialCircles(
         // 1b. Inner radius — master geofence boundary (solid, prominent)
         val innerCircle = Polygon().apply {
             points = Polygon.pointsAsCircle(centerPoint, spatialArea.innerRadiusMeters.toDouble())
-            fillPaint.color = android.graphics.Color.argb(18, 0, 0, 0)
-            outlinePaint.color = android.graphics.Color.BLACK
+            fillPaint.color = slidingWindowColor.withAlpha(18)
+            outlinePaint.color = slidingWindowColor
             outlinePaint.strokeWidth = 5f
         }
         map.overlays.add(innerCircle)
@@ -371,3 +389,10 @@ private fun drawReminderMarkers(
         )
     }
 }
+
+/** Opacity applied to the semi-transparent fill inside a geofence circle. */
+private const val FILL_ALPHA = 55
+
+/** Returns this opaque ARGB color with only its alpha replaced. */
+private fun Int.withAlpha(alpha: Int): Int =
+    (this and 0x00FFFFFF) or (alpha.coerceIn(0, 255) shl 24)

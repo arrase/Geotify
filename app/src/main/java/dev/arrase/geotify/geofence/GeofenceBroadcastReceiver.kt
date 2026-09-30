@@ -12,9 +12,11 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
+import dev.arrase.geotify.data.entity.notificationId
 import dev.arrase.geotify.notification.NotificationHelper
 import dev.arrase.geotify.util.goAsyncCoroutine
 
+/** Receives geofence transitions from Google Play services. */
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     @EntryPoint
@@ -26,93 +28,90 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "onReceive triggered with intent: $intent")
-        val geofencingEvent = GeofencingEvent.fromIntent(intent)
-        if (geofencingEvent == null) {
-            Log.w(TAG, "GeofencingEvent is null in received intent")
+        val event = GeofencingEvent.fromIntent(intent)
+        if (event == null) {
+            Log.w(TAG, "Received an intent without a GeofencingEvent")
             return
         }
 
-        if (geofencingEvent.hasError()) {
-            Log.e(TAG, "Geofencing error code: ${geofencingEvent.errorCode}")
+        val entryPoint = EntryPointAccessors.fromApplication(context, ReceiverEntryPoint::class.java)
+        val orchestrator = entryPoint.geofenceOrchestrator()
+
+        if (event.hasError()) {
+            // Errors such as GEOFENCE_TOO_MANY_GEOFENCES or GEOFENCE_NOT_REGISTERED leave the
+            // monitored set inconsistent; only a recalculation can recover from them.
+            Log.e(TAG, "Geofencing error code: ${event.errorCode}. Scheduling recalculation.")
+            orchestrator.triggerExpeditedRecalculation()
             return
         }
 
-        val triggeringGeofences = geofencingEvent.triggeringGeofences
+        val triggeringGeofences = event.triggeringGeofences
         if (triggeringGeofences.isNullOrEmpty()) {
-            Log.w(TAG, "No triggering geofences found in event")
+            Log.w(TAG, "GeofencingEvent contained no triggering geofences")
             return
         }
 
-        val transitionType = geofencingEvent.geofenceTransition
-        Log.d(TAG, "Triggered geofences count: ${triggeringGeofences.size}, transitionType: $transitionType")
+        val transitionType = event.geofenceTransition
+        Log.d(TAG, "${triggeringGeofences.size} geofence(s) triggered, transition=$transitionType")
 
-        val entryPoint = EntryPointAccessors.fromApplication(
-            context, ReceiverEntryPoint::class.java
-        )
-
-        val hasMasterExit = triggeringGeofences.any { it.requestId == "MASTER_GEOFENCE_TRIGGER" } &&
-                transitionType == Geofence.GEOFENCE_TRANSITION_EXIT
-        if (hasMasterExit) {
-            Log.i(TAG, "Master geofence exit triggered. Enqueuing expedited recalculation...")
-            entryPoint.geofenceOrchestrator().triggerExpeditedRecalculation()
+        val masterExited = transitionType == Geofence.GEOFENCE_TRANSITION_EXIT &&
+            triggeringGeofences.any { it.requestId == GeofenceManager.MASTER_REQUEST_ID }
+        if (masterExited) {
+            Log.i(TAG, "Left the recalculation area. Scheduling expedited recalculation.")
+            orchestrator.triggerExpeditedRecalculation()
         }
 
-        val poiGeofences = triggeringGeofences.filter { it.requestId != "MASTER_GEOFENCE_TRIGGER" }
+        val poiGeofences = triggeringGeofences
+            .filter { it.requestId != GeofenceManager.MASTER_REQUEST_ID }
         if (poiGeofences.isEmpty()) return
 
         goAsyncCoroutine {
-            try {
-                val locationRepo = entryPoint.locationRepository()
-                val reminderRepo = entryPoint.reminderRepository()
-                processPoiGeofences(context, locationRepo, reminderRepo, poiGeofences, transitionType)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error processing geofence event", e)
-            }
+            runCatching {
+                processPoiTransitions(
+                    context = context,
+                    locationRepository = entryPoint.locationRepository(),
+                    reminderRepository = entryPoint.reminderRepository(),
+                    poiGeofences = poiGeofences,
+                    transitionType = transitionType
+                )
+            }.onFailure { Log.e(TAG, "Failed to process geofence event", it) }
 
-            // Re-evaluate geofences after deactivating triggered reminders.
-            // If no active reminders remain, this will purge all geofences to save battery.
-            entryPoint.geofenceOrchestrator().triggerExpeditedRecalculation()
+            // Re-evaluate the window now that the triggered reminders are no longer active.
+            orchestrator.triggerExpeditedRecalculation()
         }
     }
 
-    private suspend fun processPoiGeofences(
+    private suspend fun processPoiTransitions(
         context: Context,
-        locationRepo: LocationRepository,
-        reminderRepo: ReminderRepository,
+        locationRepository: LocationRepository,
+        reminderRepository: ReminderRepository,
         poiGeofences: List<Geofence>,
         transitionType: Int
     ) {
-        for (geofence in poiGeofences) {
+        poiGeofences.forEach { geofence ->
             val locationId = geofence.requestId
-            val location = locationRepo.findLocationById(locationId)
+            val location = locationRepository.findLocationById(locationId)
             if (location == null) {
-                Log.d(TAG, "Location not found in database for geofence ID: $locationId")
-                continue
+                Log.d(TAG, "No location stored for geofence $locationId; ignoring")
+                return@forEach
             }
-            Log.d(TAG, "Processing geofence for location: ${location.alias} (ID: $locationId)")
 
-            val activeReminders = reminderRepo.getActiveRemindersForLocation(locationId)
-            Log.d(TAG, "Found ${activeReminders.size} active reminders for location ID: $locationId")
+            val due = reminderRepository.getActiveRemindersForLocation(locationId)
+                .filter { it.transitionType == transitionType }
 
-            val matchingReminders = activeReminders.filter { it.transitionType == transitionType }
-            Log.d(TAG, "Found ${matchingReminders.size} matching reminders for transitionType: $transitionType")
-
-            for (reminder in matchingReminders) {
-                Log.d(TAG, "Deactivating and showing notification for reminder ID: ${reminder.id}")
-                reminderRepo.deactivateReminder(reminder.id)
-
+            due.forEach { reminder ->
                 NotificationHelper.showGeofenceNotification(
-                    context,
-                    reminder.id.hashCode(),
-                    location.alias,
-                    reminder.message
+                    context = context,
+                    notificationId = reminder.notificationId(),
+                    alias = location.alias,
+                    message = reminder.message
                 )
+                reminderRepository.deactivateReminder(reminder.id)
             }
         }
     }
 
-    companion object {
-        private const val TAG = "GeofenceBroadcastReceiver"
+    private companion object {
+        const val TAG = "GeotifyGeofenceReceiver"
     }
 }

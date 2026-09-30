@@ -42,6 +42,11 @@ fun getSigningSecret(entryName: String, propertyKey: String, envVar: String): St
 }
 
 android {
+    sourceSets {
+        // MigrationTestHelper reads the exported schemas from the test APK's assets.
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
+
     namespace = "dev.arrase.geotify"
     compileSdk = 37
 
@@ -49,8 +54,8 @@ android {
         applicationId = "dev.arrase.geotify"
         minSdk = 24
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.0.0-beta.7"
+        versionCode = 15
+        versionName = "1.0.0-beta.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -103,6 +108,13 @@ ksp {
 }
 
 dependencies {
+    // room-testing's generated schema parser is compiled against the serialization 1.8.x API, so
+    // the whole build resolves to that version to satisfy Gradle's consistent resolution between
+    // the main and androidTest classpaths.
+    constraints {
+        add("implementation", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    }
+
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -117,12 +129,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
 
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
@@ -156,9 +167,11 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.room.testing)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
+
 
 tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("testDebugUnitTest")

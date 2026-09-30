@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.arrase.geotify.data.GeotifyDatabase
+import dev.arrase.geotify.data.Migrations
 import dev.arrase.geotify.data.dao.LocationDao
 import dev.arrase.geotify.data.dao.ReminderDao
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,25 +26,15 @@ object AppModule {
 
     @Provides
     @Singleton
-    @MainDispatcher
-    fun provideMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
-
-    @Provides
-    @Singleton
-    @DefaultDispatcher
-    fun provideDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
-
-    @Provides
-    @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): GeotifyDatabase {
-        return Room.databaseBuilder(
+    fun provideDatabase(@ApplicationContext context: Context): GeotifyDatabase =
+        Room.databaseBuilder(
             context.applicationContext,
             GeotifyDatabase::class.java,
-            "geotify.db"
+            GeotifyDatabase.NAME
         )
-            .fallbackToDestructiveMigration(dropAllTables = true)
+            // Every schema step is declared explicitly, so user data is never dropped on upgrade.
+            .addMigrations(*Migrations.all())
             .build()
-    }
 
     @Provides
     fun provideLocationDao(database: GeotifyDatabase): LocationDao = database.locationDao()

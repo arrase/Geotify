@@ -6,7 +6,6 @@
     <string name="btn_save">Spara</string>
     <string name="btn_skip">Skippa</string>
     <string name="btn_open_settings">Öppna inställningar</string>
-    <string name="btn_use_current_gps">Använd nuvarande GPS-koordinater</string>
     <string name="btn_querying_gps">Frågar efter GPS…</string>
     <string name="label_locations">Platser</string>
     <string name="label_reminders">Påminnelser</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Redigera plats</string>
     <string name="dialog_new_reminder">Ny påminnelse</string>
     <string name="dialog_edit_reminder">Redigera påminnelse</string>
-    <string name="toast_location_deleted">\"%1$s\" taggen bort</string>
-    <string name="toast_reminder_cancelled">Påminnelsen avbruten</string>
-    <string name="toast_reminder_deleted">Påminnelsen taggen bort</string>
     <string name="content_description_add_location">Lägg till plats</string>
     <string name="content_description_add_reminder">Lägg till påminnelse</string>
-    <string name="content_description_location">Plats</string>
     <string name="content_description_reminder">Påminnelse</string>
     <string name="content_description_cancel">Avbryt</string>
     <string name="reminder_select_location">Välj plats</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Karta</string>
     <string name="btn_select_on_map">Välj på karta</string>
     <string name="btn_use_gps">Använd GPS</string>
-    <string name="btn_map_picker">Kartväljare</string>
     <string name="label_map_picker_title">Välj plats på karta</string>
     <string name="label_selected_location">Vald plats</string>
     <string name="btn_confirm_selection">Bekräfta val</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Ljust</string>
     <string name="settings_theme_dark">Mörkt</string>
-    <string name="geofence_limit_error">Geofence-gräns nådd (max 100). Du kan inte aktivera fler.</string>
-    <string name="geofence_limit_warning">Du har nått den maximala gränsen på 100 aktiva geofences.</string>
-    <string name="geofence_limit_fab_warning">Geofence-gräns på 100 nådd. Du kan bara lägga till påminnelser i platser med aktiva geofences.</string>
-    <string name="geofence_limit_dialog_error">Geofence-gräns på 100 nådd. Välj en plats med aktiva påminnelser.</string>
     <string name="label_notification_responsiveness">Aviseringsrespons</string>
     <string name="label_minutes_value">%1$d min</string>
     <string name="label_0min">0 min (Direkt)</string>
@@ -116,4 +106,15 @@
     <string name="content_description_back">Tillbaka</string>
     <string name="content_description_center_on_gps">Centrera på GPS</string>
 
+    <string name="err_location_missing">Den platsen finns inte längre</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d aktiv påminnelse</item>
+        <item quantity="other">%d aktiva påminnelser</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" borttagen</string>
+    <string name="reminder_cancelled">Påminnelse avbruten</string>
+    <string name="reminder_deleted">Påminnelse borttagen</string>
+    <string name="label_transition_unknown">Okänd</string>
 </resources>

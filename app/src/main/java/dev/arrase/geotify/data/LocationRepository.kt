@@ -25,27 +25,32 @@ class LocationRepository @Inject constructor(
         radiusMeters: Float = 150f,
         notificationResponsivenessMs: Int = 0
     ): LocationEntity = withContext(ioDispatcher) {
-        require(latitude in -90.0..90.0) { "Latitude must be between -90.0 and 90.0" }
-        require(longitude in -180.0..180.0) { "Longitude must be between -180.0 and 180.0" }
-        require(radiusMeters >= 50f) { "Geofence radius must be at least 50 meters" }
-        require(notificationResponsivenessMs >= 0) { "Notification responsiveness must be non-negative" }
+        val normalizedAlias = alias.trim()
+        require(normalizedAlias.isNotEmpty()) { "Alias must not be blank" }
+        validate(latitude, longitude, radiusMeters, notificationResponsivenessMs)
         val entity = LocationEntity(
             id = UUID.randomUUID().toString(),
-            alias = alias,
+            alias = normalizedAlias,
             latitude = latitude,
             longitude = longitude,
             radiusMeters = radiusMeters,
             notificationResponsivenessMs = notificationResponsivenessMs
         )
-        locationDao.insert(entity)
+        if (locationDao.insert(entity) == -1L) {
+            throw DuplicateAliasException(normalizedAlias)
+        }
         entity
     }
 
     suspend fun updateLocation(location: LocationEntity) = withContext(ioDispatcher) {
-        require(location.latitude in -90.0..90.0) { "Latitude must be between -90.0 and 90.0" }
-        require(location.longitude in -180.0..180.0) { "Longitude must be between -180.0 and 180.0" }
-        require(location.radiusMeters >= 50f) { "Geofence radius must be at least 50 meters" }
-        locationDao.update(location)
+        require(location.alias.isNotBlank()) { "Alias must not be blank" }
+        validate(
+            location.latitude,
+            location.longitude,
+            location.radiusMeters,
+            location.notificationResponsivenessMs
+        )
+        locationDao.update(location.copy(alias = location.alias.trim()))
     }
 
     suspend fun getAllLocations(): List<LocationEntity> = withContext(ioDispatcher) {
@@ -60,11 +65,48 @@ class LocationRepository @Inject constructor(
         locationDao.findById(id)
     }
 
+    /**
+     * Bounding-box prefilter. May return candidates outside [minLat]..[maxLat] range when the
+     * longitude window straddles the antimeridian; callers must still check exact distance.
+     */
+    suspend fun findLocationsInBoundingBox(
+        minLat: Double,
+        maxLat: Double,
+        minLon: Double,
+        maxLon: Double
+    ): List<LocationEntity> = withContext(ioDispatcher) {
+        locationDao.getLocationsInBoundingBox(minLat, maxLat, minLon, maxLon)
+    }
+
     suspend fun getAllAliases(): List<String> = withContext(ioDispatcher) {
         locationDao.getAllAliases()
     }
 
-    suspend fun deleteLocation(alias: String) = withContext(ioDispatcher) {
-        locationDao.deleteByAlias(alias)
+    /** @return `true` if a location was removed. */
+    suspend fun deleteLocation(alias: String): Boolean = withContext(ioDispatcher) {
+        locationDao.deleteByAlias(alias) > 0
+    }
+
+    private fun validate(
+        latitude: Double,
+        longitude: Double,
+        radiusMeters: Float,
+        notificationResponsivenessMs: Int
+    ) {
+        require(latitude in -90.0..90.0) { "Latitude must be between -90.0 and 90.0" }
+        require(longitude in -180.0..180.0) { "Longitude must be between -180.0 and 180.0" }
+        require(radiusMeters >= MIN_RADIUS_METERS) {
+            "Geofence radius must be at least $MIN_RADIUS_METERS meters"
+        }
+        require(notificationResponsivenessMs >= 0) { "Notification responsiveness must be non-negative" }
+    }
+
+    private companion object {
+        const val MIN_RADIUS_METERS = 50f
     }
 }
+
+/** Thrown when saving a location whose alias is already taken (case-insensitive). */
+class DuplicateAliasException(alias: String) :
+    IllegalArgumentException("Alias '$alias' already exists")
+

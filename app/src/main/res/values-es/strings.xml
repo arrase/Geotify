@@ -6,7 +6,6 @@
     <string name="btn_save">Guardar</string>
     <string name="btn_skip">Omitir</string>
     <string name="btn_open_settings">Abrir ajustes</string>
-    <string name="btn_use_current_gps">Usar coordenadas GPS actuales</string>
     <string name="btn_querying_gps">Obteniendo GPS…</string>
     <string name="label_locations">Lugares</string>
     <string name="label_reminders">Recordatorios</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Editar lugar</string>
     <string name="dialog_new_reminder">Nuevo recordatorio</string>
     <string name="dialog_edit_reminder">Editar recordatorio</string>
-    <string name="toast_location_deleted">\"%1$s\" eliminado</string>
-    <string name="toast_reminder_cancelled">Recordatorio cancelado</string>
-    <string name="toast_reminder_deleted">Recordatorio eliminado</string>
     <string name="content_description_add_location">Añadir lugar</string>
     <string name="content_description_add_reminder">Añadir recordatorio</string>
-    <string name="content_description_location">Ubicación</string>
     <string name="content_description_reminder">Recordatorio</string>
     <string name="content_description_cancel">Cancelar</string>
     <string name="reminder_select_location">Seleccionar lugar</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Mapa</string>
     <string name="btn_select_on_map">Seleccionar en mapa</string>
     <string name="btn_use_gps">Usar GPS</string>
-    <string name="btn_map_picker">Selector de mapa</string>
     <string name="label_map_picker_title">Seleccionar ubicación en el mapa</string>
     <string name="label_selected_location">Ubicación seleccionada</string>
     <string name="btn_confirm_selection">Confirmar selección</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">Sistema</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
-    <string name="geofence_limit_error">Límite de geovallas alcanzado (máximo 100). No puedes activar más.</string>
-    <string name="geofence_limit_warning">Has alcanzado el límite máximo de 100 geovallas activas.</string>
-    <string name="geofence_limit_fab_warning">Límite de 100 geovallas alcanzado. Solo puedes añadir recordatorios a ubicaciones con geovallas activas.</string>
-    <string name="geofence_limit_dialog_error">Límite de 100 geovallas alcanzado. Selecciona una ubicación con recordatorios activos.</string>
     <string name="label_notification_responsiveness">Tiempo de respuesta</string>
     <string name="label_minutes_value">%1$d min</string>
     <string name="label_0min">0 min (Instantáneo)</string>
@@ -114,4 +104,16 @@
     <string name="label_my_location">Mi ubicación</string>
     <string name="content_description_back">Atrás</string>
     <string name="content_description_center_on_gps">Centrar en GPS</string>
+    <string name="err_location_missing">Esa ubicación ya no existe</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d recordatorio activo</item>
+        <item quantity="many">%d de recordatorios activos</item>
+        <item quantity="other">%d recordatorios activos</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" eliminado</string>
+    <string name="reminder_cancelled">Recordatorio cancelado</string>
+    <string name="reminder_deleted">Recordatorio eliminado</string>
+    <string name="label_transition_unknown">Desconocido</string>
 </resources>

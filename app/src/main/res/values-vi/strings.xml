@@ -6,7 +6,6 @@
     <string name="btn_save">Lưu</string>
     <string name="btn_skip">Bỏ qua</string>
     <string name="btn_open_settings">Mở Cài đặt</string>
-    <string name="btn_use_current_gps">Sử dụng Tọa độ GPS Hiện tại</string>
     <string name="btn_querying_gps">Đang truy vấn GPS…</string>
     <string name="label_locations">Địa điểm</string>
     <string name="label_reminders">Nhắc nhở</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Chỉnh sửa địa điểm</string>
     <string name="dialog_new_reminder">Nhắc nhở mới</string>
     <string name="dialog_edit_reminder">Chỉnh sửa nhắc nhở</string>
-    <string name="toast_location_deleted">\"%1$s\" đã bị xóa</string>
-    <string name="toast_reminder_cancelled">Nhắc nhở đã bị hủy</string>
-    <string name="toast_reminder_deleted">Nhắc nhở đã bị xóa</string>
     <string name="content_description_add_location">Thêm địa điểm</string>
     <string name="content_description_add_reminder">Thêm nhắc nhở</string>
-    <string name="content_description_location">Địa điểm</string>
     <string name="content_description_reminder">Nhắc nhở</string>
     <string name="content_description_cancel">Hủy</string>
     <string name="reminder_select_location">Chọn địa điểm</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Bản đồ</string>
     <string name="btn_select_on_map">Chọn trên bản đồ</string>
     <string name="btn_use_gps">Sử dụng GPS</string>
-    <string name="btn_map_picker">Bộ chọn bản đồ</string>
     <string name="label_map_picker_title">Chọn địa điểm trên bản đồ</string>
     <string name="label_selected_location">Địa điểm đã chọn</string>
     <string name="btn_confirm_selection">Xác nhận lựa chọn</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">Hệ thống</string>
     <string name="settings_theme_light">Sáng</string>
     <string name="settings_theme_dark">Tối</string>
-    <string name="geofence_limit_error">Đã đạt giới hạn hàng rào địa lý (tối đa 100). Không thể kích hoạt thêm.</string>
-    <string name="geofence_limit_warning">Bạn đã đạt giới hạn tối đa là 100 hàng rào địa lý đang hoạt động.</string>
-    <string name="geofence_limit_fab_warning">Đã đạt giới hạn hàng rào địa lý là 100. Bạn chỉ có thể thêm nhắc nhở vào các địa điểm có hàng rào địa lý đang hoạt động.</string>
-    <string name="geofence_limit_dialog_error">Đã đạt giới hạn hàng rào địa lý là 100. Vui lòng chọn một địa điểm có nhắc nhở đang hoạt động.</string>
     <string name="label_notification_responsiveness">Độ phản hồi thông báo</string>
     <string name="label_minutes_value">%1$d phút</string>
     <string name="label_0min">0 phút (Tức thì)</string>
@@ -116,4 +106,14 @@
     <string name="content_description_back">Quay lại</string>
     <string name="content_description_center_on_gps">Căn giữa theo GPS</string>
 
+    <string name="err_location_missing">Địa điểm đó không còn tồn tại</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="other">%d lời nhắc đang hoạt động</item>
+    </plurals>
+    <string name="location_deleted">Đã xóa "%1$s"</string>
+    <string name="reminder_cancelled">Đã hủy lời nhắc</string>
+    <string name="reminder_deleted">Đã xóa lời nhắc</string>
+    <string name="label_transition_unknown">Không xác định</string>
 </resources>

@@ -9,10 +9,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.LocationEntity
-import java.util.Locale
 
 @Composable
 fun LocationRow(
@@ -29,9 +31,8 @@ fun LocationRow(
         },
         supportingContent = {
             Text(
-                text = String.format(
-                    Locale.US,
-                    "%.5f, %.5f",
+                text = stringResource(
+                    R.string.coordinates_format,
                     location.latitude,
                     location.longitude
                 ),
@@ -40,17 +41,24 @@ fun LocationRow(
             )
         },
         leadingContent = {
+            // Decorative: the alias is already the first thing a screen reader announces.
             Icon(
                 imageVector = Icons.Filled.LocationOn,
-                contentDescription = stringResource(R.string.content_description_location),
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
         },
         trailingContent = {
             if (activeReminderCount > 0) {
+                val description = pluralStringResource(
+                    R.plurals.active_reminder_count,
+                    activeReminderCount,
+                    activeReminderCount
+                )
                 Badge(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.clearAndSetSemantics { contentDescription = description }
                 ) {
                     Text(activeReminderCount.toString())
                 }

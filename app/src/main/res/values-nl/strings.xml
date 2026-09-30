@@ -6,7 +6,6 @@
     <string name="btn_save">Opslaan</string>
     <string name="btn_skip">Overslaan</string>
     <string name="btn_open_settings">Instellingen openen</string>
-    <string name="btn_use_current_gps">Gebruik huidige GPS-coördinaten</string>
     <string name="btn_querying_gps">GPS opvragen…</string>
     <string name="label_locations">Locaties</string>
     <string name="label_reminders">Herinneringen</string>
@@ -36,12 +35,8 @@
     <string name="dialog_edit_location">Locatie bewerken</string>
     <string name="dialog_new_reminder">Nieuwe herinnering</string>
     <string name="dialog_edit_reminder">Herinnering bewerken</string>
-    <string name="toast_location_deleted">\"%1$s\" verwijderd</string>
-    <string name="toast_reminder_cancelled">Herinnering geannuleerd</string>
-    <string name="toast_reminder_deleted">Herinnering verwijderd</string>
     <string name="content_description_add_location">Locatie toevoegen</string>
     <string name="content_description_add_reminder">Herinnering toevoegen</string>
-    <string name="content_description_location">Locatie</string>
     <string name="content_description_reminder">Herinnering</string>
     <string name="content_description_cancel">Annuleren</string>
     <string name="reminder_select_location">Locatie selecteren</string>
@@ -63,7 +58,6 @@
     <string name="tab_map">Kaart</string>
     <string name="btn_select_on_map">Selecteren op kaart</string>
     <string name="btn_use_gps">GPS gebruiken</string>
-    <string name="btn_map_picker">Kaartkiezer</string>
     <string name="label_map_picker_title">Locatie selecteren op kaart</string>
     <string name="label_selected_location">Geselecteerde locatie</string>
     <string name="btn_confirm_selection">Selectie bevestigen</string>
@@ -78,10 +72,6 @@
     <string name="settings_theme_system">Systeem</string>
     <string name="settings_theme_light">Licht</string>
     <string name="settings_theme_dark">Donker</string>
-    <string name="geofence_limit_error">Geofence-limiet bereikt (maximaal 100). Je kunt er geen meer activeren.</string>
-    <string name="geofence_limit_warning">Je hebt de maximale limiet van 100 actieve geofences bereikt.</string>
-    <string name="geofence_limit_fab_warning">Geofence-limiet van 100 bereikt. Je kunt alleen herinneringen toevoegen aan locaties met actieve geofences.</string>
-    <string name="geofence_limit_dialog_error">Geofence-limiet van 100 bereikt. Selecteer een locatie met actieve herinneringen.</string>
     <string name="label_notification_responsiveness">Meldingsresponsiviteit</string>
     <string name="label_minutes_value">%1$d min</string>
     <string name="label_0min">0 min (Direct)</string>
@@ -116,4 +106,15 @@
     <string name="content_description_back">Terug</string>
     <string name="content_description_center_on_gps">Centreren op GPS</string>
 
+    <string name="err_location_missing">Deze locatie bestaat niet meer</string>
+    <string name="label_coordinates_pair">%1$s: %2$.5f, %3$s: %4$.5f</string>
+    <string name="coordinates_format">%1$.5f, %2$.5f</string>
+    <plurals name="active_reminder_count">
+        <item quantity="one">%d actieve herinnering</item>
+        <item quantity="other">%d actieve herinneringen</item>
+    </plurals>
+    <string name="location_deleted">"%1$s" verwijderd</string>
+    <string name="reminder_cancelled">Herinnering geannuleerd</string>
+    <string name="reminder_deleted">Herinnering verwijderd</string>
+    <string name="label_transition_unknown">Onbekend</string>
 </resources>
