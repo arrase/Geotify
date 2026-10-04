@@ -112,7 +112,7 @@ dependencies {
     // the whole build resolves to that version to satisfy Gradle's consistent resolution between
     // the main and androidTest classpaths.
     constraints {
-        add("implementation", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+        add("implementation", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     }
 
     // Compose BOM
