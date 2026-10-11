@@ -6,7 +6,6 @@ import android.location.Location
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,9 +16,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
@@ -101,25 +97,7 @@ fun ReminderMapView(
         }
     }
 
-    // Lifecycle management. `onDetach()` shuts down this MapView's own tile-download executor, so it
-    // must be called whenever the view leaves composition (e.g. the user toggles back to the list) —
-    // otherwise each toggle leaks a thread pool.
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(mapViewRef, lifecycle) {
-        val map = mapViewRef ?: return@DisposableEffect onDispose {}
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_RESUME -> map.onResume()
-                Lifecycle.Event.ON_PAUSE -> map.onPause()
-                else -> Unit
-            }
-        }
-        lifecycle.addObserver(observer)
-        onDispose {
-            lifecycle.removeObserver(observer)
-            map.onDetach()
-        }
-    }
+    MapLifecycleEffect(mapViewRef)
 
     // Custom pins and geofence colors. The active/inactive hues are semantic (they encode reminder
     // state, not the app theme), while map chrome follows the Material theme so it stays legible on

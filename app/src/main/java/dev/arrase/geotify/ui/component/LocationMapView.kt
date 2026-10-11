@@ -4,7 +4,6 @@ import android.graphics.drawable.Drawable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,9 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.arrase.geotify.data.entity.LocationEntity
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
@@ -85,26 +81,7 @@ fun LocationMapView(
         }
     }
 
-    // Lifecycle management. `onDetach()` shuts down this MapView's own tile-download executor, so it
-    // must be called whenever the view leaves composition (e.g. the user toggles back to the list) —
-    // otherwise each toggle leaks a thread pool. It is safe to call repeatedly: osmdroid's tile
-    // writer shares a static database, so detaching does not break later MapView instances.
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(mapViewRef, lifecycle) {
-        val map = mapViewRef ?: return@DisposableEffect onDispose {}
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_RESUME -> map.onResume()
-                Lifecycle.Event.ON_PAUSE -> map.onPause()
-                else -> Unit
-            }
-        }
-        lifecycle.addObserver(observer)
-        onDispose {
-            lifecycle.removeObserver(observer)
-            map.onDetach()
-        }
-    }
+    MapLifecycleEffect(mapViewRef)
 
     // Pre-calculate/cache custom marker drawables when colors change
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()

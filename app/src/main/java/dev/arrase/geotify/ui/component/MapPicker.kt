@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -103,23 +102,7 @@ fun MapPicker(
         }
     }
 
-    // Lifecycle management to avoid memory and thread leaks
-    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(mapViewRef, lifecycle) {
-        val map = mapViewRef ?: return@DisposableEffect onDispose {}
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            when (event) {
-                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> map.onResume()
-                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> map.onPause()
-                else -> {}
-            }
-        }
-        lifecycle.addObserver(observer)
-        onDispose {
-            lifecycle.removeObserver(observer)
-            map.onDetach()
-        }
-    }
+    MapLifecycleEffect(mapViewRef)
 
     // Cache the custom marker icon
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
