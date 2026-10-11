@@ -65,7 +65,7 @@ Geotify/
 │       │   │   └── MainActivity.kt
 │       │   └── res/               # Drawables, layouts, strings, metadata
 │       └── test/                  # Unit tests
-├── docs/                          # MkDocs technical documentation source
+├── gh-pages/                      # MkDocs technical documentation source
 ├── gradle/
 │   └── libs.versions.toml         # Version catalog
 ├── build.gradle.kts               # Root build script

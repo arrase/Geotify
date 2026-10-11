@@ -2,6 +2,7 @@ site_name: Geotify
 site_description: Modern, location-aware Android application for geofenced reminders with AppFunctions integration.
 site_author: Arrase
 site_url: https://arrase.github.io/Geotify/
+docs_dir: gh-pages
 
 repo_name: arrase/Geotify
 repo_url: https://github.com/arrase/Geotify
