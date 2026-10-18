@@ -1,32 +1,74 @@
-# Geotify
-
-![Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
-![Kotlin](https://img.shields.io/badge/Language-Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
-![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
-![Hilt](https://img.shields.io/badge/DI-Dagger%20Hilt-0052CC?style=for-the-badge&logo=dagger&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
-
-**Geotify** is a modern, privacy-focused, location-aware Android application designed for creating and managing intelligent geofenced reminders. Built strictly with modern Android development standards, Geotify pairs a rich **Jetpack Compose** Material Design 3 interface with open-source **OpenStreetMap (osmdroid)** maps and system-level **Jetpack AppFunctions** integration for AI assistants.
-
-> [!TIP]
-> **Join the Open Beta on Google Play!** 🚀  
-> Geotify is available in Open Beta. You can download and test the app directly from the [Google Play Store](https://play.google.com/store/apps/details?id=dev.arrase.geotify).
-
+---
+hide:
+  - toc
 ---
 
-## Key Features
+<div class="hero-section">
+  <div class="hero-eyebrow">
+    <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
+    <span>Location-Aware Android Reminders</span>
+  </div>
+  <h1>Geotify</h1>
+  <p class="hero-subtitle">A modern, privacy-focused Android application for intelligent geofenced reminders, pairing a Jetpack Compose Material 3 UI and offline-capable OpenStreetMap rendering with system-level Jetpack AppFunctions for AI assistants.</p>
+  <div class="hero-badges">
+    <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=flat&amp;logo=android&amp;logoColor=white" alt="Android">
+    <img src="https://img.shields.io/badge/Language-Kotlin-7F52FF?style=flat&amp;logo=kotlin&amp;logoColor=white" alt="Kotlin">
+    <img src="https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=flat&amp;logo=jetpackcompose&amp;logoColor=white" alt="Jetpack Compose">
+    <img src="https://img.shields.io/badge/DI-Dagger%20Hilt-0052CC?style=flat&amp;logo=dagger&amp;logoColor=white" alt="Hilt">
+    <img src="https://img.shields.io/badge/License-MIT-blue?style=flat" alt="License">
+  </div>
+</div>
 
-- **<i class="fa-solid fa-map-location-dot"></i> Interactive Location Management**: Save exact GPS coordinates or select custom locations interactively with an embedded **Map Picker**. Customize alias names (*'Home'*, *'Office'*, *'Gym'*), geofence radii (50m to 5km), and notification responsiveness (0 to 10 minutes).
-- **<i class="fa-solid fa-bell"></i> Dynamic Geofenced Reminders**: Set arrival (enter) or departure (exit) triggers for saved locations.
-- **<i class="fa-solid fa-sliders"></i> Sliding Window Engine**: Overcomes the system-level 100 geofence limit on Android by dynamically active-monitoring the 99 nearest points of interest (POIs) alongside 1 Master Geofence.
-- **<i class="fa-solid fa-robot"></i> Jetpack AppFunctions (AI Ready)**: Exposes discoverable system APIs, enabling on-device Large Language Models (LLMs) and voice assistants to query, save locations, and create reminders autonomously.
-- **<i class="fa-solid fa-map"></i> OpenStreetMap (osmdroid)**: Fully offline-capable, embedded map rendering with theme-aware tile filtering (automatic light/dark map tiles).
-- **<i class="fa-solid fa-palette"></i> Material Design 3 UI**: Clean, fluid Compose layout supporting dynamic colors, micro-animations, light/dark mode switching, and banner notifications for required system permissions.
-- **<i class="fa-solid fa-globe"></i> Full Internationalization (i18n)**: Native localized UI in English, Spanish, German, French, Italian, and Portuguese.
+!!! tip "Join the Open Beta on Google Play! 🚀"
+    Geotify is available in Open Beta. You can download and test the app directly from the [Google Play Store](https://play.google.com/store/apps/details?id=dev.arrase.geotify).
 
----
+<div class="section-header">
+  <h2>Key Features</h2>
+  <span>Geofencing engine &amp; AI assistant integration</span>
+</div>
 
-## Screenshot Gallery
+<div class="projects-grid">
+  <div class="feature-card">
+    <i class="fa-solid fa-map-location-dot feature-icon" aria-hidden="true"></i>
+    <h3>Interactive Location Management</h3>
+    <p>Save exact GPS coordinates or select custom locations interactively with an embedded Map Picker. Customize alias names, geofence radii (50m to 5km), and notification responsiveness (0 to 10 minutes).</p>
+  </div>
+
+  <div class="feature-card">
+    <i class="fa-solid fa-bell feature-icon" aria-hidden="true"></i>
+    <h3>Dynamic Geofenced Reminders</h3>
+    <p>Configure arrival (enter) or departure (exit) triggers for saved locations with custom reminder notes and reliable background notifications.</p>
+  </div>
+
+  <div class="feature-card">
+    <i class="fa-solid fa-sliders feature-icon" aria-hidden="true"></i>
+    <h3>Sliding Window Engine</h3>
+    <p>Overcomes the system-level 100 geofence limit on Android by dynamically active-monitoring the 99 nearest points of interest (POIs) alongside 1 Master Geofence.</p>
+  </div>
+
+  <div class="feature-card">
+    <i class="fa-solid fa-robot feature-icon" aria-hidden="true"></i>
+    <h3>Jetpack AppFunctions (AI Ready)</h3>
+    <p>Exposes discoverable system APIs, enabling on-device Large Language Models (LLMs) and voice assistants to query, save locations, and create reminders autonomously.</p>
+  </div>
+
+  <div class="feature-card">
+    <i class="fa-solid fa-map feature-icon" aria-hidden="true"></i>
+    <h3>OpenStreetMap (osmdroid)</h3>
+    <p>Fully offline-capable, embedded map rendering with theme-aware tile filtering for automatic light and dark map tiles.</p>
+  </div>
+
+  <div class="feature-card">
+    <i class="fa-solid fa-palette feature-icon" aria-hidden="true"></i>
+    <h3>Material Design 3 &amp; i18n</h3>
+    <p>Clean, fluid Compose layout supporting dynamic colors, micro-animations, permission banners, and native localization in English, Spanish, German, French, Italian, and Portuguese.</p>
+  </div>
+</div>
+
+<div class="section-header">
+  <h2>Screenshot Gallery</h2>
+  <span>Material Design 3 &amp; interactive OpenStreetMap UI</span>
+</div>
 
 | Reminders List | Reminders Map |
 | :---: | :---: |
@@ -36,16 +78,72 @@
 | :---: | :---: | :---: |
 | ![Locations List](screenshots/locations_en.png) | ![Locations Map Picker](screenshots/map_en.png) | ![Settings Screen](screenshots/settings_en.png) |
 
----
+<div class="section-header">
+  <h2>Documentation</h2>
+  <span>Architecture, geofencing math &amp; Android setup</span>
+</div>
 
-## Documentation Sections
+<div class="projects-grid">
+  <a href="architecture/" class="feature-card">
+    <div class="card-top">
+      <i class="fa-solid fa-sitemap feature-icon" aria-hidden="true"></i>
+      <span class="card-badge">Read →</span>
+    </div>
+    <h3>Architecture</h3>
+    <p>Technical breakdown of MVVM + Clean Architecture, component interaction flow, tech stack, and osmdroid Compose integration.</p>
+  </a>
 
-Explore the technical architecture and features of Geotify:
+  <a href="geofencing/" class="feature-card">
+    <div class="card-top">
+      <i class="fa-solid fa-location-crosshairs feature-icon" aria-hidden="true"></i>
+      <span class="card-badge">Read →</span>
+    </div>
+    <h3>Geofencing Engine</h3>
+    <p>Deep dive into the Sliding Window algorithm, spatial bounding box math formulas, Master Geofence vs POIs, WorkManager scheduling, and transition receivers.</p>
+  </a>
 
-- [**Architecture**](architecture.md): Technical breakdown of MVVM + Clean Architecture, component interaction flow, tech stack, and osmdroid Compose integration.
-- [**Geofencing Engine**](geofencing.md): Deep dive into the Sliding Window algorithm, spatial bounding box math formulas, Master Geofence vs POIs, WorkManager scheduling, and transition receivers.
-- [**AppFunctions (AI Integration)**](appfunctions.md): Overview of Jetpack AppFunctions schemas, callable APIs, and assistant integration.
-- [**Database Schema**](database.md): Room DB entities (`LocationEntity`, `ReminderEntity`), indexes, and DataStore preferences.
-- [**System Permissions**](permissions.md): Permission handling for background location, notification posts, activity recognition, and boot triggers.
-- [**UI & Screen Guide**](screens.md): Overview of screens, ViewModels, UI state management, and custom Compose map overlays.
-- [**Building & Development**](building.md): Prerequisites, build scripts, Gradle dependencies, and developer environment setup.
+  <a href="appfunctions/" class="feature-card">
+    <div class="card-top">
+      <i class="fa-solid fa-robot feature-icon" aria-hidden="true"></i>
+      <span class="card-badge">Read →</span>
+    </div>
+    <h3>AppFunctions (AI Integration)</h3>
+    <p>Overview of Jetpack AppFunctions schemas, callable APIs, and assistant integration.</p>
+  </a>
+
+  <a href="database/" class="feature-card">
+    <div class="card-top">
+      <i class="fa-solid fa-database feature-icon" aria-hidden="true"></i>
+      <span class="card-badge">Read →</span>
+    </div>
+    <h3>Database Schema</h3>
+    <p>Room DB entities (LocationEntity, ReminderEntity), indexes, and DataStore preferences.</p>
+  </a>
+
+  <a href="permissions/" class="feature-card">
+    <div class="card-top">
+      <i class="fa-solid fa-shield-halved feature-icon" aria-hidden="true"></i>
+      <span class="card-badge">Read →</span>
+    </div>
+    <h3>System Permissions</h3>
+    <p>Permission handling for background location, notification posts, activity recognition, and boot triggers.</p>
+  </a>
+
+  <a href="screens/" class="feature-card">
+    <div class="card-top">
+      <i class="fa-solid fa-mobile-screen-button feature-icon" aria-hidden="true"></i>
+      <span class="card-badge">Read →</span>
+    </div>
+    <h3>UI &amp; Screen Guide</h3>
+    <p>Overview of screens, ViewModels, UI state management, and custom Compose map overlays.</p>
+  </a>
+
+  <a href="building/" class="feature-card">
+    <div class="card-top">
+      <i class="fa-solid fa-hammer feature-icon" aria-hidden="true"></i>
+      <span class="card-badge">Read →</span>
+    </div>
+    <h3>Building &amp; Development</h3>
+    <p>Prerequisites, build scripts, Gradle dependencies, and developer environment setup.</p>
+  </a>
+</div>
