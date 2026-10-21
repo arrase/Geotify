@@ -17,6 +17,18 @@ hide:
     <img src="https://img.shields.io/badge/DI-Dagger%20Hilt-0052CC?style=flat&amp;logo=dagger&amp;logoColor=white" alt="Hilt">
     <img src="https://img.shields.io/badge/License-MIT-blue?style=flat" alt="License">
   </div>
+  <div class="hero-badges">
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/quality_gate/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Quality Gate Status"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/coverage/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Coverage"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/bugs/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Bugs"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/vulnerabilities/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Vulnerabilities"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/code_smells/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Code Smells"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/tech_debt/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Tech Debt"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/duplicated_lines_density/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Duplicated Lines"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/security_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Security Rating"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/reliability_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Reliability Rating"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=arrase_Geotify"><img src="https://img.shields.io/sonar/sqale_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&amp;logo=sonarcloud" alt="Maintainability Rating"></a>
+  </div>
 </div>
 
 !!! tip "Join the Open Beta on Google Play! 🚀"

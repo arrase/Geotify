@@ -1,5 +1,16 @@
 # Geotify
 
+[![Quality Gate Status](https://img.shields.io/sonar/quality_gate/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Coverage](https://img.shields.io/sonar/coverage/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Bugs](https://img.shields.io/sonar/bugs/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Vulnerabilities](https://img.shields.io/sonar/vulnerabilities/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Code Smells](https://img.shields.io/sonar/code_smells/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Tech Debt](https://img.shields.io/sonar/tech_debt/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Duplicated Lines](https://img.shields.io/sonar/duplicated_lines_density/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Security Rating](https://img.shields.io/sonar/security_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Reliability Rating](https://img.shields.io/sonar/reliability_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Maintainability Rating](https://img.shields.io/sonar/sqale_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+
 Geotify is a modern, location-aware Android application that allows users to create and manage geofenced reminders. Designed with modern Android development practices, it features a beautiful Jetpack Compose interface, interactive mapping, and exposes advanced system-level **Jetpack AppFunctions**, making it capable of being driven by on-device LLMs or voice assistants.
 
 > [!TIP]
