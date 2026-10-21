@@ -1,15 +1,16 @@
 # Geotify
 
-[![Quality Gate Status](https://img.shields.io/sonar/quality_gate/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Coverage](https://img.shields.io/sonar/coverage/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Bugs](https://img.shields.io/sonar/bugs/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Vulnerabilities](https://img.shields.io/sonar/vulnerabilities/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Code Smells](https://img.shields.io/sonar/code_smells/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Tech Debt](https://img.shields.io/sonar/tech_debt/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Duplicated Lines](https://img.shields.io/sonar/duplicated_lines_density/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Security Rating](https://img.shields.io/sonar/security_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Reliability Rating](https://img.shields.io/sonar/reliability_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
-[![Maintainability Rating](https://img.shields.io/sonar/sqale_rating/arrase_Geotify?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=arrase_Geotify)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=alert_status)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=coverage)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=bugs)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=vulnerabilities)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=code_smells)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=sqale_index)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=duplicated_lines_density)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=security_rating)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=reliability_rating)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=sqale_rating)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=arrase_Geotify&metric=ncloc)](https://sonarcloud.io/summary/overall?id=arrase_Geotify)
 
 Geotify is a modern, location-aware Android application that allows users to create and manage geofenced reminders. Designed with modern Android development practices, it features a beautiful Jetpack Compose interface, interactive mapping, and exposes advanced system-level **Jetpack AppFunctions**, making it capable of being driven by on-device LLMs or voice assistants.
 
