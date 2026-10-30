@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import dev.arrase.geotify.data.entity.LocationEntity
-import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
@@ -24,7 +23,6 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
-import java.io.File
 
 @Composable
 fun LocationMapView(
@@ -35,14 +33,6 @@ fun LocationMapView(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-
-    // Configure osmdroid cache to avoid external storage permission issues
-    remember {
-        Configuration.getInstance().apply {
-            userAgentValue = context.packageName
-            osmdroidTileCache = File(context.cacheDir, "osmdroid")
-        }
-    }
 
     var mapViewRef by remember { mutableStateOf<MapView?>(null) }
 
@@ -117,6 +107,7 @@ fun LocationMapView(
     AndroidView(
         factory = { ctx ->
             MapView(ctx).apply {
+                setDestroyMode(false)
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
                 zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
@@ -126,6 +117,7 @@ fun LocationMapView(
             }
         },
         modifier = modifier.fillMaxSize(),
+        onRelease = { map -> map.onDetach() },
         update = { map ->
             map.applyTileThemeFilter(isDarkTheme, tileFilter)
             updateLocationOverlays(

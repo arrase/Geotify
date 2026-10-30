@@ -48,7 +48,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.arrase.geotify.R
 import kotlinx.coroutines.launch
-import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -57,7 +56,6 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
-import java.io.File
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,14 +71,6 @@ fun MapPicker(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
-    // Configure osmdroid cache to avoid external storage permission issues
-    remember {
-        Configuration.getInstance().apply {
-            userAgentValue = context.packageName
-            osmdroidTileCache = File(context.cacheDir, "osmdroid")
-        }
-    }
 
     var selectedPoint by remember {
         mutableStateOf(getInitialPoint(initialCoordinates))
@@ -128,14 +118,17 @@ fun MapPicker(
                 AndroidView(
                     factory = { ctx ->
                         MapView(ctx).apply {
+                            setDestroyMode(false)
                             setTileSource(TileSourceFactory.MAPNIK)
                             setMultiTouchControls(true)
                             zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
                             controller.setZoom(DEFAULT_ZOOM)
+                            onResume()
                             mapViewRef = this
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
+                    onRelease = { map -> map.onDetach() },
                     update = { map ->
                         map.applyTileThemeFilter(isDarkTheme, tileFilter)
                         configureOverlays(

@@ -8,10 +8,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.osmdroid.views.MapView
 
 /**
- * Forwards lifecycle resume/pause to [map]. `onDetach()` shuts down the MapView's own tile-download
- * executor, so it is called whenever the view leaves composition (e.g. the user toggles back to the
- * list) — otherwise each toggle leaks a thread pool. It is safe to call repeatedly: osmdroid's tile
- * writer shares a static database, so detaching does not break later MapView instances.
+ * Forwards lifecycle resume/pause events to [map] while it remains in composition.
+ * Final cleanup via `MapView.onDetach()` is handled by `AndroidView`'s `onRelease` callback.
  */
 @Composable
 fun MapLifecycleEffect(map: MapView?) {
@@ -28,7 +26,6 @@ fun MapLifecycleEffect(map: MapView?) {
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
-            mapView.onDetach()
         }
     }
 }

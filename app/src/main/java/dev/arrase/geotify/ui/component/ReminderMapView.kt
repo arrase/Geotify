@@ -19,7 +19,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import dev.arrase.geotify.R
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
-import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
@@ -29,7 +28,6 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
-import java.io.File
 
 data class SpatialRecalculationArea(
     val latitude: Double? = null,
@@ -63,14 +61,6 @@ fun ReminderMapView(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-
-    // Configure osmdroid cache (side effect, runs once)
-    LaunchedEffect(Unit) {
-        Configuration.getInstance().apply {
-            userAgentValue = context.packageName
-            osmdroidTileCache = File(context.cacheDir, "osmdroid")
-        }
-    }
 
     var mapViewRef by remember { mutableStateOf<MapView?>(null) }
     var hasCentered by remember { mutableStateOf(false) }
@@ -145,6 +135,7 @@ fun ReminderMapView(
     AndroidView(
         factory = { ctx ->
             MapView(ctx).apply {
+                setDestroyMode(false)
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
                 zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
@@ -154,6 +145,7 @@ fun ReminderMapView(
             }
         },
         modifier = modifier.fillMaxSize(),
+        onRelease = { map -> map.onDetach() },
         update = { map ->
             map.applyTileThemeFilter(isDarkTheme, tileFilter)
             map.overlays.clear()
