@@ -54,8 +54,8 @@ android {
         applicationId = "dev.arrase.geotify"
         minSdk = 24
         targetSdk = 36
-        versionCode = 15
-        versionName = "1.0.0-beta.8"
+        versionCode = 16
+        versionName = "1.0.0-beta.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -148,7 +148,6 @@ dependencies {
 
     // AppFunctions
     implementation(libs.androidx.appfunctions)
-    implementation(libs.androidx.appfunctions.service)
     ksp(libs.androidx.appfunctions.compiler)
 
     // Play Services Location (FusedLocationProvider + GeofencingClient)

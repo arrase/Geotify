@@ -1,17 +1,23 @@
 package dev.arrase.geotify.appfunction
 
-import androidx.appfunctions.AppFunctionContext
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.appfunctions.AppFunctionDeclaration
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionSerializable
-import androidx.appfunctions.service.AppFunction
+import androidx.appfunctions.AppFunctionService
+import androidx.appfunctions.AppFunctionServiceEntryPoint
 import com.google.android.gms.location.Geofence
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import dev.arrase.geotify.data.DuplicateAliasException
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.entity.triggerTypeString
 import dev.arrase.geotify.geofence.GeofenceOrchestrator
 import dev.arrase.geotify.location.LocationProvider
-import javax.inject.Inject
 
 /** Serializable result returned after initiating a location save. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
@@ -68,24 +74,47 @@ data class SavedReminder(
     val triggerType: String
 )
 
-@Suppress("UNUSED_PARAMETER")
-class GeotifyAppFunctions @Inject constructor(
-    private val locationRepository: LocationRepository,
-    private val reminderRepository: ReminderRepository,
-    private val geofenceOrchestrator: GeofenceOrchestrator,
-    private val locationProvider: LocationProvider
-) {
+@RequiresApi(Build.VERSION_CODES.BAKLAVA)
+@AppFunctionServiceEntryPoint(
+    serviceName = "GeotifyAppFunctionService",
+    appFunctionXmlFileName = "geotify_app_function_service"
+)
+abstract class GeotifyAppFunctions : AppFunctionService() {
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    internal interface ServiceEntryPoint {
+        fun locationRepository(): LocationRepository
+        fun reminderRepository(): ReminderRepository
+        fun geofenceOrchestrator(): GeofenceOrchestrator
+        fun locationProvider(): LocationProvider
+    }
+
+    internal lateinit var locationRepository: LocationRepository
+    internal lateinit var reminderRepository: ReminderRepository
+    internal lateinit var geofenceOrchestrator: GeofenceOrchestrator
+    internal lateinit var locationProvider: LocationProvider
+
+    override fun onCreate() {
+        super.onCreate()
+        val entryPoint = EntryPointAccessors.fromApplication(
+            applicationContext,
+            ServiceEntryPoint::class.java
+        )
+        locationRepository = entryPoint.locationRepository()
+        reminderRepository = entryPoint.reminderRepository()
+        geofenceOrchestrator = entryPoint.geofenceOrchestrator()
+        locationProvider = entryPoint.locationProvider()
+    }
 
     /**
-     * Save the device's exact GPS location right now, assigning it the given alias name.
-     * Examples: 'mom's house', 'supermarket', 'gym'.
-     * The location is obtained in the background via GPS and may take a few seconds to complete.
+     * Saves the device's current GPS location under a unique alias name.
      *
-     * @param alias The alias to assign to the current location (e.g. 'casa', 'trabajo').
+     * @param alias Unique human-readable alias for the current location (e.g., "home", "gym", "supermarket").
+     * @return Result containing the assigned alias and save operation status.
      */
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun saveCurrentLocation(
-        appFunctionContext: AppFunctionContext,
         alias: String
     ): SaveLocationResult {
         val existing = locationRepository.findLocationByAlias(alias)
@@ -116,17 +145,15 @@ class GeotifyAppFunctions @Inject constructor(
     }
 
     /**
-     * Create a location-based reminder. It triggers when the user crosses the geofence
-     * of the location referenced by 'targetAlias'. Set 'triggerOnArrival' to true to trigger
-     * when arriving, or false to trigger when leaving.
+     * Creates a location-based geofence reminder for a saved location alias that triggers on arrival or departure.
      *
-     * @param targetAlias The exact alias of a previously saved location. Use listLocations to see available aliases.
-     * @param payloadMessage The reminder message to display when triggered.
-     * @param triggerOnArrival True = remind on arrival (entering the area). False = remind on departure (leaving the area).
+     * @param targetAlias Exact alias of an existing saved location.
+     * @param payloadMessage Non-blank reminder message displayed when the geofence triggers.
+     * @param triggerOnArrival True to trigger when arriving at the location; false to trigger when departing.
+     * @return Details of the newly created geofence reminder.
      */
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun createGeofenceReminder(
-        appFunctionContext: AppFunctionContext,
         targetAlias: String,
         payloadMessage: String,
         triggerOnArrival: Boolean
@@ -151,27 +178,25 @@ class GeotifyAppFunctions @Inject constructor(
     }
 
     /**
-     * List all saved locations with their alias names and coordinates.
-     * Use this to check available locations before creating a reminder.
+     * Lists all saved locations with their aliases and GPS coordinates.
+     *
+     * @return List of all saved locations, or an empty list if none exist.
      */
-    @AppFunction(isDescribedByKDoc = true)
-    suspend fun listLocations(
-        appFunctionContext: AppFunctionContext
-    ): List<SavedLocation> {
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
+    suspend fun listLocations(): List<SavedLocation> {
         return locationRepository.getAllLocations().map { entity ->
             SavedLocation(entity.alias, entity.latitude, entity.longitude)
         }
     }
 
     /**
-     * Delete a saved location by its alias. This also removes all reminders
-     * and geofences associated with that location.
+     * Deletes a saved location by its alias along with all reminders and geofences associated with it.
      *
-     * @param alias The alias of the saved location to delete (e.g. 'casa').
+     * @param alias Exact alias of the saved location to delete.
+     * @return Deletion status for the specified location alias.
      */
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun deleteLocation(
-        appFunctionContext: AppFunctionContext,
         alias: String
     ): DeleteResult {
         locationRepository.findLocationByAlias(alias) ?: throwAliasNotFound(alias)
@@ -181,16 +206,14 @@ class GeotifyAppFunctions @Inject constructor(
     }
 
     /**
-     * Cancel and delete a specific active reminder by matching the location alias
-     * and optional reminder message.
+     * Cancels and deletes an active reminder matching a saved location alias and optional message substring.
      *
-     * @param targetAlias The alias of the location associated with the reminder.
-     * @param message The reminder message to match and delete. If omitted or null,
-     *                and only one active reminder exists for the location, it will be deleted.
+     * @param targetAlias Exact alias of the saved location associated with the reminder.
+     * @param message Case-insensitive substring of the reminder message to match. If null or blank and only one active reminder exists for the location, deletes that reminder.
+     * @return Deletion status for the matched reminder.
      */
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun deleteReminder(
-        appFunctionContext: AppFunctionContext,
         targetAlias: String,
         message: String? = null
     ): DeleteResult {
@@ -228,13 +251,12 @@ class GeotifyAppFunctions @Inject constructor(
     }
 
     /**
-     * List all active reminders across all locations.
-     * Use this to check active reminders and their messages.
+     * Lists all active geofence reminders across all saved locations.
+     *
+     * @return List of active reminders with their IDs, target aliases, messages, and trigger types.
      */
-    @AppFunction(isDescribedByKDoc = true)
-    suspend fun listActiveReminders(
-        appFunctionContext: AppFunctionContext
-    ): List<SavedReminder> {
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
+    suspend fun listActiveReminders(): List<SavedReminder> {
         val reminders = reminderRepository.getActiveReminders()
         val locations = locationRepository.getAllLocations().associateBy { it.id }
         return reminders.map { entity ->
