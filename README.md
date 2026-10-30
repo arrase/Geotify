@@ -53,13 +53,10 @@ Geotify is a modern, location-aware Android application that allows users to cre
 
 ## Expose AppFunctions (AI / Agentic Integration)
 
-> [!WARNING]
-> **EXPERIMENTAL**: The AppFunctions integration is enabled for devices running the correct Android version (Android 16+), but please note that it will not fully function until Google officially releases the Jetpack AppFunctions library to General Availability (GA).
-
-Geotify implements **Jetpack AppFunctions** (via the `androidx.appfunctions` APIs). This acts as a bridge that allows system services, voice assistants, and local Large Language Models (LLMs) to discover and execute actions within the app context.
-
 > [!NOTE]
-> When integrating or calling these functions programmatically via the Jetpack AppFunctions framework, the first parameter (`appFunctionContext: AppFunctionContext`) is automatically injected by the system and is omitted from the assistant/caller-facing schemas.
+> **BETA**: Geotify integrates **Jetpack AppFunctions** (`androidx.appfunctions:1.0.0-beta01`) for devices running Android 16 (API 36) and newer, using the compile-time `@AppFunctionServiceEntryPoint` architecture.
+
+Geotify implements **Jetpack AppFunctions** (via the `androidx.appfunctions` APIs). This acts as a bridge that allows system services, voice assistants, and local Large Language Models (LLMs) to discover and execute actions within the app context without opening the UI.
 
 ### AppFunction APIs
 
@@ -98,8 +95,7 @@ data class CreateReminderResult(
     val reminderId: String,     // Unique identifier of the newly created reminder
     val targetAlias: String,    // The alias of the target location
     val payloadMessage: String, // The reminder message displayed when triggered
-    val triggerType: String,    // "arrival" or "departure"
-    val warning: String?        // Warning if geofence limit is reached (optional)
+    val triggerType: String     // "arrival" or "departure"
 )
 ```
 

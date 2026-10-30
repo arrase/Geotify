@@ -1,25 +1,36 @@
 package dev.arrase.geotify.appfunction
 
+import android.app.Application
+import android.content.Context
 import android.location.Location
-import androidx.appfunctions.AppFunctionContext
+import android.os.CancellationSignal
 import androidx.appfunctions.AppFunctionInvalidArgumentException
+import androidx.appfunctions.ExecuteAppFunctionRequest
+import androidx.appfunctions.ExecuteAppFunctionResponse
+import androidx.appfunctions.metadata.AppFunctionMetadata
 import com.google.android.gms.location.Geofence
+import dagger.hilt.internal.GeneratedComponent
+import dagger.hilt.internal.GeneratedComponentManager
+import dev.arrase.geotify.data.DuplicateAliasException
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
 import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.geofence.GeofenceOrchestrator
 import dev.arrase.geotify.location.LocationProvider
+import java.util.function.Consumer
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -49,22 +60,62 @@ class GeotifyAppFunctionsTest {
     private val reminderRepository: ReminderRepository = mock()
     private val locationProvider: LocationProvider = mock()
     private val geofenceOrchestrator: GeofenceOrchestrator = mock()
-    private val appFunctionContext: AppFunctionContext = mock()
 
     private lateinit var appFunctions: GeotifyAppFunctions
 
     @Before
     fun setUp() {
-        appFunctions = GeotifyAppFunctions(
-            locationRepository = locationRepository,
-            reminderRepository = reminderRepository,
-            geofenceOrchestrator = geofenceOrchestrator,
-            locationProvider = locationProvider
-        )
+        appFunctions = GeotifyAppFunctionService().apply {
+            locationRepository = this@GeotifyAppFunctionsTest.locationRepository
+            reminderRepository = this@GeotifyAppFunctionsTest.reminderRepository
+            geofenceOrchestrator = this@GeotifyAppFunctionsTest.geofenceOrchestrator
+            locationProvider = this@GeotifyAppFunctionsTest.locationProvider
+        }
         runBlocking {
             // Deletions report the number of affected rows.
             whenever(locationRepository.deleteLocation(any())).thenReturn(true)
             whenever(reminderRepository.cancelReminder(any())).thenReturn(true)
+        }
+    }
+
+    private interface TestComponent : GeneratedComponent, GeotifyAppFunctions.ServiceEntryPoint
+
+    private class TestHiltApplication(
+        private val component: TestComponent
+    ) : Application(), GeneratedComponentManager<Any> {
+        override fun getApplicationContext(): Context = this
+        override fun generatedComponent(): Any = component
+    }
+
+    // ── Service lifecycle / DI wiring tests ──
+
+    @Test
+    fun onCreate_resolvesDependenciesFromHiltEntryPoint() {
+        val component: TestComponent = mock {
+            on { locationRepository() } doReturn locationRepository
+            on { reminderRepository() } doReturn reminderRepository
+            on { geofenceOrchestrator() } doReturn geofenceOrchestrator
+            on { locationProvider() } doReturn locationProvider
+        }
+        val app = TestHiltApplication(component)
+        val service = object : GeotifyAppFunctions() {
+            override fun getApplicationContext(): Context = app
+            override fun onExecuteFunction(
+                request: ExecuteAppFunctionRequest,
+                metadata: AppFunctionMetadata,
+                cancellationSignal: CancellationSignal,
+                callback: Consumer<ExecuteAppFunctionResponse>
+            ) = Unit
+        }
+
+        service.onCreate()
+        try {
+            assertSame(locationRepository, service.locationRepository)
+            assertSame(reminderRepository, service.reminderRepository)
+            assertSame(geofenceOrchestrator, service.geofenceOrchestrator)
+            assertSame(locationProvider, service.locationProvider)
+        } finally {
+            service.onDestroy()
         }
     }
 
@@ -79,7 +130,7 @@ class GeotifyAppFunctionsTest {
             whenever(locationRepository.findLocationByAlias("Casa")).thenReturn(null)
             whenever(locationProvider.getCurrentLocation()).thenReturn(mockLocation)
 
-            val result = appFunctions.saveCurrentLocation(appFunctionContext, "Casa")
+            val result = appFunctions.saveCurrentLocation("Casa")
 
             verify(locationRepository).saveLocation("Casa", 40.4168, -3.7038)
             assertEquals("Casa", result.alias)
@@ -95,7 +146,7 @@ class GeotifyAppFunctionsTest {
 
             val exception = assertThrows(AppFunctionInvalidArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.saveCurrentLocation(appFunctionContext, "Casa")
+                    appFunctions.saveCurrentLocation("Casa")
                 }
             }
 
@@ -105,12 +156,30 @@ class GeotifyAppFunctionsTest {
     }
 
     @Test
+    fun saveCurrentLocation_whenDuplicateAliasInsertedConcurrently_returnsDuplicateAliasStatus() {
+        runBlocking {
+            val mockLocation: Location = mock()
+            whenever(mockLocation.latitude).thenReturn(40.4168)
+            whenever(mockLocation.longitude).thenReturn(-3.7038)
+            whenever(locationRepository.findLocationByAlias("Casa")).thenReturn(null)
+            whenever(locationProvider.getCurrentLocation()).thenReturn(mockLocation)
+            whenever(locationRepository.saveLocation("Casa", 40.4168, -3.7038))
+                .thenThrow(DuplicateAliasException("Casa"))
+
+            val result = appFunctions.saveCurrentLocation("Casa")
+
+            assertEquals("Casa", result.alias)
+            assertTrue(result.status.contains("Alias already in use"))
+        }
+    }
+
+    @Test
     fun saveCurrentLocation_whenGpsFixFails_returnsFailureStatus() {
         runBlocking {
             whenever(locationRepository.findLocationByAlias("Trabajo")).thenReturn(null)
             whenever(locationProvider.getCurrentLocation()).thenReturn(null)
 
-            val result = appFunctions.saveCurrentLocation(appFunctionContext, "Trabajo")
+            val result = appFunctions.saveCurrentLocation("Trabajo")
 
             verify(locationRepository, never()).saveLocation(any(), any(), any(), any(), any())
             assertEquals("Trabajo", result.alias)
@@ -124,7 +193,7 @@ class GeotifyAppFunctionsTest {
             whenever(locationRepository.findLocationByAlias("Gym")).thenReturn(null)
             whenever(locationProvider.getCurrentLocation()).thenThrow(RuntimeException("GPS hardware unavailable"))
 
-            val result = appFunctions.saveCurrentLocation(appFunctionContext, "Gym")
+            val result = appFunctions.saveCurrentLocation("Gym")
 
             verify(locationRepository, never()).saveLocation(any(), any(), any(), any(), any())
             assertEquals("Gym", result.alias)
@@ -150,7 +219,6 @@ class GeotifyAppFunctionsTest {
                 .thenReturn(createdReminder)
 
             val result = appFunctions.createGeofenceReminder(
-                appFunctionContext = appFunctionContext,
                 targetAlias = "Super",
                 payloadMessage = "Comprar leche",
                 triggerOnArrival = true
@@ -179,7 +247,6 @@ class GeotifyAppFunctionsTest {
                 .thenReturn(createdReminder)
 
             val result = appFunctions.createGeofenceReminder(
-                appFunctionContext = appFunctionContext,
                 targetAlias = "Oficina",
                 payloadMessage = "Cerrar ventana",
                 triggerOnArrival = false
@@ -200,7 +267,7 @@ class GeotifyAppFunctionsTest {
 
             val exception = assertThrows(AppFunctionInvalidArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.createGeofenceReminder(appFunctionContext, "Desconocido", "Test", true)
+                    appFunctions.createGeofenceReminder("Desconocido", "Test", true)
                 }
             }
 
@@ -217,7 +284,7 @@ class GeotifyAppFunctionsTest {
 
             val exception = assertThrows(AppFunctionInvalidArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.createGeofenceReminder(appFunctionContext, "Desconocido", "Test", true)
+                    appFunctions.createGeofenceReminder("Desconocido", "Test", true)
                 }
             }
 
@@ -236,7 +303,7 @@ class GeotifyAppFunctionsTest {
 
             assertThrows(IllegalArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.createGeofenceReminder(appFunctionContext, "Casa", "", true)
+                    appFunctions.createGeofenceReminder("Casa", "", true)
                 }
             }
         }
@@ -253,7 +320,7 @@ class GeotifyAppFunctionsTest {
             )
             whenever(locationRepository.getAllLocations()).thenReturn(entities)
 
-            val result = appFunctions.listLocations(appFunctionContext)
+            val result = appFunctions.listLocations()
 
             assertEquals(2, result.size)
             assertEquals(SavedLocation("Casa", 40.4168, -3.7038), result[0])
@@ -266,7 +333,7 @@ class GeotifyAppFunctionsTest {
         runBlocking {
             whenever(locationRepository.getAllLocations()).thenReturn(emptyList())
 
-            val result = appFunctions.listLocations(appFunctionContext)
+            val result = appFunctions.listLocations()
 
             assertTrue(result.isEmpty())
         }
@@ -280,7 +347,7 @@ class GeotifyAppFunctionsTest {
             val location = LocationEntity("loc-1", "Casa", 40.0, -3.0)
             whenever(locationRepository.findLocationByAlias("Casa")).thenReturn(location)
 
-            val result = appFunctions.deleteLocation(appFunctionContext, "Casa")
+            val result = appFunctions.deleteLocation("Casa")
 
             verify(locationRepository).deleteLocation("Casa")
             assertEquals(DeleteResult("Casa", deleted = true), result)
@@ -295,7 +362,7 @@ class GeotifyAppFunctionsTest {
 
             assertThrows(AppFunctionInvalidArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.deleteLocation(appFunctionContext, "NoExiste")
+                    appFunctions.deleteLocation("NoExiste")
                 }
             }
             verify(locationRepository, never()).deleteLocation(any())
@@ -312,7 +379,7 @@ class GeotifyAppFunctionsTest {
             whenever(locationRepository.findLocationByAlias("Casa")).thenReturn(location)
             whenever(reminderRepository.getActiveReminders()).thenReturn(listOf(reminder))
 
-            val result = appFunctions.deleteReminder(appFunctionContext, "Casa")
+            val result = appFunctions.deleteReminder("Casa")
 
             verify(reminderRepository).cancelReminder("rem-1")
             assertEquals(DeleteResult("Casa", deleted = true), result)
@@ -327,7 +394,7 @@ class GeotifyAppFunctionsTest {
 
             assertThrows(AppFunctionInvalidArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.deleteReminder(appFunctionContext, "Missing", null)
+                    appFunctions.deleteReminder("Missing", null)
                 }
             }
             verify(reminderRepository, never()).cancelReminder(any())
@@ -344,7 +411,7 @@ class GeotifyAppFunctionsTest {
 
             val exception = assertThrows(AppFunctionInvalidArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.deleteReminder(appFunctionContext, "Casa", null)
+                    appFunctions.deleteReminder("Casa", null)
                 }
             }
 
@@ -364,7 +431,7 @@ class GeotifyAppFunctionsTest {
 
             val exception = assertThrows(AppFunctionInvalidArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.deleteReminder(appFunctionContext, "Casa", "")
+                    appFunctions.deleteReminder("Casa", "")
                 }
             }
 
@@ -382,7 +449,7 @@ class GeotifyAppFunctionsTest {
             whenever(locationRepository.findLocationByAlias("Casa")).thenReturn(location)
             whenever(reminderRepository.getActiveReminders()).thenReturn(listOf(reminder1, reminder2))
 
-            val result = appFunctions.deleteReminder(appFunctionContext, "Casa", "regar")
+            val result = appFunctions.deleteReminder("Casa", "regar")
 
             verify(reminderRepository).cancelReminder("rem-2")
             assertEquals(DeleteResult("Casa", deleted = true), result)
@@ -399,7 +466,7 @@ class GeotifyAppFunctionsTest {
 
             val exception = assertThrows(AppFunctionInvalidArgumentException::class.java) {
                 runBlocking {
-                    appFunctions.deleteReminder(appFunctionContext, "Casa", "Lavar coche")
+                    appFunctions.deleteReminder("Casa", "Lavar coche")
                 }
             }
 
@@ -422,7 +489,7 @@ class GeotifyAppFunctionsTest {
             whenever(reminderRepository.getActiveReminders()).thenReturn(listOf(reminder1, reminder2, reminder3))
             whenever(locationRepository.getAllLocations()).thenReturn(listOf(loc1, loc2))
 
-            val result = appFunctions.listActiveReminders(appFunctionContext)
+            val result = appFunctions.listActiveReminders()
 
             assertEquals(3, result.size)
             assertEquals(

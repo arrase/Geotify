@@ -1,47 +1,49 @@
 # AppFunctions (AI Assistant Integration)
 
-Android 16 introduces `androidx.appfunctions`, enabling system-level AI assistants (such as Google Gemini) to discover and execute actions within applications without opening the user interface. Geotify exposes six specialized AppFunctions for managing saved locations and geofenced reminders.
+Android 16 introduces `androidx.appfunctions`, enabling system-level AI assistants (such as Google Gemini) to discover and execute actions within applications without opening the user interface. Geotify exposes six specialized AppFunctions using the **`androidx.appfunctions:1.0.0-beta01`** `@AppFunctionServiceEntryPoint` architecture for managing saved locations and geofenced reminders.
 
 ---
 
 ## Overview & System Flow
 
-When a user prompts an AI assistant (e.g., *"Remind me to buy milk when I arrive at the supermarket"*), the assistant inspects registered `androidx.appfunctions` schemas, builds the parameter payloads, and invokes the function directly in the background.
+When a user prompts an AI assistant (e.g., *"Remind me to buy milk when I arrive at the supermarket"*), the assistant inspects registered `androidx.appfunctions` schemas and app-level `appfn:instructions`, builds the parameter payloads, and invokes the bound `GeotifyAppFunctionService` directly in the background.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User
     participant AI as AI Assistant (Gemini)
-    participant AF as GeotifyAppFunctions
+    participant AF as GeotifyAppFunctionService
     participant Repo as Repositories
     participant DB as Room Database (geotify.db)
 
     User->>AI: "Remind me to buy milk when I get home"
-    AI->>AF: listLocations(context)
+    AI->>AF: listLocations()
     AF->>Repo: getAllLocations()
     Repo->>DB: Query saved locations
     DB-->>AF: [SavedLocation(alias="home", ...)]
     AF-->>AI: List of SavedLocation DTOs
-    AI->>AF: createGeofenceReminder(context, targetAlias="home", payloadMessage="buy milk", triggerOnArrival=true)
+    AI->>AF: createGeofenceReminder(targetAlias="home", payloadMessage="buy milk", triggerOnArrival=true)
     AF->>Repo: createReminder(...)
     Repo->>DB: Insert ReminderEntity
     AF-->>AI: CreateReminderResult DTO
     AI-->>User: "I've set a reminder for when you arrive at home."
 ```
 
-### Context Injection & Metadata Extraction
+### Compile-Time Service Entry Point & Metadata Extraction
 
-Every function in `GeotifyAppFunctions` accepts an `AppFunctionContext` as its first parameter. The system automatically injects this context upon invocation.
+`GeotifyAppFunctions` is an `abstract class` extending `AppFunctionService`, annotated with `@AppFunctionServiceEntryPoint` and resolving its singletons via a Hilt `@EntryPoint`:
 
-- **`@AppFunction(isDescribedByKDoc = true)`**: Instructs the KSP compiler plugin (`androidx.appfunctions.compiler`) to parse KDoc comments into app metadata XML (`app_metadata.xml`), exposing function capabilities to system AI callers.
-- **`@AppFunctionSerializable`**: Annotates all return DTO classes (`SaveLocationResult`, `CreateReminderResult`, `SavedLocation`, `DeleteResult`, `SavedReminder`) to allow automated cross-process serialization.
+- **`@AppFunctionServiceEntryPoint`**: Instructs KSP (`androidx.appfunctions.compiler`) to generate the concrete `GeotifyAppFunctionService` bound in `AndroidManifest.xml` and the schema asset `assets/geotify_app_function_service.xml`.
+- **`@AppFunctionDeclaration(isDescribedByKDoc = true)`**: Marks service methods as callable AppFunctions and extracts KDoc summaries, `@param`, and `@return` descriptions into compile-time metadata.
+- **`@AppFunctionSerializable(isDescribedByKDoc = true)`**: Annotates all return DTO classes (`SaveLocationResult`, `CreateReminderResult`, `SavedLocation`, `DeleteResult`, `SavedReminder`) and extracts inline property KDocs for cross-process serialization.
+- **`app_metadata.xml` (`appfn:instructions`)**: Provides app-level operational patterns and cross-function constraints to guide LLM tool orchestration.
 
 ---
 
 ## API Summary & Method Specs
 
-`GeotifyAppFunctions` is defined in [`GeotifyAppFunctions.kt`](file:///home/arrase/Develop/Geotify/app/src/main/java/dev/arrase/geotify/appfunction/GeotifyAppFunctions.kt).
+`GeotifyAppFunctions` is defined in `app/src/main/java/dev/arrase/geotify/appfunction/GeotifyAppFunctions.kt`.
 
 | Function | Purpose | Key Parameters | Return Type |
 | :--- | :--- | :--- | :--- |
@@ -99,7 +101,7 @@ private suspend fun throwAliasNotFound(alias: String): Nothing {
 ### Self-Correction Lifecycle Example
 
 1. **User request**: *"Remind me to buy bread at the store."*
-2. **AI Action**: Invoques `createGeofenceReminder(targetAlias="store", ...)`
+2. **AI Action**: Invokes `createGeofenceReminder(targetAlias="store", ...)`
 3. **App Exception**:
    > `AppFunctionInvalidArgumentException`: *"Alias 'store' not found. Valid locations are: home, supermarket, gym. Map the user's intent to an exact value from this list and invoke again."*
 4. **AI Recovery**: The AI assistant reads the available alias list, maps `"store"` to `"supermarket"`, and re-invokes `createGeofenceReminder(targetAlias="supermarket", ...)`.
