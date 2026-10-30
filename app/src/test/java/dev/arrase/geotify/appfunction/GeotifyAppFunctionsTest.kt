@@ -1,8 +1,16 @@
 package dev.arrase.geotify.appfunction
 
+import android.app.Application
+import android.content.Context
 import android.location.Location
+import android.os.CancellationSignal
 import androidx.appfunctions.AppFunctionInvalidArgumentException
+import androidx.appfunctions.ExecuteAppFunctionRequest
+import androidx.appfunctions.ExecuteAppFunctionResponse
+import androidx.appfunctions.metadata.AppFunctionMetadata
 import com.google.android.gms.location.Geofence
+import dagger.hilt.internal.GeneratedComponent
+import dagger.hilt.internal.GeneratedComponentManager
 import dev.arrase.geotify.data.DuplicateAliasException
 import dev.arrase.geotify.data.LocationRepository
 import dev.arrase.geotify.data.ReminderRepository
@@ -10,16 +18,19 @@ import dev.arrase.geotify.data.entity.LocationEntity
 import dev.arrase.geotify.data.entity.ReminderEntity
 import dev.arrase.geotify.geofence.GeofenceOrchestrator
 import dev.arrase.geotify.location.LocationProvider
+import java.util.function.Consumer
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -64,6 +75,47 @@ class GeotifyAppFunctionsTest {
             // Deletions report the number of affected rows.
             whenever(locationRepository.deleteLocation(any())).thenReturn(true)
             whenever(reminderRepository.cancelReminder(any())).thenReturn(true)
+        }
+    }
+
+    private interface TestComponent : GeneratedComponent, GeotifyAppFunctions.ServiceEntryPoint
+
+    private class TestHiltApplication(
+        private val component: TestComponent
+    ) : Application(), GeneratedComponentManager<Any> {
+        override fun getApplicationContext(): Context = this
+        override fun generatedComponent(): Any = component
+    }
+
+    // ── Service lifecycle / DI wiring tests ──
+
+    @Test
+    fun onCreate_resolvesDependenciesFromHiltEntryPoint() {
+        val component: TestComponent = mock {
+            on { locationRepository() } doReturn locationRepository
+            on { reminderRepository() } doReturn reminderRepository
+            on { geofenceOrchestrator() } doReturn geofenceOrchestrator
+            on { locationProvider() } doReturn locationProvider
+        }
+        val app = TestHiltApplication(component)
+        val service = object : GeotifyAppFunctions() {
+            override fun getApplicationContext(): Context = app
+            override fun onExecuteFunction(
+                request: ExecuteAppFunctionRequest,
+                metadata: AppFunctionMetadata,
+                cancellationSignal: CancellationSignal,
+                callback: Consumer<ExecuteAppFunctionResponse>
+            ) = Unit
+        }
+
+        service.onCreate()
+        try {
+            assertSame(locationRepository, service.locationRepository)
+            assertSame(reminderRepository, service.reminderRepository)
+            assertSame(geofenceOrchestrator, service.geofenceOrchestrator)
+            assertSame(locationProvider, service.locationProvider)
+        } finally {
+            service.onDestroy()
         }
     }
 
